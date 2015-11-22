@@ -1,0 +1,25 @@
+{
+	"name": "youconix/core",
+	"description": "Core files from the Miniature-happyness framework.",
+	"license": "LGPL-3.0+",
+	"require" : {
+		"phpmailer/phpmailer" : "5.2.*",
+		"psr/log" : "1.*",
+	},
+	"suggest" : {
+		"dompdf/dompdf" : "0.6.*",
+		"facebook/php-sdk-v4": "~5.0",
+		"guzzlehttp/guzzle": "^6.0",
+		"firephp/firephp-core" : "0.4.*"
+	},
+	"authors": [
+        {
+            "name": "R. Lugtigheid",
+            "email": "rlugtigheid@youconix.nl"
+        },
+        {
+            "name": "R. Scheijen",
+            "email": "rscheijen@youconix.nl"
+        }
+    ]
+}
