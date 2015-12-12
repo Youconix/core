@@ -2,19 +2,6 @@
 namespace core\helpers;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Contains the password form with a password strength test
  *
  * This file is part of Miniature-happiness
@@ -26,13 +13,19 @@ namespace core\helpers;
 class PasswordForm extends Helper
 {
 
-    private $language;
+    /**
+     *
+     * @var \Language
+     */
+    protected $language;
 
     /**
-     * PHP 5 constructor 
-     * 
-     * @param \Language $language     The language service
-     * @param \Output $template     The template service
+     * PHP 5 constructor
+     *
+     * @param \Language $language
+     *            The language service
+     * @param \Output $template
+     *            The template service
      */
     public function __construct(\Language $language, \Output $template)
     {
@@ -48,8 +41,8 @@ class PasswordForm extends Helper
 
     /**
      * Generates the form
-     * 
-     * @return string   The form
+     *
+     * @return string The form
      */
     public function generate()
     {
@@ -58,7 +51,7 @@ class PasswordForm extends Helper
         $a_language = array(
             'passwordform_invalid' => $this->language->get('widgets/passwordForm/invalid'),
             'passwordform_toShort' => $this->language->get('widgets/passwordForm/toShort'),
-            'passwordform_veryStrongPassword' =>  $this->language->get('widgets/passwordForm/veryStrongPassword'),
+            'passwordform_veryStrongPassword' => $this->language->get('widgets/passwordForm/veryStrongPassword'),
             'passwordform_strongPassword' => $this->language->get('widgets/passwordForm/strongPassword'),
             'passwordform_fairPassword' => $this->language->get('widgets/passwordForm/fairPassword'),
             'passwordform_weakPassword' => $this->language->get('widgets/passwordForm/weakPassword')
@@ -67,11 +60,11 @@ class PasswordForm extends Helper
         $s_html = '<section id="passwordForm">
 		<fieldset>
 				<label class="label">' . $this->language->get('widgets/passwordForm/password') . '</label>
-				<span><input type="password" name="password" id="password1" data-validation="'.$s_passwordError.'" data-validation-pattern="'.$a_language['passwordform_toShort'].'" pattern=".{8,}" required></span>
+				<span><input type="password" name="password" id="password1" data-validation="' . $s_passwordError . '" data-validation-pattern="' . $a_language['passwordform_toShort'] . '" pattern=".{8,}" required></span>
 		</fieldset>
         <fieldset>
 			<label class="label" for="password2">' . $this->language->get('widgets/passwordForm/passwordAgain') . '</label>
-			<span><input type="password" name="password2" id="password2" data-validation="'.$s_passwordError.'" data-validation-pattern="'.$a_language['passwordform_toShort'].'" pattern=".{8,}" required></span>			
+			<span><input type="password" name="password2" id="password2" data-validation="' . $s_passwordError . '" data-validation-pattern="' . $a_language['passwordform_toShort'] . '" pattern=".{8,}" required></span>			
 		</fieldset>
 		</section>
         <article id="passwordStrength">
@@ -110,7 +103,7 @@ class PasswordForm extends Helper
             validation.bind(["password1","password2"]);
 				    
     		passwordCheck = new PasswordCheck();
-		    passwordCheck.setLanguage('.json_encode($a_language).');
+		    passwordCheck.setLanguage(' . json_encode($a_language) . ');
     		passwordCheck.init();
     	});
 		//-->

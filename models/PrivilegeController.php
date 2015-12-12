@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Controller for the page privileges
  *
  * This file is part of Miniature-happiness
@@ -22,12 +9,12 @@ namespace core\models;
  * @copyright Youconix
  * @author Rachelle Scheijen
  */
-class PrivilegeController extends \core\models\Model
+class PrivilegeController extends \youconix\core\models\Model
 {
 
     /**
      *
-     * @var \core\services\FileHandler
+     * @var \youconix\core\services\FileHandler
      */
     protected $file;
 
@@ -44,14 +31,14 @@ class PrivilegeController extends \core\models\Model
      *
      * @param \Builder $builder
      *            The query builder
-     * @param \core\services\Validation $service_Validation
+     * @param \Validation $validation
      *            The validation service
-     * @param \core\services\FileHandler $file
+     * @param \youconix\core\services\FileHandler $file
      *            The file service
      */
-    public function __construct(\Builder $builder, \core\services\Validation $service_Validation, \core\services\FileHandler $file, \Config $config)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\services\FileHandler $file, \Config $config)
     {
-        parent::__construct($builder, $service_Validation);
+        parent::__construct($builder, $validation);
         
         $this->file = $file;
         $this->config = $config;

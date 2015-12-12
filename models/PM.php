@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * PM controller model.
  * Contains the PM models
  *
@@ -24,18 +11,18 @@ namespace core\models;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class PM extends Model
+class PM extends \youconix\core\models\Model
 {
 
     /**
-     * 
-     * @var \core\services\Mailer
+     *
+     * @var \Mailer
      */
     private $mailer;
 
     /**
-     * 
-     * @var \core\models\data\DataPM
+     *
+     * @var \youconix\core\models\data\PM
      */
     private $pm;
 
@@ -44,12 +31,12 @@ class PM extends Model
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \core\services\Validation $validation
-     * @param \core\models\data\Data_PM $pm
-     * @param \core\services\Mailer $mailer
+     * @param \Builder $builder            
+     * @param \Validation $validation            
+     * @param \youconix\core\models\data\PM $pm            
+     * @param \Mailer $mailer            
      */
-    public function __construct(\Builder $builder, \core\services\Validation $validation, \core\models\data\Data_PM $pm, \core\services\Mailer $mailer)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\models\data\PM $pm, \Mailer $mailer)
     {
         parent::__construct(builder, $validation);
         $this->pm = $pm;
@@ -59,17 +46,17 @@ class PM extends Model
     /**
      * Sends a message from system
      *
-     * @param \core\models\data\User $obj_receiver            
-     * @param String $s_title
+     * @param \youconix\core\models\data\User $obj_receiver            
+     * @param string $s_title
      *            The title of the message
-     * @param String $s_message
+     * @param string $s_message
      *            The content of the message
      * @return int The new message ID
      */
-    public function sendSystemMessage(\core\models\data\User $obj_receiver, $s_title, $s_message)
+    public function sendSystemMessage(\youconix\core\models\data\User $obj_receiver, $s_title, $s_message)
     {
-        \core\Memory::type('string', $s_title);
-        \core\Memory::type('string', $s_message);
+        \youconix\core\Memory::type('string', $s_title);
+        \youconix\core\Memory::type('string', $s_message);
         
         $i_receiver = $obj_receiver->getID();
         
@@ -90,19 +77,19 @@ class PM extends Model
     /**
      * Sends a message
      *
-     * @param \core\models\data\User $obj_receiver            
-     * @param String $s_title
+     * @param \youconix\core\models\data\User $obj_receiver            
+     * @param string $s_title
      *            The title of the message
-     * @param String $s_message
+     * @param string $s_message
      *            The content of the message
      * @param int $i_sender
      *            ID, default current user
      * @return int The new message ID
      */
-    public function sendMessage(\core\models\data\User $obj_receiver, $s_title, $s_message, $i_sender = -1)
+    public function sendMessage(\youconix\core\models\data\User $obj_receiver, $s_title, $s_message, $i_sender = -1)
     {
-        \core\Memory::type('string', $s_title);
-        \core\Memory::type('string', $s_message);
+        \youconix\core\Memory::type('string', $s_title);
+        \youconix\core\Memory::type('string', $s_message);
         
         if ($i_sender == - 1) {
             $i_sender = USERID;
@@ -133,7 +120,7 @@ class PM extends Model
      *
      * @param int $i_receiver
      *            ID, default current user
-     * @return array The messages
+     * @return \youconix\core\models\data\PM[] The messages
      */
     public function getMessages($i_receiver = -1)
     {
@@ -169,12 +156,12 @@ class PM extends Model
      *
      * @param int $i_id
      *            The ID of the message
-     * @return Data_PM The message
-     * @throws DBException if the message does not exists
+     * @return \youconix\core\models\data\PM The message
+     * @throws \DBException if the message does not exists
      */
     public function getMessage($i_id)
     {
-        \core\Memory::type('int', $i_id);
+        \youconix\core\Memory::type('int', $i_id);
         
         if (array_key_exists($i_id, $this->a_messages)) {
             return $this->a_messages[$i_id];
@@ -192,11 +179,11 @@ class PM extends Model
      *
      * @param int $i_id
      *            The ID of the message
-     * @throws DBException if the message does not exists
+     * @throws \DBException if the message does not exists
      */
     public function deleteMessage($i_id)
     {
-        \core\Memory::type('int', $i_id);
+        \youconix\core\Memory::type('int', $i_id);
         
         $obj_message = $this->getMessage($i_id);
         $obj_message->deleteMessage();

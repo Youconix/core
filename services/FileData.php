@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * File-data handler for collecting file specific data
  *
  * This file is part of Miniature-happiness
@@ -41,15 +28,15 @@ class FileData extends Service
      * Returns the mine-type from the given file.
      * Needs mime_content_type() of finfo_open() on the server to work.
      *
-     * @param String $s_file
+     * @param string $s_file
      *            name
-     * @param Boolean $bo_removeDetails
+     * @param boolean $bo_removeDetails
      *            false te preserve the details after ;
-     * @return String mine-type
+     * @return string mine-type
      */
     public function getMimeType($s_file, $bo_removeDetails = true)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         if (function_exists('finfo_open')) {
             $s_finfo = finfo_open(FILEINFO_MIME);
@@ -72,13 +59,13 @@ class FileData extends Service
      * Return the size from the given file.
      * Needs file_size() or stat() on the server to work.
      *
-     * @param String $s_file
+     * @param string $s_file
      *            name
      * @return int size or -1 if the size could not be collected
      */
     public function getFileSize($s_file)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         if (function_exists('file_size')) {
             return file_size($s_file);
@@ -96,13 +83,13 @@ class FileData extends Service
      * Returns the last date that the given file was accessed.
      * Needs stat() on the server to work.
      *
-     * @param String $s_file
+     * @param string $s_file
      *            name
      * @return int last access date or -1 if the date could not be collected
      */
     public function getLastAccess($s_file)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         if (function_exists('stat')) {
             $a_stats = stat($s_file);
@@ -121,7 +108,7 @@ class FileData extends Service
      */
     public function getLastModified($s_file)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         if (function_exists('stat')) {
             $a_stats = stat($s_file);

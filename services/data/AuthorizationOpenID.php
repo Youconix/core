@@ -1,5 +1,7 @@
 <?php
-class AuthorizationOpenID extends \core\services\Service implements \core\interfaces\Authorization {
+namespace youconix\core\services\data;
+
+class AuthorizationOpenID extends \youconix\core\services\Service implements \youconix\core\interfaces\Authorization {
 	private $service_Cookie;
 	private $service_Session;
 	private $builder;
@@ -14,10 +16,10 @@ class AuthorizationOpenID extends \core\services\Service implements \core\interf
 	 * @param \Logger $service_Logs
 	 *        	The log service
 	 *        	@oaram \Session $service_Session The session handler
-	 * @param \core\models\User $model_User
+	 * @param \youconix\core\models\User $model_User
 	 *        	The user model
 	 */
-	public function __construct(\Builder $builder, \Logger $service_Logs, \Session $service_Session, \core\models\User $model_User) {
+	public function __construct(\Builder $builder, \Logger $service_Logs, \Session $service_Session, \youconix\core\models\User $model_User) {
 		$this->builder = $builder;
 		$this->service_Database = $this->builder->getDatabase ();
 		$this->service_Logs = $service_Logs;

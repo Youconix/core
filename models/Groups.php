@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Group model.
  * Contains the group data
  *
@@ -31,13 +18,13 @@ class Groups extends Model
 {
 
     /**
-     * 
-     * @var \core\models\data\Group
+     *
+     * @var \youconix\core\models\data\Group
      */
     protected $group;
-    
+
     /**
-     * 
+     *
      * @var \Config
      */
     protected $config;
@@ -47,12 +34,12 @@ class Groups extends Model
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \Validation $validation
-     * @param \core\models\data\Group $group
-     * @param \Config $config
+     * @param \Builder $builder            
+     * @param \Validation $validation            
+     * @param \youconix\core\models\data\Group $group            
+     * @param \Config $config            
      */
-    public function __construct(\Builder $builder, \Validation $validation, \core\models\data\Group $group, \Config $config)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\models\data\Group $group, \Config $config)
     {
         parent::__construct($builder, $validation);
         
@@ -81,7 +68,7 @@ class Groups extends Model
     /**
      * Gets all the registrated groups
      *
-     * @return Data_Group-array The registrated groups
+     * @return \youconix\core\models\data\Group[]
      */
     public function getGroups()
     {
@@ -93,13 +80,13 @@ class Groups extends Model
      *
      * @param int $i_groupid
      *            The group ID
-     * @return \core\models\data\Group The registrated group
-     * @throws TypeException if $i_groupid is not a int
-     * @throws OutOfBoundsException if the group does not exist
+     * @return \youconix\core\models\data\Group The registrated group
+     * @throws \TypeException if $i_groupid is not a int
+     * @throws \OutOfBoundsException if the group does not exist
      */
     public function getGroup($i_groupid)
     {
-        \core\Memory::type('int', $i_groupid);
+        \youconix\core\Memory::type('int', $i_groupid);
         
         if (! array_key_exists($i_groupid, $this->a_groups)) {
             throw new \OutOfBoundsException("Calling non existing group with id " . $i_groupid);
@@ -118,8 +105,8 @@ class Groups extends Model
      */
     public function getLevel($i_userid, $i_groupid = -1)
     {
-        \core\Memory::type('int', $i_userid);
-        \core\Memory::type('int', $i_groupid);
+        \youconix\core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_groupid);
         
         if ($i_groupid == - 1) {
             $s_page = $this->config->getPage();
@@ -149,8 +136,8 @@ class Groups extends Model
      */
     public function getLevelByGroupID($i_groupid, $i_userid)
     {
-        \core\Memory::type('int', $i_groupid);
-        \core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_groupid);
+        \youconix\core\Memory::type('int', $i_userid);
         
         $this->builder->select('group_users', 'level')
             ->getWhere()
@@ -176,7 +163,7 @@ class Groups extends Model
     /**
      * Generates a new group
      *
-     * @return Data_Group new group
+     * @return \youconix\core\models\data\Group
      */
     public function generateGroup()
     {
@@ -192,7 +179,7 @@ class Groups extends Model
      */
     public function getGroupsLevel($i_userid)
     {
-        \core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_userid);
         
         $a_groups = array();
         foreach ($this->a_groups as $obj_group) {
@@ -212,8 +199,8 @@ class Groups extends Model
      */
     public function addUserDefaultGroups($i_userid, $i_level = 0)
     {
-        \core\Memory::type('int', $i_userid);
-        \core\Memory::type('int', $i_level);
+        \youconix\core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_level);
         
         foreach ($this->a_groups as $obj_group) {
             if (! $obj_group->isDefault()) {
@@ -232,7 +219,7 @@ class Groups extends Model
      */
     public function deleteUserFromGroups($i_userid)
     {
-        \core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_userid);
         
         foreach ($this->a_groups as $obj_group) {
             $obj_group->deleteUser($i_userid);
@@ -250,13 +237,13 @@ class Groups extends Model
      */
     public function editUserLevel($i_userid, $a_groups, $i_level)
     {
-        \core\Memory::type('int', $i_userid);
-        \core\Memory::type('array', $a_groups);
-        \core\Memory::type('int', $i_level);
+        \youconix\core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('array', $a_groups);
+        \youconix\core\Memory::type('int', $i_level);
         
         foreach ($a_groups as $i_group) {
             if (! is_int($i_group) || ! array_key_exists($i_group, $this->a_groups)) {
-                throw new \OutOfBoundsException("Unknown group id ".$i_group.'.');
+                throw new \OutOfBoundsException("Unknown group id " . $i_group . '.');
             }
             
             $this->a_groups[$i_group]->editUser($i_userid, $i_level);

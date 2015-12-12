@@ -1,5 +1,5 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
  * Account authorization service
@@ -11,19 +11,6 @@ namespace core\services;
  * @author Rachelle Scheijen
  * @see core/openID/OpenAuth.inc.php
  * @since 1.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
 class Authorization extends Service
 {
@@ -60,7 +47,7 @@ class Authorization extends Service
         $this->service_Database = $this->service_QueryBuilder->getDatabase();
         $this->service_Logs = $service_Logs;
         
-        if (! class_exists('\core\interfaces\Authorization')) {
+        if (! class_exists('\youconix\core\interfaces\Authorization')) {
             require (NIV . 'include/interface/Authorization.inc.php');
         }
         
@@ -71,7 +58,7 @@ class Authorization extends Service
             'LDAP'
         );
         foreach ($a_types as $s_type) {
-            $authorization = \Loader::Inject('\core\services\Authorization' . ucfirst($s_type), true);
+            $authorization = \Loader::Inject('\youconix\core\services\Authorization' . ucfirst($s_type), true);
             if( !is_null($authorization) ){
                 $this->a_authorizationTypes[$s_type] = $authorization;
                 $this->a_openID_types[] = $s_type;
@@ -330,7 +317,7 @@ class Authorization extends Service
             return - 1;
         }
         
-        $service_Random = \core\Memory::services('Random');
+        $service_Random = \youconix\core\Memory::services('Random');
         $s_newPassword = $service_Random->numberLetter(10, true);
         $s_hash = sha1($s_username . $service_Random->numberLetter(20, true) . $s_email);
         
@@ -449,7 +436,7 @@ class Authorization extends Service
      */
     public function disableAccount($s_username)
     {
-        \core\Memory::type('string', $s_username);
+        \youconix\core\Memory::type('string', $s_username);
         
         try {
             $this->service_QueryBuilder->select('users', 'email')

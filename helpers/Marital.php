@@ -1,4 +1,5 @@
 <?php
+namespace youconix\core\helpers;
 
 /**
  * Marital list widget
@@ -6,43 +7,30 @@
  * This file is part of Miniature-happiness
  *
  * @copyright Youconix
- * @author    Rachelle Scheijen
- * @since     1.0
- *
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness.  If not, see <http://www.gnu.org/licenses/>.
+ * @author Rachelle Scheijen
+ * @since 1.0
  */
-class Helper_Marital extends Helper
+class Marital extends \youconix\core\helpers\Helper
 {
 
-    private $a_items;
+    protected $a_items;
 
     /**
      * Creates the marital helper
+     *
+     * @param \Language $language            
      */
-    public function __construct()
+    public function __construct(\Language $language)
     {
-        $service_Language = Memory::services('Language');
-        
         $this->a_items = array(
-            'married' => $service_Language->get('marital/married'),
-            'registeredPartner' => $service_Language->get('marital/registeredPartner'),
-            'divorced' => $service_Language->get('marital/divorced'),
-            'unknown' => $service_Language->get('marital/unknown'),
-            'single' => $service_Language->get('marital/single'),
-            'livingTogetherContract' => $service_Language->get('marital/livingTogetherContract'),
-            'livingTogether' => $service_Language->get('marital/livingTogether'),
-            'widow' => $service_Language->get('marital/widow')
+            'married' => $language->get('system/marital/married'),
+            'registeredPartner' => $language->get('system/marital/registeredPartner'),
+            'divorced' => $language->get('system/marital/divorced'),
+            'unknown' => $language->get('system/marital/unknown'),
+            'single' => $language->get('system/marital/single'),
+            'livingTogetherContract' => $language->get('system/marital/livingTogetherContract'),
+            'livingTogether' => $language->get('system/marital/livingTogether'),
+            'widow' => $language->get('system/marital/widow')
         );
     }
 
@@ -51,7 +39,7 @@ class Helper_Marital extends Helper
      *
      * @param string $s_key
      *            key
-     *            @returb bool	True if the key is valid
+     * @return bool True if the key is valid
      */
     public function isValid($s_key)
     {

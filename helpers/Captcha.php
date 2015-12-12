@@ -1,20 +1,7 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Helper for generating capchas
  *
  * This file is part of Miniature-happiness
@@ -23,24 +10,30 @@ namespace core\helpers;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class Captcha extends Helper
+class Captcha extends \youconix\core\helpers\Helper
 {
 
-    private $session;
+    /**
+     *
+     * @var \Session
+     */
+    protected $session;
 
-    private $random;
+    /**
+     *
+     * @var \Youconix\core\services\Random
+     */
+    protected $random;
 
-    private $i_length = 8;
+    protected $i_length = 8;
 
     /**
      * PHP 5 constructor
      *
-     * @param \Session $session
-     *            The session service
-     * @param \core\services\Random $random
-     *            The random service
+     * @param \Session $session            
+     * @param \youconix\core\services\Random $random            
      */
-    public function __construct(\Session $session, \core\services\Random $random)
+    public function __construct(\Session $session, \youconix\core\services\Random $random)
     {
         $this->session = $session;
         $this->random = $random;
@@ -104,21 +97,22 @@ class Captcha extends Helper
         
         ob_clean();
         /*
-         * Write image */
-         header("Expires: Mon, 26 Jul 1990 05:00:00 GMT");
-         header("Cache-Control: no-store, no-cache, must-revalidate");
-         header("Cache-Control: post-check=0, pre-check=0", false);
-         header("Pragma: no-cache");
-         header('Content-type: image/png');
-         ImagePng($s_image);
-         
-         ImageDestroy($s_image);
+         * Write image
+         */
+        header("Expires: Mon, 26 Jul 1990 05:00:00 GMT");
+        header("Cache-Control: no-store, no-cache, must-revalidate");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        header('Content-type: image/png');
+        ImagePng($s_image);
+        
+        ImageDestroy($s_image);
     }
 
     /**
      * Generates the capcha code
      *
-     * @return String The code
+     * @return string The code
      */
     private function generateCode()
     {
@@ -130,9 +124,9 @@ class Captcha extends Helper
     /**
      * Checks if the given code is correct
      *
-     * @param String $s_code
+     * @param string $s_code
      *            The filled in code, case insensitive
-     * @return Boolean True if the code is correct, otherwise false
+     * @return boolean True if the code is correct, otherwise false
      */
     public function checkCaptcha($s_code)
     {

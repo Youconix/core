@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Config contains the main runtime configuration of the framework.
  *
  * This file is part of Miniature-happiness
@@ -23,12 +10,14 @@ namespace core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-class Config extends Model implements \Config,\SplSubject
+class Config extends Model implements \Config, \SplSubject
 {
-	/**
-	 * @var \core\services\FileHandler
-	 */
-	protected $file;
+
+    /**
+     *
+     * @var \youconix\core\services\FileHandler
+     */
+    protected $file;
 
     /**
      *
@@ -50,6 +39,8 @@ class Config extends Model implements \Config,\SplSubject
 
     protected $s_templateDir;
 
+    protected $s_stylesDir;
+
     protected $bo_ajax = false;
 
     protected $s_base;
@@ -70,14 +61,14 @@ class Config extends Model implements \Config,\SplSubject
 
     /**
      * PHP 5 constructor
-     *       
-     * @param \core\services\FileHandler $file
+     *
+     * @param \youconix\core\services\FileHandler $file            
      * @param \Settings $settings            
      * @param \Cookie $cookie            
      */
-    public function __construct(\core\services\FileHandler $file,\Settings $settings, \Cookie $cookie, \Builder $builder)
+    public function __construct(\youconix\core\services\FileHandler $file, \Settings $settings, \Cookie $cookie, \Builder $builder)
     {
-    	$this->file = $file;
+        $this->file = $file;
         $this->settings = $settings;
         $this->cookie = $cookie;
         $this->builder = $builder;
@@ -182,7 +173,7 @@ class Config extends Model implements \Config,\SplSubject
         $obj_languageFiles = $this->file->readDirectory(NIV . 'language');
         
         foreach ($obj_languageFiles as $languageFile) {
-        	$s_languageFile = $languageFile->getFilename();
+            $s_languageFile = $languageFile->getFilename();
             if (strpos($s_languageFile, 'language_') !== false) {
                 /* Fallback */
                 return $this->getLanguagesOld();
@@ -306,20 +297,30 @@ class Config extends Model implements \Config,\SplSubject
             $this->bo_ajax = true;
         }
     }
-    
+
     /**
      * Detects the template directory and layout
      */
-    public function detectTemplateDir(){
-    	$s_uri = $this->s_page;//$_SERVER['REQUEST_URI'];
-    	while( strpos($s_uri,'//') !== false ){
-    		$s_uri = str_replace('//','/',$s_uri);
-    	}
-        if (preg_match('#^/?admin/#', $s_uri)) {
-            $this->loadAdminTemplateDir();
-        } else {
-            $this->loadTemplateDir();
+    public function detectTemplateDir()
+    {
+        $this->s_stylesDir = 'styles';
+        
+        $s_uri = $this->s_page;
+        while (strpos($s_uri, '//') !== false) {
+            $s_uri = str_replace('//', '/', $s_uri);
         }
+        if (preg_match('#^/?vendor/#', $s_uri)) {
+            $this->loadTemplateDir();
+            preg_match('#^/?vendor/([a-zA-Z0-9\-_]+/[a-zA-Z0-0\-_]+)/#', $s_uri, $a_matches);
+            $this->s_templateDir = 'vendor' . DS . $a_matches[1];
+            
+            $this->s_stylesDir = substr($this->s_templateDir, 0, strrpos($this->s_templateDir, '/'));
+        } else 
+            if (preg_match('#^/?admin/#', $s_uri)) {
+                $this->loadAdminTemplateDir();
+            } else {
+                $this->loadTemplateDir();
+            }
         
         $this->notify();
     }
@@ -375,8 +376,8 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Clears the location path from evil input
      *
-     * @param String $s_location            
-     * @return String path
+     * @param string $s_location            
+     * @return string path
      */
     protected function clearLocation($s_location)
     {
@@ -396,7 +397,7 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Returns the template directory
      *
-     * @return String The template directory
+     * @return string
      */
     public function getTemplateDir()
     {
@@ -406,21 +407,27 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Returns the loaded template directory
      *
-     * @return String template directory
+     * @return string
      */
     public function getStylesDir()
     {
-        return 'styles/' . $this->s_templateDir . '/';
+        return $this->s_stylesDir .DS. $this->s_templateDir . '/';
     }
-    
-    public function getSharedStylesDir(){
+
+    /**
+     * Returns the shared style directory
+     *
+     * @return string
+     */
+    public function getSharedStylesDir()
+    {
         return 'styles/shared/';
     }
 
     /**
      * Returns the main template layout
      *
-     * @return String The layout
+     * @return string
      */
     public function getLayout()
     {
@@ -440,7 +447,7 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Returns the used protocol
      *
-     * @return String protocol
+     * @return string protocol
      */
     public function getProtocol()
     {
@@ -460,7 +467,7 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Returns the current page
      *
-     * @return String page
+     * @return string page
      */
     public function getPage()
     {
@@ -470,9 +477,9 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Sets the current page
      *
-     * @param String $s_page
+     * @param string $s_page
      *            The new page
-     * @param String $s_command
+     * @param string $s_command
      *            The new command
      *            @parma String $s_layout The new layout
      */
@@ -519,7 +526,7 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Returns the request command
      *
-     * @return String The command
+     * @return string The command
      */
     public function getCommand()
     {
@@ -529,7 +536,7 @@ class Config extends Model implements \Config,\SplSubject
     /**
      * Returns the server host
      *
-     * @return String The host
+     * @return string The host
      */
     public function getHost()
     {
@@ -540,7 +547,7 @@ class Config extends Model implements \Config,\SplSubject
      * Returns the path to the website root
      * This value gets set in {LEVEL}
      *
-     * @return String path
+     * @return string path
      */
     public function getBase()
     {
@@ -607,50 +614,56 @@ class Config extends Model implements \Config,\SplSubject
         }
         return true;
     }
-    
-    public function isLDAPLogin(){
+
+    public function isLDAPLogin()
+    {
         if (! $this->settings->exists('login/LDAP') || $this->settings->get('login/LDAP/status') != 1) {
             return false;
         }
         return true;
     }
-    
-    public function getLoginTypes(){
+
+    public function getLoginTypes()
+    {
         $a_login = array();
-        if( $this->isNormalLogin() ){
+        if ($this->isNormalLogin()) {
             $a_login[] = 'normal';
         }
-        if( $this->isLDAPLogin() ){
+        if ($this->isLDAPLogin()) {
             $a_login[] = 'ldap';
         }
-        $a_login = array_merge($a_login,$this->getOpenAuth());
+        $a_login = array_merge($a_login, $this->getOpenAuth());
         return $a_login;
     }
-    
-    public function getOpenAuth(){
-        if( !$this->settings->exists('login/openAuth') ){
+
+    public function getOpenAuth()
+    {
+        if (! $this->settings->exists('login/openAuth')) {
             return array();
         }
         
         $a_types = $this->settings->getBlock('login/openAuth/type');
         $a_openAuth = array();
-        foreach( $a_types AS $type ){
-            if( $type->tagName != 'type' ){ continue; }
+        foreach ($a_types as $type) {
+            if ($type->tagName != 'type') {
+                continue;
+            }
             
-            if( $this->settings->get('login/openAuth/'.$type->nodeValue.'/status') == 1 ){
+            if ($this->settings->get('login/openAuth/' . $type->nodeValue . '/status') == 1) {
                 $a_openAuth[] = $type->nodeValue;
             }
         }
         
         return $a_openAuth;
     }
-    
-    public function isOpenAuthEnabled($s_name){
-        if( !$this->settings->exists('login/openAuth') || !$this->settings->exists('login/openAuth/'.$s_name)){
+
+    public function isOpenAuthEnabled($s_name)
+    {
+        if (! $this->settings->exists('login/openAuth') || ! $this->settings->exists('login/openAuth/' . $s_name)) {
             return false;
         }
         
-        return ($this->settings->exists('login/openAuth/'.$s_name.'/status') == 1 );
+        return ($this->settings->exists('login/openAuth/' . $s_name . '/status') == 1);
     }
 
     /**
@@ -712,12 +725,12 @@ class Config extends Model implements \Config,\SplSubject
      * Returns if SSL is enabled
      *
      * @return int The SSL code
-     * @see \core\services\Settings
+     * @see \youconix\core\services\Settings
      */
     public function isSslEnabled()
     {
         if (! $this->settings->exists('main/ssl')) {
-            return \core\services\Settings::SSL_DISABLED;
+            return \youconix\core\services\Settings::SSL_DISABLED;
         }
         
         return $this->settings->get('main/ssl');

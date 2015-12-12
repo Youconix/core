@@ -1,21 +1,8 @@
 <?php
 
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Calender generator class.
  * Generates a month calender
  *
@@ -25,9 +12,24 @@ namespace core\helpers;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class Calender extends Helper {
-	protected $helper_HTML;
-	protected $service_Language;
+class Calender extends \youconix\core\helpers\Helper {
+    /**
+     * 
+     * @var \youconix\core\helpers\HTML
+     */    
+	protected $HTML;
+	/**
+	 * 
+	 * @var \Language 
+	 */
+	protected $language;
+	
+	/**
+	 * 
+	 * @var \Output
+	 */
+	protected $template;
+	
 	protected $i_month;
 	protected $i_year;
 	protected $i_startDayWeek;
@@ -38,17 +40,17 @@ class Calender extends Helper {
 	/**
 	 * PHP 5 constructor
 	 *
-	 * @param \core\helpers\html\HTML $helper_HTML
-	 *        	service
-	 * @param \Language $service_Language
-	 *        	service
+	 * @param \youconix\core\helpers\html\HTML $HTML
+	 * @param \Language $language
+	 * @param \Output $template
 	 */
-	public function __construct(\core\helpers\html\HTML $helper_HTML, \Language $service_Language) {
+	public function __construct(\youconix\core\helpers\html\HTML $HTML, \Language $language,\Output $template) {
 		$this->i_month = date ( 'n' );
 		$this->i_year = date ( 'Y' );
 		$this->i_startDayWeek = 0; // sunday
-		$this->helper_HTML = $helper_HTML;
-		$this->service_Language = $service_Language;
+		$this->HTML = $HTML;
+		$this->language = $language;
+		$this->template = $template;
 		$this->s_event = '';
 		$this->a_items = array ();
 	}
@@ -125,57 +127,44 @@ class Calender extends Helper {
 	/**
 	 * Generates the calender
 	 *
-	 * @return string The calender
+	 * @param string $s_key    The template key to write to
 	 */
-	public function generateCalender() {
-		$s_view = '<style type="text/css">
-    <!--
-    #calender {	width:215px; height:auto; }
-    #calender li { width:30px; float:left; font-size:1em;}
-    #calender li.bold { font-size:0.95em;}
-    //-->
-    </style>
-
-    <div id="calender">
-    <table>
-    <thead>
-    <tr>
-    <td><span class="link" onclick="calender.decreaseMonth()">&lt;&lt;</span></td>
-    <td class="textCenter" id="calender_month"></td>
-    <td><span class="link" onclick="calender.increaseMonth()">&gt;&gt;</span></td>
-    </tr>
-    <tr>
-    <td colspan="3"><ul>';
-		for($i = $this->i_startDayWeek; $i < 7; $i ++) {
-			$s_view .= '<li class="bold">' . $this->service_Language->get ( 'system/weekdaysShort/day' . $i ) . '</li>';
-		}
-		for($i = 0; $i < $this->i_startDayWeek; $i ++) {
-			$s_view .= '<li class="bold">' . $this->service_Language->get ( 'system/weekdaysShort/day' . $i ) . '</li>';
-		}
-		$s_view .= '</ul></tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td colspan="3"><ul id="calender_days"></ul></td>
-    </tr>
-    </tbody>
-    </table>
-    </div>
-
-    <script type="text/javascript">
-    <!--
-    calender.setWeekStart(' . $this->i_startDayWeek . ');
-    calender.setMonth(' . $this->i_month . ');
-    calender.setYear(' . $this->i_year . ');
-    calender.setData(' . json_encode ( $this->a_items ) . ');
-    calender.setCaller("' . $this->s_event . '");
-    calender.display();
-
-    $("head").append(\'<script src="{NIV}js/calender.php"></script>\');
-    //-->
-    </script>
-    ';
-		
-		return $s_view;
+	public function generateCalender($s_key) {
+	    $style = $this->HTML->stylesheet('
+        #calender {	width:215px; height:auto; }
+        #calender li { width:30px; float:left; font-size:1em;}
+        #calender li.bold { font-size:0.95em;}
+	    ');
+	    $this->template->setCSS($style->generateItem());
+	    
+	    $this->template->loadTemplate($s_key, NIV.'vendor'.DS.'youconix'.DS.'core'.DS.'templates'.DS.'helpers'.DS.'calendar.tpl');
+	    
+	    // Write days
+	    for($i = $this->i_startDayWeek; $i < 7; $i ++) {
+	        $this->template->setBlock('calendar_day',array('name'=> $this->language->get ( 'system/weekdaysShort/day' . $i )) );
+	    }
+	    for($i = 0; $i < $this->i_startDayWeek; $i ++) {
+	        $this->template->setBlock('calendar_day',array('name'=> $this->language->get ( 'system/weekdaysShort/day' . $i )) );
+	    }
+	    
+	    $script = 'calendar.setWeekStart(' . $this->i_startDayWeek . ');
+        calendar.setMonth(' . $this->i_month . ');
+        calendar.setYear(' . $this->i_year . ');
+        calendar.setData(' . json_encode ( $this->a_items ) . ');
+        calendar.setCaller("' . $this->s_event . '");
+        ';
+	    
+	    $a_months = array();
+	    for($i=1; $i<=12; $i++){
+	        $a_months[] = $i.' : '.$this->language->get('system/months/month'.$i);
+	    }
+	    
+	    $script = $this->HTML->javascript('
+	    calendar.setMonths({'.implode(',',$a_months).'});
+        calendar.display();
+        ');
+	    $link = $this->HTML->javascriptLink('{NIV}js/calender.php');
+        $this->template->setJavascript($script->generateItem());
+        $this->template->setJavascriptLink($link->generateItem());
 	}
 }

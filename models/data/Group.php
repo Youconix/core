@@ -1,20 +1,7 @@
 <?php
-namespace core\models\data;
+namespace youconix\core\models\data;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Group data model.
  * Contains the group data
  *
@@ -24,25 +11,24 @@ namespace core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class Group extends \core\models\Model
+class Group extends \youconix\core\models\Model
 {
 
-    private $i_id;
+    protected $i_id;
 
     protected $s_name;
 
     protected $i_default = 0;
 
-    private $a_users;
+    protected $a_users;
 
     protected $s_description;
-    
 
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \Validation $validation
+     * @param \Builder $builder            
+     * @param \Validation $validation            
      */
     public function __construct(\Builder $builder, \Validation $validation)
     {
@@ -82,7 +68,6 @@ class Group extends \core\models\Model
     }
 
     /**
-     * Returns the ID
      *
      * @return int ID
      */
@@ -92,7 +77,6 @@ class Group extends \core\models\Model
     }
 
     /**
-     * Returns the name
      *
      * @return string name
      */
@@ -102,19 +86,17 @@ class Group extends \core\models\Model
     }
 
     /**
-     * Sets the name
      *
      * @param string $s_name            
      */
     public function setName($s_name)
     {
-        \core\Memory::type('string', $s_name);
+        \youconix\core\Memory::type('string', $s_name);
         
         $this->s_name = $s_name;
     }
 
     /**
-     * Returns the description
      *
      * @return string description
      */
@@ -124,13 +106,12 @@ class Group extends \core\models\Model
     }
 
     /**
-     * Sets the description
      *
      * @param string $s_description            
      */
     public function setDescription($s_description)
     {
-        \core\Memory::type('string', $s_description);
+        \youconix\core\Memory::type('string', $s_description);
         
         $this->s_description = $s_description;
     }
@@ -153,7 +134,7 @@ class Group extends \core\models\Model
      */
     public function setDefault($bo_default)
     {
-        \core\Memory::type('boolean', $bo_default);
+        \youconix\core\Memory::type('boolean', $bo_default);
         
         if ($bo_default) {
             $this->i_default = 1;
@@ -171,7 +152,7 @@ class Group extends \core\models\Model
      */
     public function getLevelByGroupID($i_userid)
     {
-        \core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_userid);
         
         if (! is_null($this->a_users)) {
             if (array_key_exists($i_userid, $this->a_users)) {
@@ -251,7 +232,7 @@ class Group extends \core\models\Model
             $this->i_default
         ));
         $i_groupID = $this->builder->getResult()->getID();
-        $this->i_id  = $i_groupID;
+        $this->i_id = $i_groupID;
         
         if ($this->i_default == 1) {
             /* Add users to group */
@@ -338,8 +319,8 @@ class Group extends \core\models\Model
      */
     public function addUser($i_userid, $i_level = 0)
     {
-        \core\Memory::type('int', $i_userid);
-        \core\Memory::type('int', $i_level);
+        \youconix\core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_level);
         
         if ($i_level < 0 || $i_level > 2)
             $i_level = 0;
@@ -371,8 +352,8 @@ class Group extends \core\models\Model
      */
     public function editUser($i_userid, $i_level = 0)
     {
-        \core\Memory::type('int', $i_userid);
-        \core\Memory::type('int', $i_level);
+        \youconix\core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_level);
         
         if (! in_array($i_level, array(
             - 1,
@@ -457,7 +438,7 @@ class Group extends \core\models\Model
      */
     public function deleteUser($i_userid)
     {
-        \core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_userid);
         
         if ($this->getLevelByGroupID($i_userid) != \Session::ANONYMOUS) {
             $this->builder->delete('group_users')

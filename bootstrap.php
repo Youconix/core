@@ -23,10 +23,9 @@ function reportException(\Exception $exception, $bo_caught = true)
 /* Set error catcher */
 function exception_handler($exception)
 {
-    if (defined('DEBUG')) {
-        $headers = \Loader::Inject('\Headers');
-        $headers->http500();
-        $headers->printHeaders();
+    if (defined('DEBUG') || ($exception instanceof \CoreException)) {
+        header('HTTP/1.1 500 Internal Server Error');
+        
         echo ('<!DOCTYPE html>
 		<html>
 		<head>
@@ -48,9 +47,7 @@ function exception_handler($exception)
         exit();
     }
     
-    print_r($exception);
-    
-    include (WEBSITE_ROOT . 'errors/Error500.php');
+    include (WEB_ROOT . 'errors/Error500.php');
     exit();
 }
 
@@ -66,13 +63,16 @@ interface Routable
  * Start framework
  */
 define('CORE','vendor'.DIRECTORY_SEPARATOR.'youconix'.DIRECTORY_SEPARATOR.'core'.DIRECTORY_SEPARATOR);
-require_once (NIV.CORE.'Profiler.php');
+$a_files = explode('vendor'.DIRECTORY_SEPARATOR.'youconix',__FILE__);
+define('WEB_ROOT',$a_files[0]);
+
+require_once (WEB_ROOT.DIRECTORY_SEPARATOR.CORE.'Profiler.php');
 Profiler::reset();
 
-require_once (NIV.CORE. 'Memory.php');
-\core\Memory::startUp();
+require_once (WEB_ROOT.DIRECTORY_SEPARATOR.CORE. 'Memory.php');
+\youconix\core\Memory::startUp();
 
 /* Check login */
 \Profiler::profileSystem('core/models/Provileges', 'Checking access level');
-\Loader::inject('\core\models\Privileges')->checkLogin();
+\Loader::inject('\youconix\core\models\Privileges')->checkLogin();
 \Profiler::profileSystem('core/models/Provileges', 'Checking access level completed');

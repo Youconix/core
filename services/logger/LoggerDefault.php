@@ -1,7 +1,7 @@
 <?php
-namespace core\services\logger;
+namespace youconix\core\services\logger;
 
-class LoggerDefault extends \core\services\logger\LoggerParent
+class LoggerDefault extends \youconix\core\services\logger\LoggerParent
 {
 
     protected $service_File;
@@ -14,8 +14,7 @@ class LoggerDefault extends \core\services\logger\LoggerParent
 
     protected $s_errorLog;
 
-    public function __construct(\core\services\File $service_File, \core\services\FileData $service_FileData, 
-        \core\services\Mailer $mailer,\Config $config,\Psr\Log\LogLevel $loglevel)
+    public function __construct(\youconix\core\services\File $service_File, \youconix\core\services\FileData $service_FileData, \youconix\core\services\Mailer $mailer, \Config $config, \Psr\Log\LogLevel $loglevel)
     {
         parent::__construct($mailer, $config, $loglevel);
         

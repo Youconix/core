@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * File handler class for manipulating files and directorys
  *
  * This file is part of Miniature-happiness
@@ -30,15 +17,15 @@ class File extends Service
     /**
      * Starts the service File and loads the exceptions
      *
-     * @throws Exception if the exception directory can not be read
+     * @throws \Exception if the exception directory can not be read
      */
     public function __construct()
     {
-        $s_directory = NIV.CORE.'exceptions';
+        $s_directory = NIV . CORE . 'exceptions';
         $this->readExceptionsDir($s_directory);
         
         $s_directory = NIV . 'includes/exceptions';
-        if( $this->exists($s_directory) ){
+        if ($this->exists($s_directory)) {
             $this->readExceptionsDir($s_directory);
         }
     }
@@ -56,20 +43,20 @@ class File extends Service
     /**
      * Reads the given exceptions directory
      *
-     * @param String $s_directory
+     * @param string $s_directory
      *            directory
-     * @throws Exception if the exception directory can not be read
+     * @throws \Exception if the exception directory can not be read
      */
-    private function readExceptionsDir($s_directory)
+    protected function readExceptionsDir($s_directory)
     {
         if (! is_readable($s_directory)) {
-            throw new \Exception('Can not read directory '.$s_directory);
+            throw new \Exception('Can not read directory ' . $s_directory);
         }
         
         /* read directory */
         $s_handle = opendir($s_directory);
         if ($s_handle === false) {
-            throw new \Exception('Can not open directory '.$s_directory);
+            throw new \Exception('Can not open directory ' . $s_directory);
         }
         
         /* read all exceptions */
@@ -94,18 +81,18 @@ class File extends Service
     /**
      * Generates a new file with the given rights
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The url
      * @param int $i_rights
      *            The permissions of the file, default 0644 (read/write for owner, read for rest)
      * @param boolean $bo_binary
      *            true for binary writing, optional
-     * @throws IOException when the given directory is not writable
+     * @throws \IOException when the given directory is not writable
      */
     public function newFile($s_file, $i_rights, $bo_binary = false)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('int', $i_rights);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('int', $i_rights);
         
         $s_dir = dirname($s_file);
         
@@ -124,16 +111,16 @@ class File extends Service
     /**
      * Reads the content from the given file
      *
-     * @param String $s_file
+     * @param string $s_file
      *            name
      * @param boolean $bo_binary
      *            true for binary reading, optional
-     * @return String The content from the requested file
-     * @throws IOException when the file does not exists or is not readable
+     * @return string The content from the requested file
+     * @throws \IOException when the file does not exists or is not readable
      */
     public function readFile($s_file, $bo_binary = false)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         if (preg_match("#^(http://|ftp://)#si", $s_file)) {
             return $this->readExtenalFile($s_file, $bo_binary);
@@ -160,13 +147,13 @@ class File extends Service
     /**
      * Reads the content from the given file on a different server
      *
-     * @param String $s_file
+     * @param string $s_file
      *            name
      * @param boolean $bo_binary
      *            true for binary reading, optional
-     * @return String The content from the requested file
+     * @return string The content from the requested file
      */
-    private function readExtenalFile($s_file, $bo_binary = false)
+    protected function readExtenalFile($s_file, $bo_binary = false)
     {
         $i_size = 50000;
         ($bo_binary) ? $s_mode = 'rb' : $s_mode = 'r';
@@ -180,21 +167,21 @@ class File extends Service
     /**
      * Overwrites the given file or generates it if does not exists
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The url
-     * @param String $s_content
+     * @param string $s_content
      *            The content
      * @param int $i_rights
      *            The permissions of the file, default 0644 (read/write for owner, read for rest)
      * @param boolean $bo_binary
      *            true for binary writing, optional
-     * @throws IOException When the file is not readable or writable
+     * @throws \IOException When the file is not readable or writable
      */
     public function writeFile($s_file, $s_content, $i_rights = 0644, $bo_binary = false)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('string', $s_content);
-        \core\Memory::type('int', $i_rights);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_content);
+        \youconix\core\Memory::type('int', $i_rights);
         
         /* Check file */
         if (! $this->exists($s_file)) {
@@ -218,21 +205,21 @@ class File extends Service
     /**
      * Writes at the end of the given file or generates it if doens not exists
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The url
-     * @param String $s_content
+     * @param string $s_content
      *            The content
      * @param int $i_rights
      *            The permissions of the file, default 0644 (read/write for owner, read for rest)
      * @param boolean $bo_binary
      *            true for binary writing, optional
-     * @throws IOException When the file is not readable or writable
+     * @throws \IOException When the file is not readable or writable
      */
     public function writeLastFile($s_file, $s_content, $i_rights = 0644, $bo_binary = false)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('string', $s_content);
-        \core\Memory::type('int', $i_rights);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_content);
+        \youconix\core\Memory::type('int', $i_rights);
         
         /* Check file */
         if (! $this->exists($s_file)) {
@@ -256,21 +243,21 @@ class File extends Service
     /**
      * Writes at the begin of the given file or generates it if doens not exists
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The url
-     * @param String $s_content
+     * @param string $s_content
      *            The content
      * @param int $i_rights
      *            The permissions of the file, default 0644 (read/write for owner, read for rest)
      * @param boolean $bo_binary
      *            true for binary writing, optional
-     * @throws IOException When the file is not readable or writable
+     * @throws \IOException When the file is not readable or writable
      */
     public function writeFirstFile($s_file, $s_content, $i_rights = 0644, $bo_binary = false)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('string', $s_content);
-        \core\Memory::type('int', $i_rights);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_content);
+        \youconix\core\Memory::type('int', $i_rights);
         
         /* Check file */
         if (! $this->exists($s_file)) {
@@ -297,16 +284,16 @@ class File extends Service
     /**
      * Renames the given file
      *
-     * @param String $s_nameOld
+     * @param string $s_nameOld
      *            The current url
-     * @param String $s_nameNew
+     * @param string $s_nameNew
      *            The new url
-     * @throws IOException when the file does not exist or is not writable (needed for renaming)
+     * @throws \IOException when the file does not exist or is not writable (needed for renaming)
      */
     public function renameFile($s_nameOld, $s_nameNew)
     {
-        \core\Memory::type('string', $s_nameOld);
-        \core\Memory::type('string', $s_nameNew);
+        \youconix\core\Memory::type('string', $s_nameOld);
+        \youconix\core\Memory::type('string', $s_nameNew);
         
         /* Check file */
         if (! $this->exists($s_nameOld)) {
@@ -321,16 +308,16 @@ class File extends Service
     /**
      * Copy's the given file to the given directory
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The file to copy
-     * @param String $s_target
+     * @param string $s_target
      *            The target directory
-     * @throws IOException when the file is not readable or the target directory is not writable
+     * @throws \IOException when the file is not readable or the target directory is not writable
      */
     public function copyFile($s_file, $s_target)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('string', $s_target);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_target);
         
         /* Check file */
         if (! $this->exists($s_file)) {
@@ -351,16 +338,16 @@ class File extends Service
     /**
      * Moves the given file to the given directory
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The current url
-     * @param String $s_target
+     * @param string $s_target
      *            The target directory
-     * @throws IOException when the target directory is not writable (needed for moving)
+     * @throws \IOException when the target directory is not writable (needed for moving)
      */
     public function moveFile($s_file, $s_target)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('string', $s_target);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_target);
         
         /* Check file and target-directory */
         if (! $this->exists($s_file)) {
@@ -385,13 +372,13 @@ class File extends Service
     /**
      * Deletes the given file
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The file to delete
-     * @throws IOException when the file does not exist or is not writable
+     * @throws \IOException when the file does not exist or is not writable
      */
     public function deleteFile($s_file)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         /* Check file */
         if (! $this->exists($s_file)) {
@@ -408,7 +395,7 @@ class File extends Service
     /**
      * Reads the given directory
      *
-     * @param String $s_directory
+     * @param string $s_directory
      *            The directory to read
      * @param boolean $bo_recursive
      *            Set true for recursive reading
@@ -416,7 +403,7 @@ class File extends Service
      */
     public function readDirectory($s_directory, $bo_recursive = false)
     {
-        \core\Memory::type('string', $s_directory);
+        \youconix\core\Memory::type('string', $s_directory);
         
         /* Check Directory */
         if (! is_readable($s_directory)) {
@@ -460,16 +447,16 @@ class File extends Service
     /**
      * Generates a new directory with the given name and rights
      *
-     * @param String $s_name
+     * @param string $s_name
      *            The name
      * @param int $i_rights
      *            The rights, defaul 0755 (write/write/excequte for owner, rest read + excequte)
-     * @throws IOException when the target directory is not writable
+     * @throws \IOException when the target directory is not writable
      */
     public function newDirectory($s_name, $i_rights = 0755)
     {
-        \core\Memory::type('string', $s_name);
-        \core\Memory::type('int', $i_rights);
+        \youconix\core\Memory::type('string', $s_name);
+        \youconix\core\Memory::type('int', $i_rights);
         
         $s_dir = $s_name;
         if (substr($s_dir, - 1) == '/')
@@ -493,16 +480,16 @@ class File extends Service
     /**
      * Renames the given Directory
      *
-     * @param String $s_nameOld
+     * @param string $s_nameOld
      *            The current name
-     * @param String $s_nameNew
+     * @param string $s_nameNew
      *            The new name
-     * @throws IOException if the directory is not writable
+     * @throws \IOException if the directory is not writable
      */
     public function renameDirectory($s_nameOld, $s_nameNew)
     {
-        \core\Memory::type('string', $s_nameOld);
-        \core\Memory::type('string', $s_nameNew);
+        \youconix\core\Memory::type('string', $s_nameOld);
+        \youconix\core\Memory::type('string', $s_nameNew);
         
         /* Check or the directory exists */
         if (! $this->exists($s_nameOld)) {
@@ -522,16 +509,16 @@ class File extends Service
     /**
      * Moves a directory too the given address
      *
-     * @param String $s_directoryOld
+     * @param string $s_directoryOld
      *            The current directory
-     * @param String $s_directoryNew
+     * @param string $s_directoryNew
      *            The target address
      * @return boolean on success, false on failure
      */
     public function moveDirectory($s_directoryOld, $s_directoryNew)
     {
-        \core\Memory::type('string', $s_directoryOld);
-        \core\Memory::type('string', $s_directoryNew);
+        \youconix\core\Memory::type('string', $s_directoryOld);
+        \youconix\core\Memory::type('string', $s_directoryNew);
         
         /* Copy map */
         if ($this->copyDirectory($s_directoryOld, $s_directoryNew)) {
@@ -543,16 +530,16 @@ class File extends Service
     /**
      * Copy's a directory to a new location
      *
-     * @param String $s_directoryOld
+     * @param string $s_directoryOld
      *            The current location
-     * @param String $s_directoryNew
+     * @param string $s_directoryNew
      *            The new location
-     * @throws IOException if the copy failes
+     * @throws \IOException if the copy failes
      */
     public function copyDirectory($s_directoryOld, $s_directoryNew)
     {
-        \core\Memory::type('string', $s_directoryOld);
-        \core\Memory::type('string', $s_directoryNew);
+        \youconix\core\Memory::type('string', $s_directoryOld);
+        \youconix\core\Memory::type('string', $s_directoryNew);
         
         /* Check or new map exists */
         if (! $this->exists($s_directoryNew)) {
@@ -597,14 +584,14 @@ class File extends Service
     /**
      * Deletes the given Directory
      *
-     * @param String $s_directory
+     * @param string $s_directory
      *            The directory to delete
      * @return boolean True on success, false on failure
-     * @throws IOException When the directory is not writetable
+     * @throws \IOException When the directory is not writetable
      */
     public function deleteDirectory($s_directory)
     {
-        \core\Memory::type('string', $s_directory);
+        \youconix\core\Memory::type('string', $s_directory);
         
         /* Delete all present files and maps */
         if (! $s_handle = opendir($s_directory)) {
@@ -632,13 +619,13 @@ class File extends Service
     /**
      * Checks if the given file or directory exists
      *
-     * @param String $s_file
+     * @param string $s_file
      *            name or directory name
      * @return boolean if file or directory exists, otherwise false
      */
     public function exists($s_file)
     {
-        \core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_file);
         
         if (file_exists($s_file)) {
             return true;
@@ -651,7 +638,7 @@ class File extends Service
      * Sets the rights from a file or directory.
      * The rights must be in hexadecimal form (0644)
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The file
      * @param int $i_rights
      *            The new rights
@@ -659,8 +646,8 @@ class File extends Service
      */
     public function rights($s_file, $i_rights)
     {
-        \core\Memory::type('string', $s_file);
-        \core\Memory::type('int', $i_rights);
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('int', $i_rights);
         
         if (function_exists('chmod')) {
             eval("chmod(\$s_file, $i_rights);");

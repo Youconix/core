@@ -1,21 +1,8 @@
 <?php
 
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Maintenance service for maintaining the website
  *
  * This file is part of Miniature-happiness
@@ -33,7 +20,7 @@ class Maintenance extends Service {
 	protected $builder;
 	/**
 	 * 
-	 * @var \core\models\Stats
+	 * @var \youconix\core\models\Stats
 	 */
 	protected $stats;
 	
@@ -41,11 +28,9 @@ class Maintenance extends Service {
 	 * PHP 5 constructor
 	 *
 	 * @param Builder $builder
-	 *        	query builder
 	 * @param core\models\Stats $stats
-	 *        	The statistics model
 	 */
-	public function __construct(\Builder $builder, \core\models\Stats $stats) {
+	public function __construct(\Builder $builder, \youconix\core\models\Stats $stats) {
 		$this->builder = $builder;
 		$this->stats = $stats;
 	}
@@ -127,7 +112,7 @@ class Maintenance extends Service {
 	 *
 	 * @return array table names
 	 */
-	private function getTables() {
+	protected function getTables() {
 		$this->builder->showTables ();
 		
 		$a_tables = $this->builder->getResult ()->fetch_row ();

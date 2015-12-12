@@ -1,5 +1,5 @@
 <?php
-namespace\core\helpers;
+namespace\youconix\core\helpers;
 
 /**
  * Birthday form widget
@@ -9,37 +9,19 @@ namespace\core\helpers;
  * @copyright Youconix
  * @author Rachelle Scheijen
  * @since 1.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
-
-if (! class_exists('DateForm')) {
-    require (NIV . 'include/helpers/DateForm.inc.php');
-}
-
-class BirthdayForm extends DateForm
+class BirthdayForm extends \youconix\core\helpers\DateForm
 {
 
-    private $s_className;
+    protected $s_className;
 
-    private $s_callback;
+    protected $s_callback;
 
-    private $s_dayID;
+    protected $s_dayID;
 
-    private $s_monthID;
+    protected $s_monthID;
 
-    private $s_yearID;
+    protected $s_yearID;
 
     /**
      * Resets the form
@@ -75,8 +57,8 @@ class BirthdayForm extends DateForm
      *
      * @param int $i_year
      *            year
-     * @throws DateException the end year is in the future
-     * @throws DateException the end year is lower then the start year
+     * @throws \DateException the end year is in the future
+     * @throws \DateException the end year is lower then the start year
      */
     public function setEndYear($i_year)
     {
@@ -94,8 +76,8 @@ class BirthdayForm extends DateForm
      *
      * @param int $i_year
      *            year
-     * @throws DateException the start year is in the future
-     * @throws DateException the start year is higer then the end year
+     * @throws \DateException the start year is in the future
+     * @throws \DateException the start year is higer then the end year
      */
     public function setStartYear($i_year)
     {
@@ -166,15 +148,15 @@ class BirthdayForm extends DateForm
     /**
      * Generates the javascript code
      *
-     * @return HTML_Javascript javascript code
+     * @return string javascript code
      */
     private function generateJS()
     {
-        return '<script>
-    	<!--
-    	var ' . $this->s_className . ';
+        $link = $this->html->javascriptLink(NIV . 'js/widgets/birthdayForm.js');
+        
+        $s_javascript = 'var ' . $this->s_className . ';
     	if( typeof BirthdayForm !== "function" ){
-    		$("head").append(\'<script src="' . NIV . 'js/widgets/birthdayForm.js"/></script>\');
+    		$("head").append(\''.$link->generateItem().'\');
     		window.setTimeout(function(){
     			' . $this->s_className . ' = new BirthdayForm();
     			' . $this->s_className . '.init("' . $this->s_dayID . '","' . $this->s_monthID . '","' . $this->s_yearID . '","' . $this->s_callback . '"); 	
@@ -183,9 +165,9 @@ class BirthdayForm extends DateForm
     	else {
     		' . $this->s_className . ' = new BirthdayForm();
     		' . $this->s_className . '.init("' . $this->s_dayID . '","' . $this->s_monthID . '","' . $this->s_yearID . '","' . $this->s_callback . '");
-    	}
-    	//-->
-    	</script>
-        ';
+    	}';
+        
+        $javascript = $this->html->javascript($s_javascript);
+        return $javascript->generateItem();
     }
 }

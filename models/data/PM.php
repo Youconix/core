@@ -1,20 +1,7 @@
 <?php
-namespace core\models\data;
+namespace youconix\core\models\data;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Personal message data model.
  * Contains the personal message data
  *
@@ -24,20 +11,20 @@ namespace core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class PM extends \core\models\Model
+class PM extends \youconix\core\models\Model
 {
 
     /**
-     * 
-     * @var \core\models\User
+     *
+     * @var \youconix\core\models\User
      */
     protected $user;
 
     protected $i_id = null;
 
     /**
-     * 
-     * @var \core\models\data\User
+     *
+     * @var \youconix\core\models\data\User
      */
     protected $obj_sender;
 
@@ -54,11 +41,11 @@ class PM extends \core\models\Model
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \core\services\Validation $validation
-     * @param \core\models\User $user
+     * @param \Builder $builder            
+     * @param \Validation $validation            
+     * @param \youconix\core\models\User $user            
      */
-    public function __construct(\Builder $builder, \core\services\Validation $validation, \core\models\User $user)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\models\User $user)
     {
         parent::__construct($builder, $validation);
         
@@ -96,7 +83,7 @@ class PM extends \core\models\Model
      *
      * @param int $i_id
      *            message ID
-     * @throws DBException the message does not exist
+     * @throws \DBException the message does not exist
      */
     public function loadData($i_id)
     {
@@ -122,7 +109,7 @@ class PM extends \core\models\Model
      */
     public function setData($a_message)
     {
-        \core\Memory::type('array', $a_message);
+        \youconix\core\Memory::type('array', $a_message);
         
         $this->i_id = $a_message['id'];
         $this->obj_sender = $this->user->get($a_message['fromUserid']);
@@ -146,7 +133,7 @@ class PM extends \core\models\Model
     /**
      * Returns the sender
      *
-     * @return \core\models\data\User The sender
+     * @return \youconix\core\models\data\User The sender
      */
     public function getSender()
     {
@@ -161,7 +148,7 @@ class PM extends \core\models\Model
      */
     public function setSender($i_sender)
     {
-        \core\Memory::type('int', $i_sender);
+        \youconix\core\Memory::type('int', $i_sender);
         
         $this->obj_sender = $this->user->get($i_sender);
     }
@@ -175,7 +162,7 @@ class PM extends \core\models\Model
      */
     public function setReceiver($i_receiver)
     {
-        \core\Memory::type('int', $i_receiver);
+        \youconix\core\Memory::type('int', $i_receiver);
         
         $this->i_receiverID = $i_receiver;
     }
@@ -208,7 +195,7 @@ class PM extends \core\models\Model
      */
     public function setTitle($s_title)
     {
-        \core\Memory::type('string', $s_title);
+        \youconix\core\Memory::type('string', $s_title);
         
         $this->s_title = $s_title;
     }
@@ -231,7 +218,7 @@ class PM extends \core\models\Model
      */
     public function setMessage($s_message)
     {
-        \core\Memory::type('string', $s_message);
+        \youconix\core\Memory::type('string', $s_message);
         
         $this->s_message = $s_message;
     }

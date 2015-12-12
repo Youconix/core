@@ -1,7 +1,7 @@
 <?php
-namespace core\mailer;
+namespace youconix\core\mailer;
 
-class PHPMailerDebug extends \core\services\Service implements \Mailer
+class PHPMailerDebug extends \youconix\core\services\Service implements \Mailer
 {
     private $s_sender;
     private $s_subject;
@@ -28,7 +28,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
     
     /**
      * 
-     * @var \core\services\FileHandler
+     * @var \youconix\core\services\FileHandler
      */
     private $file;
     
@@ -36,7 +36,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
     /**
      * Initializes the wrapper
      */
-    public function __construct(\core\services\FileHandler $file)
+    public function __construct(\youconix\core\services\FileHandler $file)
     {
         $this->file = $file;
         
@@ -72,7 +72,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setSubject($s_subject)
     {
-        \core\Memory::type('string',$s_subject,true);
+        \youconix\core\Memory::type('string',$s_subject,true);
         
         $this->s_subject = $s_subject;
     }
@@ -88,7 +88,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setBody($s_body)
     {
-        \core\Memory::type('string', $s_body,true);
+        \youconix\core\Memory::type('string', $s_body,true);
         
         $this->s_body = $s_body;
     }
@@ -106,7 +106,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setAltBody($s_body)
     {
-        \core\Memory::type('string', $s_body,true);
+        \youconix\core\Memory::type('string', $s_body,true);
         
         $this->s_altBody;
         
@@ -124,7 +124,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setWordWrap($i_wrap)
     {
-        \core\Memory::type('int', $i_wrap);
+        \youconix\core\Memory::type('int', $i_wrap);
         if( $i_wrap < 0 ){
             throw new InvalidArgumentException('Wrap must be a whole number greater of equal to 0.');
         }
@@ -165,7 +165,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setCharset($s_charset)
     {
-        \core\Memory::type('string',$s_charset,true);
+        \youconix\core\Memory::type('string',$s_charset,true);
         
        	$this->s_charset = $s_charset;
     }
@@ -180,7 +180,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setContentType($s_contentType)
     {
-        \core\Memory::type('string', $s_contentType,true);
+        \youconix\core\Memory::type('string', $s_contentType,true);
         
         $this->s_contentType = $s_contentType;
     }
@@ -227,7 +227,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setReadingConfirmation($s_address)
     {
-        \core\Memory::type('string',$s_address,true);
+        \youconix\core\Memory::type('string',$s_address,true);
         
         $this->s_ConfirmReadingTo = $s_address;
     }
@@ -242,7 +242,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function setMessageID($s_id)
     {
-        \core\Memory::type('string',$s_id,true);
+        \youconix\core\Memory::type('string',$s_id,true);
         
         $this->i_messageID = $s_id;
     }
@@ -294,7 +294,7 @@ class PHPMailerDebug extends \core\services\Service implements \Mailer
      */
     public function useHTML($bo_html = true)
     {
-        \core\Memory::type('bool',$bo_html);
+        \youconix\core\Memory::type('bool',$bo_html);
         
         return $this->b_html = $bo_html;
     }

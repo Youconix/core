@@ -1,22 +1,32 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
-class LanguageTree extends Helper {
+/**
+ * Transforms the language files into a list tree
+ *
+ * This file is part of Miniature-happines
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 2.0
+ */
+
+class LanguageTree extends \youconix\core\helpers\Helper {
     /**
      * @var \DOMDocument
      */
-    private $dom_document;
-    private $s_language;
+    protected $dom_document;
+    protected $s_language;
     /**
      * @var TreeRoot
      */
-    private $obj_root;
+    protected $obj_root;
     
     /**
      * Inits the class LanguageTree
      * 
-     * @param unknown $s_language
-     * @param unknown $s_file
+     * @param string $s_language
+     * @param string $s_file
      * @throws \IOException
      */
     public function init($s_language,$s_file){

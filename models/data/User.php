@@ -1,22 +1,8 @@
 <?php
-namespace core\models\data;
+namespace youconix\core\models\data;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
- * Model is the user data model class.
- * This class contains the user data
+ * User data model
  *
  * This file is part of Miniature-happiness
  *
@@ -24,24 +10,24 @@ namespace core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class User extends \core\models\Model
+class User extends \youconix\core\models\Model
 {
 
     /**
-     * 
-     * @var \core\models\Groups
+     *
+     * @var \youconix\core\models\Groups
      */
     protected $groups;
 
     /**
-     * 
+     *
      * @var \Language
      */
     protected $language;
-    
+
     /**
-     * 
-     * @var \core\services\hashing
+     *
+     * @var \youconix\core\services\Hashing
      */
     protected $hashing;
 
@@ -60,7 +46,7 @@ class User extends \core\models\Model
     protected $i_active = 0;
 
     protected $i_blocked = 0;
-    
+
     protected $i_passwordExpired = 0;
 
     protected $s_password;
@@ -75,17 +61,18 @@ class User extends \core\models\Model
 
     protected $s_language = '';
 
+    protected $i_bindToIp = false;
+
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \Validation $validation
-     * @param \core\services\Hashing $hashing
-     * @param \core\models\Groups $groups
-     * @param \Language $language
+     * @param \Builder $builder            
+     * @param \Validation $validation            
+     * @param \youconix\core\services\Hashing $hashing            
+     * @param \youconix\core\models\Groups $groups            
+     * @param \Language $language            
      */
-    public function __construct(\Builder $builder, \Validation $validation, 
-        \core\services\Hashing $hashing, \core\models\Groups $groups, \Language $language)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\services\Hashing $hashing, \youconix\core\models\Groups $groups, \Language $language)
     {
         parent::__construct($builder, $validation);
         $this->groups = $groups;
@@ -155,11 +142,11 @@ class User extends \core\models\Model
      *
      * @param int $i_userid
      *            The userid
-     * @throws DBException If the userid is invalid
+     * @throws \DBException If the userid is invalid
      */
     public function loadData($i_userid)
     {
-        \core\Memory::type('int', $i_userid);
+        \youconix\core\Memory::type('int', $i_userid);
         
         $this->builder->select('users', '*')
             ->getWhere()
@@ -183,7 +170,7 @@ class User extends \core\models\Model
      */
     public function setData($a_data)
     {
-        \core\Memory::type('array', $a_data);
+        \youconix\core\Memory::type('array', $a_data);
         
         $this->i_userid = (int) $a_data['id'];
         $this->s_username = $a_data['nick'];
@@ -237,7 +224,7 @@ class User extends \core\models\Model
      */
     public function setUsername($s_username)
     {
-        \core\Memory::type('string', $s_username);
+        \youconix\core\Memory::type('string', $s_username);
         $this->s_username = $s_username;
     }
 
@@ -259,7 +246,7 @@ class User extends \core\models\Model
      */
     public function setEmail($s_email)
     {
-        \core\Memory::type('string', $s_email);
+        \youconix\core\Memory::type('string', $s_email);
         $this->s_email = $s_email;
     }
 
@@ -274,11 +261,11 @@ class User extends \core\models\Model
      */
     public function setPassword($s_password, $bo_expired = false)
     {
-        \core\Memory::type('string', $s_password);
+        \youconix\core\Memory::type('string', $s_password);
         
         $s_salt = $this->getSalt($this->getUsername(), $this->s_loginType);
         
-        $this->s_password = $this->hashing->hashUserPassword($s_password,$s_salt);
+        $this->s_password = $this->hashing->hashUserPassword($s_password, $s_salt);
         
         if ($bo_expired) {
             $this->builder->update('users', array(
@@ -300,7 +287,7 @@ class User extends \core\models\Model
             $this->builder->getResult();
         }
     }
-    
+
     /**
      * Changes the saved password
      *
@@ -313,16 +300,16 @@ class User extends \core\models\Model
     public function changePassword($s_passwordOld, $s_password)
     {
         $s_salt = $this->getSalt($this->getUsername(), $this->s_loginType);
-        if( is_null($s_salt) ){
+        if (is_null($s_salt)) {
             return false;
         }
-    
+        
         $s_passwordOld = $this->hashing->hashUserPassword($s_passwordOld, $s_salt);
         $s_password = $this->hashing->hashUserPassword($s_password, $s_salt);
-    
+        
         $this->builder->select('users', 'id')
-        ->getWhere()
-        ->addAnd(array(
+            ->getWhere()
+            ->addAnd(array(
             'id',
             'password'
         ), array(
@@ -333,13 +320,13 @@ class User extends \core\models\Model
             $s_passwordOld
         ));
         $service_Database = $this->builder->getResult();
-    
+        
         if ($service_Database->num_rows() == 0) {
             return false;
         }
         
-        $i_userid = $service_Database->result(0,'id');
-    
+        $i_userid = $service_Database->result(0, 'id');
+        
         $this->builder->update('users', array(
             'password',
             'password_expired'
@@ -355,16 +342,21 @@ class User extends \core\models\Model
         
         return true;
     }
-    
+
     /**
      * Returns the user salt
      *
-     * @param string $s_username    The username
-     * @param string $s_loginType   The login type
-     * @return NULL|string  The salt if the user exists
+     * @param string $s_username
+     *            The username
+     * @param string $s_loginType
+     *            The login type
+     * @return NULL|string The salt if the user exists
      */
-    public function getSalt($s_username,$s_loginType){
-        $this->builder->select('users','salt,id')->getWhere()->addAnd(array(
+    public function getSalt($s_username, $s_loginType)
+    {
+        $this->builder->select('users', 'salt,id')
+            ->getWhere()
+            ->addAnd(array(
             'nick',
             'active',
             'loginType'
@@ -379,28 +371,28 @@ class User extends \core\models\Model
             $s_loginType
         ));
         $service_Database = $this->builder->getResult();
-    
+        
         if ($service_Database->num_rows() == 0) {
             return null;
         }
-    
+        
         $a_data = $service_Database->fetch_assoc();
-    
-        if( empty($a_data[0]['salt']) ){
+        
+        if (empty($a_data[0]['salt'])) {
             $s_salt = $this->hashing->createSalt();
-            $this->builder->update('users', 'salt', 's',$s_salt)->getWhere('id','i',$a_data[0]['id']);
+            $this->builder->update('users', 'salt', 's', $s_salt)->getWhere('id', 'i', $a_data[0]['id']);
             $this->builder->getResult();
             
             return $s_salt;
         }
-    
+        
         return $a_data[0]['salt'];
     }
 
     /**
      * Checks if the user is a system account
      *
-     * @return Boolean if the user is a system account
+     * @return boolean if the user is a system account
      */
     public function isBot()
     {
@@ -410,12 +402,12 @@ class User extends \core\models\Model
     /**
      * Sets the account as a normal or system account
      *
-     * @param Boolean $bo_bot
+     * @param boolean $bo_bot
      *            to true for a system account
      */
     public function setBot($bo_bot)
     {
-        \core\Memory::type('boolean', $bo_bot);
+        \youconix\core\Memory::type('boolean', $bo_bot);
         
         if ($bo_bot) {
             $this->i_bot = 1;
@@ -423,15 +415,19 @@ class User extends \core\models\Model
             $this->i_bot = 0;
         }
     }
-    
-    public function isPasswordExpired(){
+
+    /**
+     *
+     * @return boolean
+     */
+    public function isPasswordExpired()
+    {
         return ($this->i_passwordExpired == 1);
     }
 
     /**
-     * Checks if the user is enabled
      *
-     * @return Boolean if the user is enabled
+     * @return boolean
      */
     public function isEnabled()
     {
@@ -439,8 +435,8 @@ class User extends \core\models\Model
     }
 
     /**
-     * Returns the registration date
-     *
+     * *
+     * 
      * @return int registration date as a timestamp
      */
     public function getRegistrated()
@@ -449,7 +445,6 @@ class User extends \core\models\Model
     }
 
     /**
-     * Returns the last login date
      *
      * @return int The logged in date as a timestamp
      */
@@ -457,24 +452,24 @@ class User extends \core\models\Model
     {
         return $this->i_loggedIn;
     }
-    
+
     /**
      * Updates the last login date
      */
-    public function updateLastLoggedIn(){
+    public function updateLastLoggedIn()
+    {
         $i_time = time();
         $this->i_loggedIn = $i_time;
         
         $this->builder->update('users', 'lastLogin', 'i', $i_time)
-        ->getWhere()
-        ->addAnd('id', 'i', $this->getID());
+            ->getWhere()
+            ->addAnd('id', 'i', $this->getID());
         $this->builder->getResult();
     }
 
     /**
-     * Checks if the account is blocked
      *
-     * @return boolean if the account is blocked
+     * @return boolean
      */
     public function isBlocked()
     {
@@ -489,7 +484,7 @@ class User extends \core\models\Model
      */
     public function setBlocked($bo_blocked)
     {
-        \core\Memory::type('boolean', $bo_blocked);
+        \youconix\core\Memory::type('boolean', $bo_blocked);
         
         if ($bo_blocked) {
             $this->i_blocked = 1;
@@ -501,20 +496,20 @@ class User extends \core\models\Model
     /**
      * Sets the activation code
      *
-     * @param string $s_activation
-     *            activation code
+     * @param string $s_activation            
      */
     public function setActivation($s_activation)
     {
         $this->s_activation = $s_activation;
     }
-    
+
     /**
      * Returns the activation code
-     * 
-     * @return string   The code
+     *
+     * @return string The code
      */
-    public function getActivation(){
+    public function getActivation()
+    {
         return $this->s_activation;
     }
 
@@ -605,7 +600,7 @@ class User extends \core\models\Model
      */
     public function getColor($i_groupid = -1)
     {
-        \core\Memory::type('int', $i_groupid);
+        \youconix\core\Memory::type('int', $i_groupid);
         
         $i_group = $this->checkGroup($i_groupid);
         
@@ -633,7 +628,7 @@ class User extends \core\models\Model
      */
     public function isModerator($i_groupid = -1)
     {
-        \core\Memory::type('int', $i_groupid);
+        \youconix\core\Memory::type('int', $i_groupid);
         
         $i_groupid = $this->checkGroup($i_groupid);
         
@@ -645,11 +640,11 @@ class User extends \core\models\Model
      *
      * @param int $i_groupid
      *            The group ID, leave empty for site group
-     * @return Boolean True if the visitor has administrator rights, otherwise false
+     * @return boolean True if the visitor has administrator rights, otherwise false
      */
     public function isAdmin($i_groupid = -1)
     {
-        \core\Memory::type('int', $i_groupid);
+        \youconix\core\Memory::type('int', $i_groupid);
         
         $i_groupid = $this->checkGroup($i_groupid);
         
@@ -686,7 +681,7 @@ class User extends \core\models\Model
 
     /**
      * Returns the set user language
-     * 
+     *
      * @return string
      */
     public function getLanguage()

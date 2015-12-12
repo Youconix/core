@@ -1,17 +1,26 @@
 <?php
-namespace core\common\file;
+namespace youconix\core\common\file;
 
+/**
+ * File uploader
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 2.0
+ */
 class UploadFile extends \File
 {
 
     /**
      *
-     * @var \core\services\Language
+     * @var \Language
      */
     protected $language;
-    
+
     /**
-     * 
+     *
      * @var \Logger
      */
     protected $logger;
@@ -25,30 +34,31 @@ class UploadFile extends \File
     protected $i_maxServerSize;
 
     protected $i_fileSize;
-    
+
     protected $s_fileExtension;
+
     protected $s_fileMimetype;
-    
+
     /**
      *
-     * @var \core\common\file\File
+     * @var \youconix\core\common\file\File
      */
     protected $file;
-    
+
     /**
-     * 
-     * @var \core\common\file\File
+     *
+     * @var \youconix\core\common\file\File
      */
     protected $temp;
 
     /**
      * Constructor
-     * 
-     * @param \core\services\Language $language     The language service
-     * @param \Logger $logger                       The logger service
-     * @param \core\common\File $file               The file object
+     *
+     * @param \Language $language            
+     * @param \Logger $logger            
+     * @param \youconix\core\common\File $file            
      */
-    public function __construct(\core\services\Language $language,\Logger $logger,\core\common\File $file)
+    public function __construct(\youconix\core\services\Language $language, \Logger $logger, \youconix\core\common\File $file)
     {
         $this->language = $language;
         $this->logger = $logger;
@@ -64,6 +74,12 @@ class UploadFile extends \File
         $this->i_maxServerSize = $i_maxUpload;
     }
 
+    /**
+     * Parses the max server upload size
+     *
+     * @param string $size            
+     * @return int The max server upload size in bytes
+     */
     private function parse_size($size)
     {
         $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
@@ -78,18 +94,20 @@ class UploadFile extends \File
 
     /**
      * Adds an allowed mimetype
-     * 
-     * @param \core\common\file\FileExtension $allowed      The mimetype
+     *
+     * @param \youconix\core\common\file\FileExtension $allowed
+     *            The mimetype
      */
-    public function setMimeAllowed(\core\common\file\FileExtension $allowed)
+    public function setMimeAllowed(\youconix\core\common\file\FileExtension $allowed)
     {
         $this->a_mimetypes[] = $allowed;
     }
 
     /**
      * Sets the $_FILES field name
-     *  
-     * @param string $s_name    The name
+     *
+     * @param string $s_name
+     *            The name
      */
     public function setFieldName($s_name)
     {
@@ -98,21 +116,21 @@ class UploadFile extends \File
 
     /**
      * Checks if the file is correctly uploaded
-     * 
+     *
      * @return boolean
      */
     public function isUploaded()
     {
-        if( !array_key_exists($this->s_fieldName, $_FILES) || $_FILES[$this->s_fieldName]['error'] != 0){
-            $this->i_error = -1;
+        if (! array_key_exists($this->s_fieldName, $_FILES) || $_FILES[$this->s_fieldName]['error'] != 0) {
+            $this->i_error = - 1;
             return false;
         }
         
         $file = $this->file;
         $this->temp = $file::create($_FILES[$s_name]['tmp_name']);
         $this->i_fileSize = $this->temp->getSize();
-        if( $this->i_fileSize > $this->i_maxServerSize ){
-            $this->i_error = -2;
+        if ($this->i_fileSize > $this->i_maxServerSize) {
+            $this->i_error = - 2;
             $this->deleteTemp();
             return false;
         }
@@ -122,15 +140,15 @@ class UploadFile extends \File
 
     /**
      * Checks if the file is accepted by the server and program
-     * 
+     *
      * @return boolean
      */
     public function isValid()
     {
         $s_extension = $this->temp->getExtension();
         $this->s_fileExtension = $s_extension;
-        if( !array_key_exists($s_extension, $this->a_mimetypes) ){
-            $this->i_error = -3;
+        if (! array_key_exists($s_extension, $this->a_mimetypes)) {
+            $this->i_error = - 3;
             $this->deleteTemp();
             
             return false;
@@ -139,31 +157,38 @@ class UploadFile extends \File
         $a_mimetype = $this->a_mimetypes->$s_extension;
         $this->s_fileMimetype = $this->temp->getMimetype();
         
-        if( !in_array($this->s_fileMimetype, $a_mimetype->getMimetypes()) ){
-            $this->i_error = -3;
+        if (! in_array($this->s_fileMimetype, $a_mimetype->getMimetypes())) {
+            $this->i_error = - 3;
             $this->deleteTemp();
             return false;
         }
         
         return true;
     }
-    
+
     /**
      * Deletes the temperary file
      */
-    protected function deleteTemp(){
+    protected function deleteTemp()
+    {
         $s_filename = $this->temp->getRealPath();
         $this->temp = null;
         
         unlink($s_filename);
     }
 
+    /**
+     * Moves the uploaded file
+     *
+     * @param string $s_target            
+     * @param string $s_newName            
+     * @return boolean
+     */
     public function move($s_target, $s_newName = '')
     {
         if (empty($s_newName)) {
             $s_newName = $this->temp->getbasename();
-        } 
-        else {
+        } else {
             $s_targetName .= $this->s_fileExtension;
         }
         
@@ -173,7 +198,7 @@ class UploadFile extends \File
             while (file_exists($s_target . '/' . str_replace($s_extension, '__' . $i . $s_extension, $s_testname))) {
                 $i ++;
             }
-        
+            
             $s_targetName = str_replace($s_extension, '__' . $i . $s_extension, $s_testname);
         }
         
@@ -187,12 +212,19 @@ class UploadFile extends \File
             return false;
         }
         
+        $file = $this->file;
         $this->temp = $file::create($s_target . '/' . $s_targetName);
         
         return true;
     }
-    
-    public function getFile(){
+
+    /**
+     * Returns the uploaded file
+     *
+     * @return \youconix\core\common\file\File
+     */
+    public function getFile()
+    {
         return $this->temp;
     }
 
@@ -216,10 +248,9 @@ class UploadFile extends \File
     {
         $this->setFieldName($s_name);
         
-        return $this->doUpload($s_target,$s_newName);
-        
+        return $this->doUpload($s_target, $s_newName);
     }
-    
+
     /**
      * Performs the upload
      *
@@ -236,9 +267,9 @@ class UploadFile extends \File
      *         -3 File has an invalid extension/mimetype
      *         -4 Moving of the file failed. Check target permissions
      */
-    public function doUpload($s_target,$s_newName = '')
+    public function doUpload($s_target, $s_newName = '')
     {
-        if (! $this->isUploaded() || !$this->isValid()  || !$this->move($s_target,$s_newName) ){
+        if (! $this->isUploaded() || ! $this->isValid() || ! $this->move($s_target, $s_newName)) {
             return $this->i_error;
         }
         
@@ -246,31 +277,45 @@ class UploadFile extends \File
         
         return 0;
     }
-    
+
     /**
      * Returns the translated error message
-     * 
-     * @param int $i_code   The error code
-     * @return string   The error message
+     *
+     * @param int $i_code
+     *            The error code
+     * @return string The error message
      */
-    public function getErrorMessage($i_code){
-        if( !$this->language->exists('system/upload_messages/message'.$i_code) ){
+    public function getErrorMessage($i_code)
+    {
+        if (! $this->language->exists('system/upload_messages/message' . $i_code)) {
             return '';
         }
-        $s_message = $this->language->get('system/upload_messages/message'.$i_code);
-            
+        $s_message = $this->language->get('system/upload_messages/message' . $i_code);
         
-        switch($i_code){
-            case 2 :
-                $s_message = $this->language->insert($s_message, array('fileSize','serverLimit'),array($this->i_fileSize,$this->i_maxServerSize));
+        switch ($i_code) {
+            case 2:
+                $s_message = $this->language->insert($s_message, array(
+                    'fileSize',
+                    'serverLimit'
+                ), array(
+                    $this->i_fileSize,
+                    $this->i_maxServerSize
+                ));
                 break;
-            case 3 :
-                $s_message = $this->language->insert($s_message,array('extension','mimetype','allowed'),
-                    array($this->s_fileExtension,$this->s_fileExtension,implode(', ',array_keys($this->a_mimetypes)) ));
+            case 3:
+                $s_message = $this->language->insert($s_message, array(
+                    'extension',
+                    'mimetype',
+                    'allowed'
+                ), array(
+                    $this->s_fileExtension,
+                    $this->s_fileExtension,
+                    implode(', ', array_keys($this->a_mimetypes))
+                ));
                 break;
         }
         
-        return '';
+        return $s_message;
     }
 }
 ?>

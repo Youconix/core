@@ -1,3 +1,6 @@
-<?php 
-interface Logger extends \Psr\Log\LoggerInterface { }
+<?php
+
+interface Logger extends \Psr\Log\LoggerInterface
+{
+}
 ?>

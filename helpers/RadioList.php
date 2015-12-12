@@ -1,34 +1,29 @@
 <?php
+namespace youconix\core\helpers;
 
-/** 
- * Radio list widget                           
- *                                                                              
- * This file is part of Miniature-happiness                                    
- *                                                                              
- * @copyright Youconix                                
- * @author    Rachelle Scheijen                                                
- * @since     1.0                                                              
- * @changed   05/08/2012
- *                                                                              
- * Miniature-happiness is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU Lesser General Public License as published by  
- * the Free Software Foundation, either version 3 of the License, or            
- * (at your option) any later version.                                          
- *                                                                              
- * Miniature-happiness is distributed in the hope that it will be useful,      
- * but WITHOUT ANY WARRANTY; without even the implied warranty of               
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
- * GNU General Public License for more details.                                 
- *                                                                              
- * You should have received a copy of the GNU Lesser General Public License     
- * along with Miniature-happiness.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Radio list widget
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 1.0
  */
-class Helper_RadioList extends Helper
+class RadioList extends \youconix\core\helpers\Helper
 {
 
-    protected $service_Template;
+    /**
+     *
+     * @var \youconix\core\helpers\HTML
+     */
+    protected $HTML;
 
-    protected $helper_HTML;
+    /**
+     *
+     * @var \Ouput
+     */
+    protected $template;
 
     protected $s_callback = 'null';
 
@@ -36,13 +31,16 @@ class Helper_RadioList extends Helper
 
     /**
      * PHP 5 constructor
+     *
+     * @param \Ouput $template            
+     * @param \youconix\core\helpers\HTML $HTML            
      */
-    public function __construct()
+    public function __construct(\Ouput $template, \youconix\core\helpers\HTML $HTML)
     {
         $this->a_values = array();
         
-        $this->helper_HTML = Memory::helpers('HTML');
-        $this->service_Template = Memory::services('Template');
+        $this->HTML = $HTML;
+        $this->template = $template;
     }
 
     /**
@@ -92,7 +90,7 @@ class Helper_RadioList extends Helper
         }
         
         /* Generate widget */
-        $obj_out = $this->helper_HTML->div();
+        $obj_out = $this->HTML->div();
         $obj_out->setID('radioList')->setClass('widget');
         $obj_out->setContent($s_output);
         
@@ -109,7 +107,7 @@ class Helper_RadioList extends Helper
         $a_list = array();
         $a_keys = array_keys($this->a_values);
         foreach ($a_keys as $s_key) {
-            $obj_radio = $this->helper_HTML->radio();
+            $obj_radio = $this->HTML->radio();
             $obj_radio->setID($s_key);
             $obj_radio->setName($s_key);
             $obj_radio->setValue($this->a_values[$s_key][0]);

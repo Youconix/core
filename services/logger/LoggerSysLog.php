@@ -1,7 +1,7 @@
 <?php
-namespace core\services\logger;
+namespace youconix\core\services\logger;
 
-class LoggerSysLog extends \core\services\logger\LoggerParent
+class LoggerSysLog extends \youconix\core\services\logger\LoggerParent
 {
 
     /**

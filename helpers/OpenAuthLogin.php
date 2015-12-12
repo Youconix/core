@@ -1,5 +1,5 @@
 <?php
-namespace\core\helpers;
+namespace\youconix\core\helpers;
 
 class OpenAuthLogin extends Helper
 {
@@ -17,16 +17,16 @@ class OpenAuthLogin extends Helper
     /**
      * PHP 5 constructor
      *
-     * @param \core\services\Security $service_Security
+     * @param \youconix\core\services\Security $service_Security
      *            The security handler
-     * @param \core\services\Language $service_Language
+     * @param \youconix\core\services\Language $service_Language
      *            The language service
-     * @param \core\services\Template $service_Template
+     * @param \youconix\core\services\Template $service_Template
      *            The template service
      * @param \Builder $service_Builder
      *            The query builder
      */
-    public function __construct(\core\services\Security $service_Security, \core\services\Language $service_Language, \core\services\Template $service_Template, \Builder $service_Builder)
+    public function __construct(\youconix\core\services\Security $service_Security, \youconix\core\services\Language $service_Language, \youconix\core\services\Template $service_Template, \Builder $service_Builder)
     {
         $this->service_Language = $service_Language;
         $this->service_Template = $service_Template;
@@ -174,7 +174,7 @@ class OpenAuthLogin extends Helper
     {
         $a_settings = $this->getSettingsArray($a_setting['settings']);
         $a_settings['action'] = $s_action;
-        $a_settings['channelUrl'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . \core\Memory::getBase() . '/openID/channelFacebook.php';
+        $a_settings['channelUrl'] = 'https://' . $_SERVER['HTTP_HOST'] . '/' . \youconix\core\Memory::getBase() . '/openID/channelFacebook.php';
         $a_settings['locale'] = $this->service_Language->get('locale');
         if (! array_key_exists('loggedin', $a_settings)) {
             $a_settings['loggedin'] = array();

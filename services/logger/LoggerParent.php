@@ -1,20 +1,7 @@
 <?php
-namespace core\services\logger;
+namespace youconix\core\services\logger;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Log-handler for manipulating log files
  *
  * This file is part of Miniature-happiness
@@ -24,7 +11,7 @@ namespace core\services\logger;
  * @version 1.0
  * @since 2.0
  */
-abstract class LoggerParent extends \core\services\Service implements \Logger
+abstract class LoggerParent extends \youconix\core\services\Service implements \Logger
 {
 
     protected $service_Mailer;
@@ -34,14 +21,15 @@ abstract class LoggerParent extends \core\services\Service implements \Logger
     protected $obj_loglevel;
 
     protected $s_host;
-    
-    public function __construct(\core\services\Mailer $mailer,\Config $config,\Psr\Log\LogLevel $loglevel){
+
+    public function __construct(\youconix\core\services\Mailer $mailer, \Config $config, \Psr\Log\LogLevel $loglevel)
+    {
         $this->service_Mailer = $mailer;
         $this->a_address = $config->getAdminAddress();
         $this->obj_loglevel = $loglevel;
         $this->s_host = $config->getHost();
     }
-    
+
     /**
      * Returns if the object schould be treated as singleton
      *

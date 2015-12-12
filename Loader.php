@@ -12,10 +12,10 @@ class Loader
     private static function getFileName($s_className)
     {
         /* Check for interfaces */
-        if (file_exists(NIV.CORE .'interfaces' . DS . $s_className . '.php')) {
+        if (file_exists(WEB_ROOT . CORE . 'interfaces' . DS . $s_className . '.php')) {
             return CORE . 'interfaces' . DS . $s_className . '.php';
         }
-        if (file_exists(NIV . 'includes' . DS . 'interfaces' . DS . $s_className . '.php')) {
+        if (file_exists(WEB_ROOT . 'includes' . DS . 'interfaces' . DS . $s_className . '.php')) {
             return 'includes' . DS . 'interfaces' . DS . $s_className . '.php';
         }
         
@@ -28,44 +28,36 @@ class Loader
             $s_fileName = str_replace('\\', DS, $s_namespace) . DS;
         }
         
-        if( file_exists(NIV.str_replace('core/',CORE,$s_fileName).DS.$s_className.'.php') ){
-            return str_replace('core/',CORE,$s_fileName).DS.$s_className.'.php';
+        if (file_exists(WEB_ROOT . 'vendor' . DS . $s_fileName . DS . $s_className . '.php')) {
+            return 'vendor' . DS . $s_fileName . DS . $s_className . '.php';
         }
         
-        if (file_exists(NIV . $s_fileName.DS.$s_className.'.inc.php')) {
-            return $s_fileName.DS.$s_className.'.inc.php';
+        if (file_exists(WEB_ROOT . 'vendor' . DS . strtolower($s_fileName) . DS . $s_fileName . DS . $s_className . '.php')) {
+            return 'vendor' . DS . strtolower($s_fileName) . DS . $s_fileName . DS . $s_className . '.php';
         }
         
-        if( file_exists(NIV.str_replace('core/',CORE,$s_fileName).DS.$s_className.'.php') ){
-            return str_replace('core/',CORE,$s_fileName).DS.$s_className.'.php';
+        if (file_exists(WEB_ROOT . $s_fileName . DS . $s_className . '.inc.php')) {
+            return $s_fileName . DS . $s_className . '.inc.php';
         }
         
-        if (file_exists(NIV . $s_fileName.DS.$s_className.'.php')) {
-            return $s_fileName.DS.$s_className.'.php';
+        if (file_exists(WEB_ROOT . str_replace('core/', CORE, $s_fileName) . DS . $s_className . '.php')) {
+            return str_replace('core/', CORE, $s_fileName) . DS . $s_className . '.php';
+        }
+        
+        if (file_exists(WEB_ROOT . $s_fileName . DS . $s_className . '.php')) {
+            return $s_fileName . DS . $s_className . '.php';
         }
         
         /* Check for website files */
         $s_name = strtolower($s_fileName . DS . $s_className . '.php');
-        if (file_exists(NIV . $s_name)) {
+        if (file_exists(WEB_ROOT . $s_name)) {
             return $s_name;
         }
         
         if (defined('WEBSITE_ROOT')) {
-            if (file_exists(WEBSITE_ROOT . $s_name.'.php')) {
-                return WEBSITE_ROOT . $s_name.'.php';
+            if (file_exists(WEB_ROOT . $s_name . '.php')) {
+                return $s_name . '.php';
             }
-        }
-        
-        /* Check for libs */
-        $s_fileName .= str_replace('_', DS, $s_className) . '.php';
-        if (file_exists(NIV . 'vendor' . DS . $s_fileName)) {
-            return 'vendor' . DS . $s_fileName;
-        }
-        if (file_exists(NIV . 'vendor' . DS . str_replace($s_namespace, strtolower(str_replace('\\', DS, $s_namespace)), $s_fileName))) {
-            return 'vendor' . DS . str_replace($s_namespace, strtolower(str_replace('\\', DS, $s_namespace)), $s_fileName);
-        }
-        if (file_exists(NIV . 'vendor' . DS . strtolower(str_replace('\\', DS, $s_namespace)) . DS . $s_fileName)) {
-            return 'vendor' . DS . strtolower(str_replace('\\', DS, $s_namespace)) . DS . $s_fileName;
         }
         
         return null;
@@ -75,19 +67,18 @@ class Loader
     {
         if (preg_match('/Exception$/', $s_className)) {
             $s_fileName = null;
-            if (file_exists(NIV . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php')) {
-                $s_fileName = NIV . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php';
+            if (file_exists(WEB_ROOT . DS . 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php')) {
+                $s_fileName = 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php';
             }
         } else {
             $s_fileName = Loader::getFileName($s_className);
         }
         
         if (! is_null($s_fileName)) {
-            if ((substr($s_fileName, 0, 5) == 'core/') && file_exists(NIV . 'files' . DS . 'updates' . DS . $s_fileName)) {
-                require (NIV . 'files' . DS . 'updates' . DS . $s_fileName);
-            } 
-            else {
-                require NIV . $s_fileName;
+            if ((substr($s_fileName, 0, 5) == 'core/') && file_exists(WEB_ROOT . 'files' . DS . 'updates' . DS . $s_fileName)) {
+                require (WEB_ROOT . 'files' . DS . 'updates' . DS . $s_fileName);
+            } else {
+                require WEB_ROOT . $s_fileName;
             }
         }
     }
@@ -98,15 +89,23 @@ class Loader
         
         $s_fileName = null;
         /* Check IoC */
-        $IoC = \core\Memory::getCache('IoC');
+        $IoC = \youconix\core\Memory::getCache('IoC');
         if (! is_null($IoC)) {
             $check = $IoC::check($s_className);
             if (! is_null($check)) {
                 $s_className = $check;
-               	$s_fileName = str_replace('\\', DS, $check) . '.php';
+                $s_fileName = str_replace('\\', DS, $check) . '.php';
                 
                 while (substr($s_fileName, 0, 1) == DS) {
                     $s_fileName = substr($s_fileName, 1);
+                }
+                
+                if (! file_exists(WEB_ROOT . DS . $s_fileName)) {
+                    if (file_exists(WEB_ROOT . DS . 'vendor' . DS . $s_fileName)) {
+                        $s_fileName = 'vendor' . DS . $s_fileName;
+                    } else {
+                        throw new \LogicException('IoC defined file ' . $s_fileName . ' does not exist.');
+                    }
                 }
             }
         }
@@ -126,18 +125,18 @@ class Loader
         }
         
         if (! class_exists($s_caller) && ! interface_exists($s_caller)) {
-            require (NIV . $s_fileName);
+            require (WEB_ROOT . $s_fileName);
         }
-        if ((substr($s_fileName, 0, 5) == 'core/') && (file_exists(NIV . str_replace('core/', 'includes/', $s_fileName) . '.inc.php') || file_exists(NIV . str_replace('core/', 'includes/', $s_fileName) . '.php') )) {
+        if ((substr($s_fileName, 0, 5) == 'core/') && (file_exists(WEB_ROOT . str_replace('core/', 'includes/', $s_fileName) . '.inc.php') || file_exists(WEB_ROOT . str_replace('core/', 'includes/', $s_fileName) . '.php'))) {
             $s_fileName = str_replace('core\\', 'includes\\', $s_fileName);
-            $caller = str_replace('\core', '\includes', $caller);
+            $caller = str_replace('\youconix\core', '\includes', $caller);
             
             if (! class_exists($s_caller)) {
-                require (NIV . $s_fileName);
+                require (WEB_ROOT . $s_fileName);
             }
         }
         
-        $object = Loader::injection($s_caller, NIV . $s_fileName, $a_arguments);
+        $object = Loader::injection($s_caller, $s_fileName, $a_arguments);
         
         return $object;
     }
@@ -157,8 +156,8 @@ class Loader
         $ref = new \ReflectionClass($s_caller);
         if (! $ref->isInstantiable()) {
             /* Check cache */
-            if (\core\Memory::IsInCache($s_caller)) {
-                return \core\Memory::getCache($s_caller);
+            if (\youconix\core\Memory::IsInCache($s_caller)) {
+                return \youconix\core\Memory::getCache($s_caller);
             }
             
             throw new \RuntimeException('Can not create a object from class ' . $s_caller . '.');
@@ -167,8 +166,8 @@ class Loader
         $bo_singleton = false;
         if (method_exists($s_caller, 'isSingleton') && $s_caller::isSingleton()) {
             /* Check cache */
-            if (\core\Memory::IsInCache($s_caller)) {
-                return \core\Memory::getCache($s_caller);
+            if (\youconix\core\Memory::IsInCache($s_caller)) {
+                return \youconix\core\Memory::getCache($s_caller);
             } else {
                 $bo_singleton = true;
             }
@@ -205,15 +204,15 @@ class Loader
                 /* No namespace */
                 if (strpos($s_name, 'Helper_') !== false) {
                     $s_name = str_replace('Helper_', '', $s_name);
-                    $a_arguments[] = \core\Memory::helpers($s_name);
+                    $a_arguments[] = \youconix\core\Memory::helpers($s_name);
                 } else 
                     if (strpos($s_name, 'Service_') !== false) {
                         $s_name = str_replace('Service_', '', $s_name);
-                        $a_arguments[] = \core\Memory::services($s_name);
+                        $a_arguments[] = \youconix\core\Memory::services($s_name);
                     } else 
                         if (strpos($s_name, 'Model_') !== false) {
                             $s_name = str_replace('Model_', '', $s_name);
-                            $a_arguments[] = \core\Memory::models($s_name);
+                            $a_arguments[] = \youconix\core\Memory::models($s_name);
                         } else {
                             /* Try to load object */
                             $a_arguments[] = Loader::inject($s_name);
@@ -228,7 +227,7 @@ class Loader
         $object = $ref->newInstanceArgs($a_arguments);
         
         if ($bo_singleton) {
-            \core\Memory::setCache($s_caller, $object);
+            \youconix\core\Memory::setCache($s_caller, $object);
         }
         
         \Profiler::profileSystem('core/Loader.php', 'Loaded class ' . $s_caller);
@@ -245,19 +244,19 @@ class Loader
      */
     private static function getConstructor($s_filename)
     {
-        $service_File = \core\Memory::getCache(\core\IoC::$s_ruleFileHandler);
+        $service_File = \youconix\core\Memory::getCache(\youconix\core\IoC::$s_ruleFileHandler);
         
-        if( $service_File->exists(str_replace('core/',CORE,$s_filename)) ){
-            $s_file = $service_File->readFile(str_replace('core/',CORE,$s_filename));
-        }
-        else if ($service_File->exists($s_filename)) {
-            $s_file = $service_File->readFile($s_filename);
+        if ($service_File->exists(WEB_ROOT . DS . $s_filename)) {
+            $s_file = $service_File->readFile(WEB_ROOT . DS . $s_filename);
         } else 
-            if ($service_File->exists(str_replace('.inc.php', '.php', $s_filename))) {
-                $s_file = $service_File->readFile(str_replace('.inc.php', '.php', $s_filename));
-            } else {
-                throw new Exception('Call to unknown file ' . $s_filename . '.');
-            }
+            if ($service_File->exists($s_filename)) {
+                $s_file = $service_File->readFile($s_filename);
+            } else 
+                if ($service_File->exists(str_replace('.inc.php', '.php', $s_filename))) {
+                    $s_file = $service_File->readFile(str_replace('.inc.php', '.php', $s_filename));
+                } else {
+                    throw new \Exception('Call to unknown file ' . $s_filename . '.');
+                }
         
         if (stripos($s_file, '__construct') === false) {
             /* Check if file has parent */
@@ -267,19 +266,19 @@ class Loader
             }
             
             switch ($a_matches[1]) {
-                case '\core\models\Model':
+                case '\youconix\core\models\Model':
                 case 'Model':
-                    $s_filename = NIV . 'core/models/Model.php';
+                    $s_filename = 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'models' . DS . 'Model.php';
                     break;
                 
-                case '\core\services\Service':
+                case '\youconix\core\services\Service':
                 case 'Service':
-                    $s_filename = NIV . 'core/services/Service.php';
+                    $s_filename = 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'services' . DS . 'Service.php';
                     break;
                 
-                case '\core\helpers\Helper':
+                case '\youconix\core\helpers\Helper':
                 case 'Helper':
-                    $s_filename = NIV . 'core/helpers/Helper.php';
+                    $s_filename = 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'helpers' . DS . 'Helper.php';
                     break;
                 
                 default:
@@ -287,18 +286,18 @@ class Loader
                     preg_match('#extends\\s+(\\\\{1}[\\\a-zA-Z0-9_\-]+)#si', $s_file, $a_matches2);
                     if (count($a_matches2) > 0) {
                         
-                       if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.php')) {
-                       	$s_filename = NIV . $a_matches2[1] . '.php';
-                       }
-                       else if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.inc.php')) {
-                       	$s_filename = NIV . $a_matches2[1] . '.inc.php';
-                       }
+                        if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.php')) {
+                            $s_filename = NIV . $a_matches2[1] . '.php';
+                        } else 
+                            if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.inc.php')) {
+                                $s_filename = NIV . $a_matches2[1] . '.inc.php';
+                            } 
 
                             else 
                                 if (file_exists(NIV . str_replace('\\', DS, strtolower($a_matches2[1])) . '.php')) {
-                                    $s_filename = NIV . strtolower($a_matches2[1]) . '.php';
+                                    $s_filename = strtolower($a_matches2[1]) . '.php';
                                 } else {
-                                    $s_filename = NIV . 'vendor' . DS . $a_matches2[1] . '.php';
+                                    $s_filename = 'vendor' . DS . $a_matches2[1] . '.php';
                                 }
                         $s_filename = str_replace(array(
                             '\\',

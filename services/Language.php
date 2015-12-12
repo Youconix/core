@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Language-handler for making your website language-independand
  *
  * This file is part of Miniature-happiness
@@ -24,9 +11,9 @@ namespace core\services;
  * @version 1.0
  * @since 1.0
  */
-abstract class Language extends \core\services\Service  implements \Language
+abstract class Language extends \youconix\core\services\Service  implements \Language
 {
-    private static $_instance;
+    protected static $_instance;
 
     /**
      * Returns if the object schould be treated as singleton
@@ -87,7 +74,7 @@ abstract class Language extends \core\services\Service  implements \Language
      *
      * @param string $s_language
      *            code
-     * @throws IOException when the language code does not exist
+     * @throws \IOException when the language code does not exist
      */
     public function setLanguage($s_language)
     {
@@ -123,7 +110,7 @@ abstract class Language extends \core\services\Service  implements \Language
      * @param string $s_path
      *            The path to the language-part
      * @return string The content of the requested part
-     * @throws XMLException when the path does not exist
+     * @throws \XMLException when the path does not exist
      */
     public static function text($s_key)
     {

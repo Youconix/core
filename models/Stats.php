@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Stats model.
  * Contains the site statistics
  *
@@ -24,18 +11,18 @@ namespace core\models;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class Stats extends Model
+class Stats extends \youconix\core\models\Model
 {
 
-    private $i_date;
+    protected $i_date;
 
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \core\services\Validation $validation
+     * @param \Builder $builder            
+     * @param \Validation $validation            
      */
-    public function __construct(\Builder $builder, \core\services\Validation $validation)
+    public function __construct(\Builder $builder, \Validation $validation)
     {
         parent::__construct($builder, $validation);
         
@@ -49,12 +36,12 @@ class Stats extends Model
      *            The IP address
      * @param string $s_page
      *            current page
-     * @return Boolean True if the visitor is unique, otherwise false
+     * @return boolean True if the visitor is unique, otherwise false
      */
     public function saveIP($s_ip, $s_page)
     {
-        \core\Memory::type('string', $s_ip);
-        \core\Memory::type('string', $s_page);
+        \youconix\core\Memory::type('string', $s_ip);
+        \youconix\core\Memory::type('string', $s_page);
         
         $i_datetime = mktime(date("H"), 0, 0, date("n"), date('j'), date("Y"));
         $this->builder->update('stats_hits', 'amount', 'l', 'amount + 1')
@@ -154,8 +141,8 @@ class Stats extends Model
      */
     public function saveOS($s_os, $s_osType)
     {
-        \core\Memory::type('string', $s_os);
-        \core\Memory::type('string', $s_osType);
+        \youconix\core\Memory::type('string', $s_os);
+        \youconix\core\Memory::type('string', $s_osType);
         
         $this->builder->update('stats_OS', 'amount', 'l', 'amount + 1')
             ->getWhere()
@@ -204,8 +191,8 @@ class Stats extends Model
      */
     public function saveBrowser($s_browser, $s_version)
     {
-        \core\Memory::type('string', $s_browser);
-        \core\Memory::type('string', $s_version);
+        \youconix\core\Memory::type('string', $s_browser);
+        \youconix\core\Memory::type('string', $s_version);
         
         $this->builder->update('stats_browser', 'amount', 'l', 'amount + 1')
             ->getWhere()
@@ -252,7 +239,7 @@ class Stats extends Model
      */
     public function saveReference($s_reference)
     {
-        \core\Memory::type('string', $s_reference);
+        \youconix\core\Memory::type('string', $s_reference);
         
         $s_reference = str_replace(array(
             '\\',
@@ -307,8 +294,8 @@ class Stats extends Model
      */
     public function saveScreenSize($i_width, $i_height)
     {
-        \core\Memory::type('int', $i_width);
-        \core\Memory::type('int', $i_height);
+        \youconix\core\Memory::type('int', $i_width);
+        \youconix\core\Memory::type('int', $i_height);
         
         $this->builder->update('stats_screenSizes', 'amount', 'l', 'amount + 1')
             ->getWhere()
@@ -355,7 +342,7 @@ class Stats extends Model
      */
     public function saveScreenColors($s_screenColors)
     {
-        \core\Memory::type('string', $s_screenColors);
+        \youconix\core\Memory::type('string', $s_screenColors);
         
         $this->builder->update('stats_screenColors', 'amount', 'l', 'amount + 1')
             ->getWhere()
@@ -391,16 +378,18 @@ class Stats extends Model
     /**
      * Returns the hits pro month
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
-     * @return \core\models\data\HitCollection The hits
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
+     * @return \youconix\core\models\data\HitCollection The hits
      */
-    public function getHits($i_startDate,$i_endDate)
+    public function getHits($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
-        $hits = new \core\models\data\HitCollection($i_startDate,$i_endDate);
+        $hits = new \youconix\core\models\data\HitCollection($i_startDate, $i_endDate);
         $this->builder->select('stats_hits', 'amount,datetime')
             ->group('datetime')
             ->getWhere()
@@ -417,32 +406,34 @@ class Stats extends Model
             $a_hitsPre = $service_Database->fetch_assoc();
             
             foreach ($a_hitsPre as $a_hit) {
-                $item = new \core\models\data\HitItem($a_hit['amount'], $a_hit['datetime']);
+                $item = new \youconix\core\models\data\HitItem($a_hit['amount'], $a_hit['datetime']);
                 $hits->add($item);
             }
         }
         
         return $hits;
     }
-    
+
     /**
      * Returns the unique visitors from the given month
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
-     * @return \core\models\data\HitCollection The visitors
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
+     * @return \youconix\core\models\data\HitCollection The visitors
      */
-    public function getUnique($i_startDate,$i_endDate)
+    public function getUnique($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
-        $unique = new \core\models\data\HitCollection($i_startDate,$i_endDate);
-    
+        $unique = new \youconix\core\models\data\HitCollection($i_startDate, $i_endDate);
+        
         $this->builder->select('stats_unique', 'datetime')
-        ->group('datetime')
-        ->getWhere()
-        ->addAnd('datetime', array(
+            ->group('datetime')
+            ->getWhere()
+            ->addAnd('datetime', array(
             'i',
             'i'
         ), array(
@@ -450,40 +441,42 @@ class Stats extends Model
             $i_endDate
         ), 'BETWEEN');
         $service_Database = $this->builder->getResult();
-    
+        
         if ($service_Database->num_rows() > 0) {
             $a_uniquePre = $service_Database->fetch_assoc();
-    
+            
             foreach ($a_uniquePre as $a_hit) {
-                $item = new \core\models\data\HitItem(1, $a_hit['datetime']);
+                $item = new \youconix\core\models\data\HitItem(1, $a_hit['datetime']);
                 $unique->add($item);
             }
         }
-    
+        
         return $unique;
     }
-    
+
     /**
      * Returns the hits pro hour
-     * 
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
-     * @return array    The hits
+     *
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
+     * @return array The hits
      */
-    public function getHitsHours($i_startDate,$i_endDate)
+    public function getHitsHours($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_hits = array();
-        for( $i=0; $i<=23; $i++){
+        for ($i = 0; $i <= 23; $i ++) {
             $a_hits[$i] = 0;
         }
         
         $this->builder->select('stats_hits', 'amount,datetime')
-        ->group('datetime')
-        ->getWhere()
-        ->addAnd('datetime', array(
+            ->group('datetime')
+            ->getWhere()
+            ->addAnd('datetime', array(
             'i',
             'i'
         ), array(
@@ -494,9 +487,9 @@ class Stats extends Model
         
         if ($service_Database->num_rows() > 0) {
             $a_hitsPre = $service_Database->fetch_assoc();
-        
+            
             foreach ($a_hitsPre as $a_hit) {
-                $a_hits[ date('H',$a_hit['datetime'])] += $a_hit['amount'];
+                $a_hits[date('H', $a_hit['datetime'])] += $a_hit['amount'];
             }
         }
         
@@ -506,14 +499,16 @@ class Stats extends Model
     /**
      * Returns the pages
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
      * @return array The pages
      */
-    public function getPages($i_startDate,$i_endDate)
+    public function getPages($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_pages = array();
         $this->builder->select('stats_pages', 'name,SUM(amount) AS amount')
@@ -534,32 +529,33 @@ class Stats extends Model
         
         return $a_pages;
     }
-    
+
     /**
      * Sorts the dates
-     * 
-     * @param array $a_data	The dates
+     *
+     * @param array $a_data
+     *            The dates
      * @return array
      */
-    private function sortDate($a_data){
+    protected function sortDate($a_data)
+    {
         $a_items = array();
         $a_data2 = array();
-        foreach( $a_data AS $a_item ){
-            if( !array_key_exists($a_item['type'], $a_data2) ){
-                $a_data2[ $a_item['type'] ] = array();
+        foreach ($a_data as $a_item) {
+            if (! array_key_exists($a_item['type'], $a_data2)) {
+                $a_data2[$a_item['type']] = array();
             }
-        
-            $a_data2[ $a_item['type'] ][ str_replace(' ','',$a_item['name']) ] = $a_item;
+            
+            $a_data2[$a_item['type']][str_replace(' ', '', $a_item['name'])] = $a_item;
         }
         
         ksort($a_data2);
-        foreach( $a_data2 AS $key => $item ){
+        foreach ($a_data2 as $key => $item) {
             ksort($a_data2[$key]);
         }
         
-        
-        foreach( $a_data2 AS $key => $type ){
-            foreach( $a_data2[$key] AS $item ){
+        foreach ($a_data2 as $key => $type) {
+            foreach ($a_data2[$key] as $item) {
                 $a_items[] = $item;
             }
         }
@@ -570,14 +566,16 @@ class Stats extends Model
     /**
      * Returns the operating systems
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
      * @return array The operating systems
      */
-    public function getOS($i_startDate,$i_endDate)
+    public function getOS($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_OS = array();
         $this->builder->select('stats_OS', 'id,name,amount,type')
@@ -596,7 +594,7 @@ class Stats extends Model
             
             $a_OS = $this->sortDate($a_data);
         }
-                
+        
         return $a_OS;
     }
 
@@ -604,14 +602,16 @@ class Stats extends Model
      * Returns the browsers
      * Grouped by browser
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
      * @return array The browsers
      */
-    public function getBrowsers($i_startDate,$i_endDate)
+    public function getBrowsers($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_browsers = array();
         $this->builder->select('stats_browser', 'id,name AS type,amount,CONCAT(name," ",version) AS name')
@@ -637,14 +637,16 @@ class Stats extends Model
     /**
      * Returns the screen colors
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
      * @return array The screen colors
      */
-    public function getScreenColors($i_startDate,$i_endDate)
+    public function getScreenColors($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_screenColors = array();
         $this->builder->select('stats_screenColors', 'name,amount')
@@ -668,14 +670,16 @@ class Stats extends Model
     /**
      * Returns the screen sizes
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
      * @return array The screen sizes
      */
-    public function getScreenSizes($i_startDate,$i_endDate)
+    public function getScreenSizes($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_screenSizes = array();
         $this->builder->select('stats_screenSizes', 'width,height,amount')->order('width', 'DESC', 'height', 'DESC');
@@ -698,17 +702,19 @@ class Stats extends Model
     /**
      * Returns the references
      *
-     * @param int   $i_startDate    The start date as timestamp
-     * @param int   $i_endDate      The end date as timestamp
+     * @param int $i_startDate
+     *            The start date as timestamp
+     * @param int $i_endDate
+     *            The end date as timestamp
      * @return array The references
      */
-    public function getReferences($i_startDate,$i_endDate)
+    public function getReferences($i_startDate, $i_endDate)
     {
-        \core\Memory::type('int', $i_startDate);
-        \core\Memory::type('int', $i_endDate);
+        \youconix\core\Memory::type('int', $i_startDate);
+        \youconix\core\Memory::type('int', $i_endDate);
         
         $a_references = array();
-        $this->builder->select('stats_reference','SUM(amount) AS amount,name')
+        $this->builder->select('stats_reference', 'SUM(amount) AS amount,name')
             ->order('amount', 'DESC')
             ->group('name');
         $this->builder->getWhere()->addAnd('datetime', array(
@@ -774,9 +780,9 @@ class Stats extends Model
      *            minimun timestamp to keep data
      * @throws DBException If the clearing failes
      */
-    private function cleanStats($i_maxDate)
+    protected function cleanStats($i_maxDate)
     {
-        \core\Memory::type('int', $i_maxDate);
+        \youconix\core\Memory::type('int', $i_maxDate);
         
         try {
             $this->builder->transaction();

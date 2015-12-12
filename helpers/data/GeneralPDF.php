@@ -1,4 +1,5 @@
 <?php
+namespace youconix\core\helpers\data;
 
 /**
  * General PDF generation class
@@ -8,24 +9,27 @@
  * @copyright Youconix                                
  * @author    Rachelle Scheijen                                                
  * @since     1.0 
- *                                                                              
- * Miniature-happiness is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU Lesser General Public License as published by  
- * the Free Software Foundation, either version 3 of the License, or            
- * (at your option) any later version.                                          
- *                                                                              
- * Miniature-happiness is distributed in the hope that it will be useful,      
- * but WITHOUT ANY WARRANTY; without even the implied warranty of               
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
- * GNU General Public License for more details.                                 
- *                                                                              
- * You should have received a copy of the GNU Lesser General Public License     
- * along with Miniature-happiness.  If not, see <http://www.gnu.org/licenses/>.
  */
 abstract class GeneralPDF
 {
 
-    protected $service_Language;
+	/**
+	 * 
+	 * @var \Language
+	 */
+    protected $language;
+    
+    /**
+     * 
+     * @var \Output
+     */
+    protected $template;
+    
+    /**
+     * 
+     * @var \youconix\services\FileHandler
+     */
+    protected $fileHandler;
 
     protected $s_encoding;
 
@@ -35,32 +39,35 @@ abstract class GeneralPDF
 
     /**
      * PHP 5 constructor
+     * 
+     * @param \Language	$language
      */
-    public function __construct()
+    public function __construct(\Language $language,\Output $template,\youconix\services\FileHandler $file)
     {
-        $this->service_Language = Memory::services('Language');
-        $this->s_encoding = $this->service_Language->get('language/encoding');
+        $this->language = $language;
+        $this->template = $template;
+        $this->fileHandler = $file;
+        $this->s_encoding = $this->language->get('language/encoding');
         
-        $this->obj_renderer = new DOMPDF();
+        $this->obj_renderer = new \dompdf\dompdf\DOMPDF();
     }
 
     /**
      * Loads the PDF template
      *
-     * @param String $s_name
+     * @param string $s_name
      *            template name
      * @throws TemplateException the template does not exists
      */
     protected function loadTemplate($s_name)
     {
-        $s_styleDir = Memory::services('Template')->getStylesDir();
+        $s_styleDir = $this->template->getStylesDir();
         
-        $service_File = Memory::services('File');
-        if (! $service_File->exists($s_styleDir . 'pdf/' . $s_name)) {
+        if (! $this->fileHandler->exists($s_styleDir . 'pdf/' . $s_name)) {
             throw new TemplateException("Could not load PDF template " . $s_name . ' in ' . $s_styleDir . 'pdf/.');
         }
         
-        $this->s_template = $service_File->readFile($s_styleDir . 'pdf/' . $s_name);
+        $this->s_template = $this->fileHandler->readFile($s_styleDir . 'pdf/' . $s_name);
     }
 
     /**
@@ -83,9 +90,9 @@ abstract class GeneralPDF
     /**
      * Creates the PDF and returns the content
      *
-     * @param String $s_name
+     * @param string $s_name
      *            of the PDF
-     * @return String pdf content
+     * @return string pdf content
      */
     protected function returnString($s_name)
     {

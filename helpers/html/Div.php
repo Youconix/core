@@ -1,14 +1,14 @@
 <?php
 namespace youconix\core\helpers\html;
 
-class Div extends HtmlItem
+class Div extends \youconix\core\helpers\html\HtmlItem
 {
 
     /**
      * Generates a new div element
      *
      * @param string $s_content
-     *            content
+     *            content,  also accepts \youconix\core\helpers\html\CoreHtmlItem
      */
     public function __construct($s_content)
     {
@@ -21,8 +21,8 @@ class Div extends HtmlItem
      * Sets the content.
      * Adds the value if a value is allready set
      *
-     * @param string $s_value
-     *            value
+     * @param string $s_content
+     *            content,  also accepts \youconix\core\helpers\html\CoreHtmlItem
      */
     public function setContent($s_content)
     {

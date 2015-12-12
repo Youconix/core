@@ -1,7 +1,16 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
-class AdminUserViews extends \core\helpers\Helper {
+/**
+ * Admin user view
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 2.0
+ */
+class AdminUserViews extends \youconix\core\helpers\Helper {
     /**
      * 
      * @var \Language
@@ -16,7 +25,7 @@ class AdminUserViews extends \core\helpers\Helper {
     
     /**
      * 
-     * @var \core\models\Groups
+     * @var \youconix\core\models\Groups
      */
     protected $groups;
     
@@ -24,11 +33,11 @@ class AdminUserViews extends \core\helpers\Helper {
     
     /**
      * 
-     * @var \core\models\data\User
+     * @var \youconix\core\models\data\User
      */
     protected $obj_User;
     
-    public function __construct(\Language $language, \Output $template,\core\models\Groups $groups)
+    public function __construct(\Language $language, \Output $template,\youconix\core\models\Groups $groups)
     {
         $this->language = $language;
         $this->template = $template;
@@ -98,7 +107,7 @@ class AdminUserViews extends \core\helpers\Helper {
     /**
      * Shows the user data
      */
-    private function runView(){
+    protected function runView(){
         $this->template->set('blockedHeader', $this->language->get('system/admin/users/blocked'));
         $this->template->set('loggedinHeader', $this->language->get('system/admin/users/loggedIn'));
         $this->template->set('registratedHeader', $this->language->get('system/admin/users/registrated'));
@@ -120,7 +129,7 @@ class AdminUserViews extends \core\helpers\Helper {
     /**
      * Checks de delete option
      */
-    private function checkDeleteOption()
+    protected function checkDeleteOption()
     {
         (USERID == $this->a_data['id']) ? $s_deleteRejected = 'style="color:grey; text-decoration: line-through; cursor:auto"' : $s_deleteRejected = '';
         
@@ -194,7 +203,7 @@ class AdminUserViews extends \core\helpers\Helper {
     /**
      * Sets the general text
      */
-    private function headersGeneral(){
+    protected function headersGeneral(){
         $this->template->set('usernameHeader', $this->language->get('system/admin/users/username'));
         $this->template->set('emailHeader', $this->language->get('system/admin/users/email'));
         $this->template->set('headerText', $this->language->get('system/admin/users/headerAdd'));
@@ -209,7 +218,7 @@ class AdminUserViews extends \core\helpers\Helper {
     /**
      * Sets the add view text
      */
-    private function add(){
+    protected function add(){
     	$this->template->set('usernameError',$this->language->get('system/admin/users/js/usernameEmpty'));
     	$this->template->set('saveButton',$this->language->get('system/buttons/save'));
     	
@@ -222,7 +231,7 @@ class AdminUserViews extends \core\helpers\Helper {
     /**
      * Shows the edit view text
      */
-    private function edit(){
+    protected function edit(){
     	if( $this->obj_User->getLoginType() == 'normal' ){
     		$this->template->displayPart('passwords');
     	
@@ -240,7 +249,7 @@ class AdminUserViews extends \core\helpers\Helper {
     /**
      * Sets the user
      * 
-     * @param \core\models\data\User $obj_User  The  user
+     * @param \youconix\core\models\data\User $obj_User  The  user
      */
     public function setData($obj_User)
     {

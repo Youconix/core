@@ -16,6 +16,10 @@ class TableCell extends \youconix\core\helpers\html\HtmlItem
 	 */
 	public function __construct($s_value)
 	{
+	    if( $s_value instanceof \youconix\core\helpers\html\CoreHtmlItem ){
+	        $s_value = $s_value->generateItem();
+	    }
+	    
 		$this->s_tag = "<td {between}{span}>{value}</td>";
 		$this->setValue($s_value);
 	}

@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Service class for handling and manipulating cookies
  *
  * This file is part of Miniature-happiness
@@ -24,20 +11,23 @@ namespace core\services;
  * @version 1.0
  * @since 1.0
  */
-class Cookie extends \core\services\Service implements \Cookie
+class Cookie extends \youconix\core\services\Service implements \Cookie
 {
 
-    private $service_Security;
+    /**
+     *
+     * @var \Security
+     */
+    protected $security;
 
     /**
      * PHP5 constructor
      *
-     * @param \Security $service_Security
-     *            The security layer
+     * @param \Security $security            
      */
-    public function __construct(\Security $service_Security)
+    public function __construct(\Security $security)
     {
-        $this->service_Security = $service_Security;
+        $this->security = $security;
     }
 
     /**
@@ -53,11 +43,11 @@ class Cookie extends \core\services\Service implements \Cookie
     /**
      * Encrypts the given string with base64_encode
      *
-     * @param String $s_cookieData
+     * @param string $s_cookieData
      *            The data that needs to be encrypted
-     * @return String The encrypted data
+     * @return string The encrypted data
      */
-    private function encrypt($s_cookieData)
+    protected function encrypt($s_cookieData)
     {
         $s_cookieData = base64_encode($s_cookieData);
         
@@ -67,15 +57,15 @@ class Cookie extends \core\services\Service implements \Cookie
     /**
      * Decrypts the given string with base64_decode
      *
-     * @param String $s_cookieData
+     * @param string $s_cookieData
      *            The data that needs to be decrypted
-     * @return String The decrypted data
+     * @return string The decrypted data
      */
-    private function decrypt($s_cookieData)
+    protected function decrypt($s_cookieData)
     {
         $s_cookieData = base64_decode($s_cookieData);
         
-        $s_cookieData = $this->service_Security->secureString($s_cookieData);
+        $s_cookieData = $this->security->secureString($s_cookieData);
         
         return $s_cookieData;
     }
@@ -83,16 +73,16 @@ class Cookie extends \core\services\Service implements \Cookie
     /**
      * Deletes the cookie with the given name and domain
      *
-     * @param String $s_cookieName
+     * @param string $s_cookieName
      *            The name of the cookie
-     * @param String $s_domain
+     * @param string $s_domain
      *            The domain of the cookie
-     * @throws Exception if the cookie does not exist
+     * @throws \Exception if the cookie does not exist
      */
     public function delete($s_cookieName, $s_domain)
     {
-        \core\Memory::type('string', $s_cookieName);
-        \core\Memory::type('string', $s_domain);
+        \youconix\core\Memory::type('string', $s_cookieName);
+        \youconix\core\Memory::type('string', $s_domain);
         
         if (! $this->exists($s_cookieName)) {
             throw new \Exception("Cookie " . $s_cookieName . " does not exist.");
@@ -107,13 +97,13 @@ class Cookie extends \core\services\Service implements \Cookie
     /**
      * Sets the cookie with the given name and data
      *
-     * @param String $s_cookieName
+     * @param string $s_cookieName
      *            The name of the cookie
-     * @param String $s_cookieData
+     * @param string $s_cookieData
      *            The data to put into the cookie
-     * @param String $s_domain
+     * @param string $s_domain
      *            The domain the cookie schould work on, default /
-     * @param String $s_url
+     * @param string $s_url
      *            The URL the cookie schould work on, optional
      * @param int $i_secure
      *            1 if the cookie schould be https-only otherwise 0, optional
@@ -121,16 +111,16 @@ class Cookie extends \core\services\Service implements \Cookie
      */
     public function set($s_cookieName, $s_cookieData, $s_domain, $s_url = "", $i_secure = 0)
     {
-        \core\Memory::type('string', $s_cookieName);
-        \core\Memory::type('string', $s_cookieData);
-        \core\Memory::type('string', $s_domain);
-        \core\Memory::type('string', $s_url);
-        \core\Memory::type('int', $i_secure);
+        \youconix\core\Memory::type('string', $s_cookieName);
+        \youconix\core\Memory::type('string', $s_cookieData);
+        \youconix\core\Memory::type('string', $s_domain);
+        \youconix\core\Memory::type('string', $s_url);
+        \youconix\core\Memory::type('int', $i_secure);
         
         $s_cookieData = $this->encrypt($s_cookieData);
         $_COOKIE[$s_cookieName] = $s_cookieData;
         
-        if ( @setcookie($s_cookieName, $s_cookieData, time() + 2592000, $s_domain, $s_url, $i_secure)) {
+        if (@setcookie($s_cookieName, $s_cookieData, time() + 2592000, $s_domain, $s_url, $i_secure)) {
             return true;
         } else {
             if (! defined('DEBUG')) {
@@ -143,14 +133,14 @@ class Cookie extends \core\services\Service implements \Cookie
     /**
      * Receives the content from the cookie with the given name
      *
-     * @param String $s_cookieName
+     * @param string $s_cookieName
      *            The name of the cookie
-     * @return String The requested cookie
-     * @throws Exception if the cookie does not exist
+     * @return string The requested cookie
+     * @throws \Exception if the cookie does not exist
      */
     public function get($s_cookieName)
     {
-        \core\Memory::type('string', $s_cookieName);
+        \youconix\core\Memory::type('string', $s_cookieName);
         
         if ($this->exists($s_cookieName) == 0) {
             throw new \Exception("Cookie " . $s_cookieName . " does not exist.");
@@ -166,13 +156,13 @@ class Cookie extends \core\services\Service implements \Cookie
     /**
      * Checks if the given cookie exists
      *
-     * @param String $s_cookieName
+     * @param string $s_cookieName
      *            The name of the cookie you want to check
      * @return boolean True if the cookie exists, false if it does not
      */
     public function exists($s_cookieName)
     {
-        \core\Memory::type('string', $s_cookieName);
+        \youconix\core\Memory::type('string', $s_cookieName);
         
         if (! isset($_COOKIE[$s_cookieName])) {
             return false;

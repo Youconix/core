@@ -1,5 +1,5 @@
 <?php
-namespace core;
+namespace youconix\core;
 
 abstract class Object
 {

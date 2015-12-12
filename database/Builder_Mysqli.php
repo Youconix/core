@@ -1,52 +1,64 @@
 <?php
-namespace core\database;
+namespace youconix\core\database;
 
+/**
+ * Mysql query builder
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 1.0
+ */
 class Builder_Mysqli implements \Builder
 {
 
-    private $service_Database;
+    /**
+     *
+     * @var \DAL
+     */
+    protected $service_Database;
 
-    private $s_query;
+    protected $s_query;
 
-    private $s_limit;
+    protected $s_limit;
 
-    private $s_group;
+    protected $s_group;
 
-    private $s_order;
+    protected $s_order;
 
-    private $a_joins;
+    protected $a_joins;
 
-    private $a_fieldsPre;
+    protected $a_fieldsPre;
 
-    private $a_fields;
+    protected $a_fields;
 
-    private $a_values;
+    protected $a_values;
 
-    private $a_types;
+    protected $a_types;
 
-    private $bo_create;
+    protected $bo_create;
 
-    private $s_resultQuery;
+    protected $s_resultQuery;
 
-    private $obj_where;
+    protected $obj_where;
 
-    private $obj_create;
+    protected $obj_create;
 
-    private $obj_having;
+    protected $obj_having;
 
     /**
      * PHP 5 constructor
      *
-     * @param DAL $service_Database
-     *            The DAL
+     * @param \DAL $service_Database            
      */
     public function __construct(\DAL $service_Database)
     {
-        \Profiler::profileSystem('core/database/Builder_Mysql.inc.php','Loading query builder');
+        \Profiler::profileSystem('core/database/Builder_Mysql.inc.php', 'Loading query builder');
         
         $this->service_Database = $service_Database;
-        if( !$this->service_Database->isConnected() ){
-        	$this->service_Database->defaultConnect();
+        if (! $this->service_Database->isConnected()) {
+            $this->service_Database->defaultConnect();
         }
         
         $this->obj_where = new Where_Mysqli();
@@ -54,7 +66,7 @@ class Builder_Mysqli implements \Builder
         $this->obj_having = new Having_Mysqli();
         $this->reset();
         
-        \Profiler::profileSystem('core/database/Builder_Mysql.inc.php','Loaded query builder');
+        \Profiler::profileSystem('core/database/Builder_Mysql.inc.php', 'Loaded query builder');
     }
 
     /**
@@ -71,7 +83,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Resets the builder
      */
-    private function reset()
+    protected function reset()
     {
         $this->s_query = '';
         $this->s_limit = '';
@@ -88,20 +100,22 @@ class Builder_Mysqli implements \Builder
         $this->obj_create->reset();
         $this->obj_having->reset();
     }
-    
-    public function __clone(){
+
+    public function __clone()
+    {
         $this->obj_where = new Where_Mysqli();
         $this->obj_create = new Create_Mysqli();
         $this->obj_having = new Having_Mysqli();
         $this->reset();
     }
-    
+
     /**
-	 * Returns if the object schould be treated as singleton
-	 *
-	 * @return boolean True if the object is a singleton
-	 */
-	public static function isSingleton(){
+     * Returns if the object schould be treated as singleton
+     *
+     * @return boolean True if the object is a singleton
+     */
+    public static function isSingleton()
+    {
         return true;
     }
 
@@ -128,9 +142,9 @@ class Builder_Mysqli implements \Builder
     /**
      * Creates a select statement
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
-     * @param String $s_fields
+     * @param string $s_fields
      *            names sepperated with a ,
      */
     public function select($s_table, $s_fields)
@@ -145,7 +159,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Creates a insert statement
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
      * @param array $a_fields
      *            names, also accepts a single value
@@ -182,7 +196,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Creates a update statement
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
      * @param array $a_fields
      *            names, also accepts a single value
@@ -218,7 +232,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Creates a delete statement
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
      */
     public function delete($s_table)
@@ -233,7 +247,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Returns the create table generation class
      *
-     * @param String $s_table
+     * @param string $s_table
      *            table name
      * @param Boolean $bo_dropTable
      *            to true to drop the given table before creating it
@@ -249,11 +263,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Adds a inner join between 2 tables
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
-     * @param String $s_field1
+     * @param string $s_field1
      *            from the first table
-     * @param String $s_field2
+     * @param string $s_field2
      *            from the second table
      */
     public function innerJoin($s_table, $s_field1, $s_field2)
@@ -266,11 +280,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Adds a outer join between 2 tables
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
-     * @param String $s_field1
+     * @param string $s_field1
      *            from the first table
-     * @param String $s_field2
+     * @param string $s_field2
      *            from the second table
      */
     public function outerJoin($s_table, $s_field1, $s_field2)
@@ -283,11 +297,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Adds a left join between 2 tables
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
-     * @param String $s_field1
+     * @param string $s_field1
      *            from the first table
-     * @param String $s_field2
+     * @param string $s_field2
      *            from the second table
      */
     public function leftJoin($s_table, $s_field1, $s_field2)
@@ -300,11 +314,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Adds a right join between 2 tables
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
-     * @param String $s_field1
+     * @param string $s_field1
      *            from the first table
-     * @param String $s_field2
+     * @param string $s_field2
      *            from the second table
      */
     public function rightJoin($s_table, $s_field1, $s_field2)
@@ -343,7 +357,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Groups the results by the given field
      *
-     * @param String $s_field            
+     * @param string $s_field            
      */
     public function group($s_field)
     {
@@ -365,13 +379,13 @@ class Builder_Mysqli implements \Builder
     /**
      * Orders the records in the given order
      *
-     * @param String $s_field1
+     * @param string $s_field1
      *            field to order on
-     * @param String $s_ordering1
+     * @param string $s_ordering1
      *            method (ASC|DESC)
-     * @param String $s_field2
+     * @param string $s_field2
      *            field to order on, optional
-     * @param String $s_ordering2
+     * @param string $s_ordering2
      *            method (ASC|DESC), optional
      */
     public function order($s_field1, $s_ordering1 = 'ASC', $s_field2 = '', $s_ordering2 = 'ASC')
@@ -388,11 +402,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Return the total amount statement for the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_alias
+     * @param string $s_alias
      *            alias
-     * @return String statement
+     * @return string statement
      */
     public function getSum($s_field, $s_alias = '')
     {
@@ -402,11 +416,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Return the maximun value statement for the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_alias
+     * @param string $s_alias
      *            alias, default the field name
-     * @return String statement
+     * @return string statement
      */
     public function getMaximun($s_field, $s_alias = '')
     {
@@ -416,11 +430,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Return the minimun value statement for the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_alias
+     * @param string $s_alias
      *            alias
-     * @return String statement
+     * @return string statement
      */
     public function getMinimun($s_field, $s_alias = '')
     {
@@ -430,11 +444,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Return the average value statement for the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_alias
+     * @param string $s_alias
      *            alias
-     * @return String statement
+     * @return string statement
      */
     public function getAverage($s_field, $s_alias = '')
     {
@@ -444,11 +458,11 @@ class Builder_Mysqli implements \Builder
     /**
      * Return statement for counting the number of records on the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_alias
+     * @param string $s_alias
      *            alias
-     * @return String statement
+     * @return string statement
      */
     public function getCount($s_field, $s_alias = '')
     {
@@ -458,13 +472,13 @@ class Builder_Mysqli implements \Builder
     /**
      * Generates the field statements
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_alias
+     * @param string $s_alias
      *            alias
-     * @param String $s_key
+     * @param string $s_key
      *            statement code
-     * @return String statement
+     * @return string statement
      */
     private function getSpecialField($s_field, $s_alias, $s_key)
     {
@@ -725,8 +739,8 @@ class Builder_Mysqli implements \Builder
         $this->service_Database->query('SHOW TABLES');
         $a_tables = $this->service_Database->fetch_row();
         foreach ($a_tables as $s_table) {
-        	$s_table = str_replace(DB_PREFIX, '', $s_table);
-        	
+            $s_table = str_replace(DB_PREFIX, '', $s_table);
+            
             $service_Database = $this->getDatabase();
             
             $sql .= $this->dumpTable($s_table[0]);
@@ -750,15 +764,15 @@ class Builder_Mysqli implements \Builder
     protected function dumpTable($s_table)
     {
         /* Table structure */
-        $s_sql = "--\n" . '-- Table structure for table ' . DB_PREFIX.$s_table . ".\n--\n";
-        $s_structure = $this->service_Database->describe(DB_PREFIX.$s_table, false, true);
+        $s_sql = "--\n" . '-- Table structure for table ' . DB_PREFIX . $s_table . ".\n--\n";
+        $s_structure = $this->service_Database->describe(DB_PREFIX . $s_table, false, true);
         
         /* Table content */
         $this->select($s_table, '*');
         $database = $this->getResult();
         
         /* Get colums */
-        $s_sql .= "--\n" . '-- Dumping data for table ' . DB_PREFIX.$s_table . ".\n--\n";
+        $s_sql .= "--\n" . '-- Dumping data for table ' . DB_PREFIX . $s_table . ".\n--\n";
         if ($database->num_rows() == 0) {
             return $s_sql;
         }
@@ -807,8 +821,8 @@ abstract class QueryConditions_Mysqli
         'LIKE' => 'LIKE',
         'IN' => 'IN',
         'BETWEEN' => 'BETWEEN',
-    	'<=' => '<=',
-    	'>=' => '>='
+        '<=' => '<=',
+        '>=' => '>='
     );
 
     /**
@@ -920,14 +934,14 @@ abstract class QueryConditions_Mysqli
     /**
      * Adds a field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field
      * @param array $s_type
      *            type : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param String $s_value            
-     * @param String $s_key
+     * @param string $s_value            
+     * @param string $s_key
      *            key (=|<>|<|>|LIKE|IN|BETWEEN)
-     * @param String $s_command
+     * @param string $s_command
      *            command (AND|OR)
      * @throws DBException the key is invalid
      */
@@ -1031,10 +1045,10 @@ class Where_Mysqli extends QueryConditions_Mysqli implements \Where
      *
      * @param Builder $obj_builder
      *            object
-     * @param String $s_field            
-     * @param String $s_key
+     * @param string $s_field            
+     * @param string $s_key
      *            (=|<>|LIKE|IN|BETWEEN)
-     * @param String $s_command
+     * @param string $s_command
      *            command (AND|OR)
      * @throws DBException the key is invalid
      * @throws DBException the command is invalid
@@ -1158,7 +1172,7 @@ class Create_Mysqli implements \Create
     /**
      * Creates a table
      *
-     * @param String $s_table
+     * @param string $s_table
      *            name
      * @param Boolean $bo_dropTable
      *            to true to drop the given table before creating it
@@ -1177,19 +1191,19 @@ class Create_Mysqli implements \Create
     /**
      * Adds a field to the create stament
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
-     * @param String $s_type
+     * @param string $s_type
      *            field type (database type!)
      * @param int $i_length
      *            length of the field, only for length fields
-     * @param String $s_default
+     * @param string $s_default
      *            default value
-     * @param String $bo_signed
+     * @param string $bo_signed
      *            to true for unsigned value, default signed
-     * @param String $bo_null
+     * @param string $bo_null
      *            to true for NULL allowed
-     * @param String $bo_autoIncrement
+     * @param string $bo_autoIncrement
      *            to true for auto increment
      */
     public function addRow($s_field, $s_type, $i_length = -1, $s_default = '', $bo_signed = true, $bo_null = false, $bo_autoIncrement = false)
@@ -1228,13 +1242,13 @@ class Create_Mysqli implements \Create
     /**
      * Adds an enum field to the create stament
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
      * @param array $a_values
      *            values
-     * @param String $s_default
+     * @param string $s_default
      *            default value
-     * @param String $bo_null
+     * @param string $bo_null
      *            to true for NULL allowed
      */
     public function addEnum($s_field, $a_values, $s_default, $bo_null = false)
@@ -1259,13 +1273,13 @@ class Create_Mysqli implements \Create
     /**
      * Adds a set field to the create stament
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
      * @param array $a_values
      *            values
-     * @param String $s_default
+     * @param string $s_default
      *            default value
-     * @param String $bo_null
+     * @param string $bo_null
      *            to true for NULL allowed
      */
     public function addSet($s_field, $s_values, $s_default, $bo_null = false)
@@ -1290,7 +1304,7 @@ class Create_Mysqli implements \Create
     /**
      * Adds a primary key to the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
      * @throws DBException If the field is unknown or if the primary key is allready set
      */
@@ -1311,7 +1325,7 @@ class Create_Mysqli implements \Create
     /**
      * Adds a index to the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
      * @throws DBException If the field is unknown
      */
@@ -1329,7 +1343,7 @@ class Create_Mysqli implements \Create
     /**
      * Sets the given fields as unique
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
      * @throws DBException If the field is unknown
      */
@@ -1347,7 +1361,7 @@ class Create_Mysqli implements \Create
     /**
      * Sets full text search on the given field
      *
-     * @param String $s_field
+     * @param string $s_field
      *            field name
      * @throws DBException If the field is unknown
      * @throws DBException If the field type is not VARCHAR and not TEXT.
@@ -1373,7 +1387,7 @@ class Create_Mysqli implements \Create
      *
      * @param boolean $bo_null
      *            null setting
-     * @return String null text
+     * @return string null text
      */
     private function checkNull($bo_null)
     {
@@ -1388,7 +1402,7 @@ class Create_Mysqli implements \Create
     /**
      * Returns the drop table setting
      *
-     * @return String drop table command. Empty string for not dropping
+     * @return string drop table command. Empty string for not dropping
      */
     public function getDropTable()
     {
@@ -1398,7 +1412,7 @@ class Create_Mysqli implements \Create
     /**
      * Creates the query
      *
-     * @return String query
+     * @return string query
      */
     public function render()
     {

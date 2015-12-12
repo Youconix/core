@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * LDAP interface to connect to a LDAP server
  *
  * This file is part of Miniature-happiness
@@ -27,21 +14,24 @@ namespace core\services;
 class LDAP extends Service
 {
 
-    private $service_Settings;
+    /**
+     *
+     * @var \Settings
+     */
+    protected $settings;
 
-    private $bo_debug = false;
+    protected $bo_debug = false;
 
-    private $obj_connection = null;
+    protected $obj_connection = null;
 
     /**
      * PHP 5 constructor
      *
-     * @param core\services\Settings $service_Settings
-     *            The settings service
+     * @param \Settings $settings            
      */
-    public function __construct(\core\services\Settings $service_Settings)
+    public function __construct(\Settings $settings)
     {
-        $this->service_Settings = $service_Settings;
+        $this->settings = $settings;
     }
 
     /**
@@ -88,20 +78,20 @@ class LDAP extends Service
     /**
      * Connects to the default LDAP server
      *
-     * @param String $s_username            
-     * @param String $s_password            
-     * @throws LdapConnectionException LDAP is not activated in the settings
-     * @throws LdapException the login details are invalid
+     * @param string $s_username            
+     * @param string $s_password            
+     * @throws \LdapConnectionException LDAP is not activated in the settings
+     * @throws \LdapException the login details are invalid
      */
     public function bind($s_username, $s_password)
     {
-        if ($this->service_Settings->get('settings/LDAP/active') != '1') {
+        if ($this->settings->get('settings/LDAP/active') != '1') {
             throw new \LdapConnectionException('LDAP is not activated in settings');
         }
         
-        $s_server = $this->service_Settings->get('settings/LDAP/server');
-        $i_port = $this->service_Settings->get('settings/LDAP/port');
-        $i_version = $this->service_Settings->get('settings/LDAP/version');
+        $s_server = $this->settings->get('settings/LDAP/server');
+        $i_port = $this->settings->get('settings/LDAP/port');
+        $i_version = $this->settings->get('settings/LDAP/version');
         
         $this->bindManual($s_server, $i_port, $s_username, $s_password, $i_version);
     }
@@ -109,16 +99,16 @@ class LDAP extends Service
     /**
      * Connects to the given LDAP server
      *
-     * @param String $s_server
+     * @param string $s_server
      *            host
      * @param int $i_port
      *            number
-     * @param String $s_username            
+     * @param string $s_username            
      * @param string $s_password            
      * @param int $i_version
      *            version (2|3), default 3
-     * @throws LdapException LDAP is not supported on the server or connection error
-     * @throws LdapConnectionException the login details are invalid
+     * @throws \LdapException LDAP is not supported on the server or connection error
+     * @throws \LdapConnectionException the login details are invalid
      */
     public function bindManual($s_server, $i_port, $s_username, $s_password, $i_version = 3)
     {
@@ -143,13 +133,13 @@ class LDAP extends Service
         ldap_set_option($obj_connection, LDAP_OPT_PROTOCOL_VERSION, $i_version);
         ldap_set_option($obj_connection, LDAP_OPT_REFERRALS, 0);
         
-        if( $this->bo_debug ){
+        if ($this->bo_debug) {
             $this->obj_connection = $obj_connection;
             return;
         }
         
         if (! @ldap_bind($obj_connection, $s_username, $s_password)) {
-            throw new \LdapConnectionException('Could not connect to server '.$s_server.' on port '.$i_port.' with geven username and password is.');
+            throw new \LdapConnectionException('Could not connect to server ' . $s_server . ' on port ' . $i_port . ' with geven username and password is.');
         }
         
         $this->obj_connection = $obj_connection;
@@ -170,16 +160,16 @@ class LDAP extends Service
     /**
      * Adds a item to the LDAP server
      *
-     * @param String $s_name            
+     * @param string $s_name            
      * @param array $a_data            
-     * @throws LdapConnectionException no connection is present.
-     * @throws LdapException adding the item failed
+     * @throws \LdapConnectionException no connection is present.
+     * @throws \LdapException adding the item failed
      */
     public function add($s_name, $a_data)
     {
         $this->checkConnection();
         
-        if (!@ ldap_add($this->obj_connection, $s_name, $a_data)) {
+        if (! @ ldap_add($this->obj_connection, $s_name, $a_data)) {
             throw new \LdapException('Adding ' . $s_name . ' failed : ' . ldap_error($this->obj_connection));
         }
     }
@@ -187,15 +177,15 @@ class LDAP extends Service
     /**
      * Deletes a item from the LDAP server
      *
-     * @param String $s_name            
-     * @throws LdapConnectionException no connection is present.
-     * @throws LdapException deleting the item failed
+     * @param string $s_name            
+     * @throws \LdapConnectionException no connection is present.
+     * @throws \LdapException deleting the item failed
      */
     public function delete($s_name)
     {
         $this->checkConnection();
         
-        if (!@ ldap_delete($this->obj_connection, $s_name)) {
+        if (! @ ldap_delete($this->obj_connection, $s_name)) {
             throw new \LdapException('Deleting ' . $s_name . ' failed : ' . ldap_error($this->obj_connection));
         }
     }
@@ -203,9 +193,9 @@ class LDAP extends Service
     /**
      * Searches on the baseDN on the LDAP server
      *
-     * @param String $s_baseDN
+     * @param string $s_baseDN
      *            to search on
-     * @param String $s_filter            
+     * @param string $s_filter            
      * @param array $a_attributes
      *            attributes, default no filtering
      * @param int $i_attributesOnly
@@ -214,8 +204,8 @@ class LDAP extends Service
      *            of results, default no limit
      * @param int $i_timelimit
      *            for searching, default no limit
-     * @throws LdapConnectionException no connection is present.
-     * @throws LdapException searching failes
+     * @throws \LdapConnectionException no connection is present.
+     * @throws \LdapException searching failes
      * @return array results
      */
     public function search($s_baseDN, $s_filter, $a_attributes = array(), $i_attributesOnly = 0, $i_sizelimit = 0, $i_timelimit = 0)
@@ -234,9 +224,9 @@ class LDAP extends Service
     /**
      * Reads the baseDN on the LDAP server
      *
-     * @param String $s_baseDN
+     * @param string $s_baseDN
      *            to read on
-     * @param String $s_filter            
+     * @param string $s_filter            
      * @param array $a_attributes
      *            attributes, default no filtering
      * @param int $i_attributesOnly
@@ -245,8 +235,8 @@ class LDAP extends Service
      *            of results, default no limit
      * @param int $i_timelimit
      *            for searching, default no limit
-     * @throws LdapConnectionException no connection is present.
-     * @throws LdapException reading failes
+     * @throws \LdapConnectionException no connection is present.
+     * @throws \LdapException reading failes
      * @return array item
      */
     public function readItem($s_baseDN, $s_filter, $a_attributes = array(), $i_attributesOnly = 0, $i_sizelimit = 0, $i_timelimit = 0)
@@ -265,10 +255,10 @@ class LDAP extends Service
     /**
      * Modifies a item on the LDAP server
      *
-     * @param String $s_name            
+     * @param string $s_name            
      * @param array $a_data            
-     * @throws LdapConnectionException no connection is present.
-     * @throws LdapException modifying the item failed
+     * @throws \LdapConnectionException no connection is present.
+     * @throws \LdapException modifying the item failed
      */
     public function modify($s_name, $a_data)
     {
@@ -282,16 +272,16 @@ class LDAP extends Service
     /**
      * Renames a item to a new name
      *
-     * @param String $s_oldName
+     * @param string $s_oldName
      *            name
-     * @param String $s_newName
+     * @param string $s_newName
      *            name
-     * @param String $s_newParent
+     * @param string $s_newParent
      *            parent name
      * @param bool $bo_deleteOldRDN
      *            false to preserve the old RDN data
-     * @throws LdapConnectionException no connection is present.
-     * @throws LdapException renaming the item failed
+     * @throws \LdapConnectionException no connection is present.
+     * @throws \LdapException renaming the item failed
      */
     public function rename($s_oldName, $s_newName, $s_newParent, $bo_deleteOldRDN = true)
     {
@@ -305,12 +295,12 @@ class LDAP extends Service
     /**
      * Checks if the login to the LDAP is correct
      *
-     * @param String $s_server
+     * @param string $s_server
      *            host
      * @param int $i_port
      *            number
-     * @param String $s_username            
-     * @param String $s_password            
+     * @param string $s_username            
+     * @param string $s_password            
      * @throws bool if the login is correct
      */
     public function checkLogin($s_server, $i_port, $s_username, $s_password)
@@ -329,9 +319,9 @@ class LDAP extends Service
     /**
      * Checks if a connection is present
      *
-     * @throws LdapConnectionException no connection is present
+     * @throws \LdapConnectionException no connection is present
      */
-    private function checkConnection()
+    protected function checkConnection()
     {
         if (is_null($this->obj_connection)) {
             throw new \LdapConnectionException('No connection to a LDAP server.');

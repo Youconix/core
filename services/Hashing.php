@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Hashing service
  *
  * This file is part of Miniature-happiness
@@ -28,8 +15,8 @@ class Hashing extends Service
 {
 
     /**
-     * 
-     * @var \core\services\Random
+     *
+     * @var \youconix\core\services\Random
      */
     private $random;
 
@@ -42,12 +29,12 @@ class Hashing extends Service
      *
      * @param \Logger $logs
      *            The log service
-     * @param \core\services\Settings $settings
+     * @param \youconix\core\services\Settings $settings
      *            The settings service
-     * @param \core\services\Random $random
+     * @param \youconix\core\services\Random $random
      *            The random generator
      */
-    public function __construct(\Logger $logs, \Settings $settings, \core\services\Random $random)
+    public function __construct(\Logger $logs, \Settings $settings, \youconix\core\services\Random $random)
     {
         $this->random = $random;
         if (! function_exists('password_hash')) {
@@ -90,10 +77,12 @@ class Hashing extends Service
 
     /**
      * Creates a hash
-     * 
-     * @param string $s_text    The text
-     * @param string $s_salt   The salt
-     * @return string   The hash
+     *
+     * @param string $s_text
+     *            The text
+     * @param string $s_salt
+     *            The salt
+     * @return string The hash
      */
     public function hash($s_text, $s_salt)
     {
@@ -102,11 +91,14 @@ class Hashing extends Service
 
     /**
      * Verifies the text against the hash
-     * 
-     * @param string $s_text    The text
-     * @param string $s_stored  The hashed text
-     * @param string $s_salt   The salt
-     * @return boolean  True if the text is the same
+     *
+     * @param string $s_text
+     *            The text
+     * @param string $s_stored
+     *            The hashed text
+     * @param string $s_salt
+     *            The salt
+     * @return boolean True if the text is the same
      */
     public function verify($s_text, $s_stored, $s_salt)
     {
@@ -115,10 +107,12 @@ class Hashing extends Service
 
     /**
      * Hashes the user password login
-     * 
-     * @param string $s_password    The password
-     * @param string $s_username    The username
-     * @return string   The hash    
+     *
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The username
+     * @return string The hash
      */
     public function hashUserPassword($s_password, $s_username)
     {
@@ -127,11 +121,14 @@ class Hashing extends Service
 
     /**
      * Verifies the user login
-     * 
-     * @param string $s_password    The password
-     * @param string $s_username    The username
-     * @param string $s_stored  The stored hash
-     * @return  bool    True if the login is correct
+     *
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The username
+     * @param string $s_stored
+     *            The stored hash
+     * @return bool True if the login is correct
      */
     public function verifyUserPassword($s_username, $s_password, $s_stored)
     {
@@ -140,8 +137,8 @@ class Hashing extends Service
 
     /**
      * Creates a salt
-     * 
-     * @return string   The salt
+     *
+     * @return string The salt
      */
     public static function createSalt()
     {
@@ -159,19 +156,24 @@ abstract class HashingParent
     /**
      * Creates a hash
      *
-     * @param string $s_text    The text
-     * @param string $s_salt   The salt
-     * @return string   The hash
+     * @param string $s_text
+     *            The text
+     * @param string $s_salt
+     *            The salt
+     * @return string The hash
      */
     abstract public function hash($s_text, $s_salt);
 
     /**
      * Verifies the text against the hash
      *
-     * @param string $s_text    The text
-     * @param string $s_stored  The hashed text
-     * @param string $s_salt   The salt
-     * @return boolean  True if the text is the same
+     * @param string $s_text
+     *            The text
+     * @param string $s_stored
+     *            The hashed text
+     * @param string $s_salt
+     *            The salt
+     * @return boolean True if the text is the same
      */
     public function verify($s_text, $s_stored, $s_salt)
     {
@@ -183,9 +185,11 @@ abstract class HashingParent
     /**
      * Hashes the user password login
      *
-     * @param string $s_password    The password
-     * @param string $s_username    The username
-     * @return string   The hash
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The username
+     * @return string The hash
      */
     public function hashUserPassword($s_username, $s_password, $s_salt)
     {
@@ -203,10 +207,13 @@ abstract class HashingParent
     /**
      * Verifies the user login
      *
-     * @param string $s_password    The password
-     * @param string $s_username    The username
-     * @param string $s_stored  The stored hash
-     * @return  bool    True if the login is correct
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The username
+     * @param string $s_stored
+     *            The stored hash
+     * @return bool True if the login is correct
      */
     public function verifyUserPassword($s_username, $s_password, $s_stored, $s_salt)
     {
@@ -216,10 +223,12 @@ abstract class HashingParent
 
     /**
      * Creates the hashed user password
-     * 
-     * @param string $s_password    The password
-     * @param string $s_username    The username
-     * @return string   The hash
+     *
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The username
+     * @return string The hash
      */
     protected function createUserPassword($s_username, $s_password)
     {
@@ -233,9 +242,11 @@ class HashNormal extends HashingParent
     /**
      * Creates a hash
      *
-     * @param string $s_text    The text
-     * @param string $s_salt   The salt
-     * @return string   The hash
+     * @param string $s_text
+     *            The text
+     * @param string $s_salt
+     *            The salt
+     * @return string The hash
      */
     public function hash($s_text, $s_salt)
     {
@@ -250,9 +261,11 @@ class HashNormal extends HashingParent
     /**
      * Hashes the user password
      *
-     * @param string $s_password    The password
-     * @param string $s_username    The username
-     * @return string   The hash
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The username
+     * @return string The hash
      */
     public function hashUserPassword($s_username, $s_password, $s_salt)
     {
@@ -265,13 +278,15 @@ class HashNormal extends HashingParent
         
         return $s_hash;
     }
-    
+
     /**
      * Creates the hashed user password
      *
-     * @param string $s_password    The password
-     * @param string $s_username    The user specific salt instead of the username
-     * @return string   The hash
+     * @param string $s_password
+     *            The password
+     * @param string $s_username
+     *            The user specific salt instead of the username
+     * @return string The hash
      */
     protected function createUserPassword($s_username, $s_password)
     {
@@ -285,9 +300,11 @@ class HashLegancy extends HashingParent
     /**
      * Creates a hash
      *
-     * @param string $s_text    The text
-     * @param string $s_salt   The salt
-     * @return string   The hash
+     * @param string $s_text
+     *            The text
+     * @param string $s_salt
+     *            The salt
+     * @return string The hash
      */
     public function hash($s_text, $s_salt)
     {
@@ -301,9 +318,11 @@ class HashingFallback extends HashingParent
     /**
      * Creates a hash
      *
-     * @param string $s_text    The text
-     * @param string $s_salt   The salt
-     * @return string   The hash
+     * @param string $s_text
+     *            The text
+     * @param string $s_salt
+     *            The salt
+     * @return string The hash
      */
     public function hash($s_text, $s_salt)
     {

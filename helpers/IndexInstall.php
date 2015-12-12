@@ -1,10 +1,10 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
-class IndexInstall extends Helper implements Display
+class IndexInstall extends Helper implements \Display
 {
 
-    private $s_content = '';
+    protected $s_content = '';
 
     public function __construct(\Output $template)
     {

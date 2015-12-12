@@ -1,14 +1,8 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Account authorization models Handles login from the accounts This file is part of Miniature-happiness
- * Miniature-happiness is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the
- * GNU Lesser General Public License along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
+ * Authorisation class for normal logins
  *
  * @copyright Youconix
  * @author Rachelle Scheijen
@@ -31,7 +25,7 @@ class Login extends LoginParent
 
     /**
      *
-     * @var \core\services\Random
+     * @var \youconix\core\services\Random
      */
     protected $random;
 
@@ -41,15 +35,15 @@ class Login extends LoginParent
      * @param \Cookie $cookie            
      * @param \Builder $builder            
      * @param \Logger $logs            
-     * @param \core\services\Hashing $hashing            
+     * @param \youconix\core\services\Hashing $hashing            
      * @param \Session $session            
-     * @param \core\services\Mailer $mailer            
-     * @param \core\services\Random $random            
+     * @param \youconix\core\services\Mailer $mailer            
+     * @param \youconix\core\services\Random $random            
      * @param \Headers $headers            
      * @param \Config $config            
-     * @param \core\models\User $user;            
+     * @param \youconix\core\models\User $user;            
      */
-    public function __construct(\Cookie $cookie, \Builder $builder, \Logger $logs, \core\services\Hashing $hashing, \Session $session, \core\services\Mailer $mailer, \core\services\Random $random, \Headers $headers, \Config $config, \core\models\User $user)
+    public function __construct(\Cookie $cookie, \Builder $builder, \Logger $logs, \youconix\core\services\Hashing $hashing, \Session $session, \youconix\core\services\Mailer $mailer, \youconix\core\services\Random $random, \Headers $headers, \Config $config, \youconix\core\models\User $user)
     {
         parent::__construct($cookie, $builder, $logs, $session, $headers, $config, $user);
         
@@ -80,7 +74,7 @@ class Login extends LoginParent
         }
         
         $s_passwordHash = $this->hashing->hashUserPassword($s_password, $s_salt);
-
+        
         /* Check the login combination */
         $this->builder->select('users', '*');
         $this->builder->getWhere()->addAnd(array(
@@ -138,7 +132,7 @@ class Login extends LoginParent
         $a_data = $service_Database->fetch_assoc();
         $user = $this->user->createUser();
         $user->setData($a_data[0]);
-        if( $bo_autologin ){
+        if ($bo_autologin) {
             $this->setAutoLogin($user);
         }
         return parent::perform_login($user);
@@ -298,7 +292,7 @@ class Login extends LoginParent
      */
     public function disableAccount($s_username)
     {
-        \core\Memory::type('string', $s_username);
+        \youconix\core\Memory::type('string', $s_username);
         
         try {
             $this->builder->select('users', 'email')
@@ -372,7 +366,7 @@ class Login extends LoginParent
             $obj_User->setUsername($s_username);
             $obj_User->setEmail($s_email);
             $obj_User->setLoginType('normal');
-            $obj_User->setPassword($s_password,'normal');
+            $obj_User->setPassword($s_password, 'normal');
             $obj_User->setActivation($s_registrationKey);
             $obj_User->setBot(false);
             $obj_User->save();
@@ -419,34 +413,35 @@ class Login extends LoginParent
             throw $e;
         }
     }
-    
-    public function changePassword($s_passwordOld,$s_passwordNew){
-    	if (! $this->session->exists('expired')) {
-    		$this->headers->redirect('index/view');
-    	}
-    	
-    	$a_data = $this->session->get('expired');
-    	$user = $this->user->createUser();
-    	$user->setData($a_data);
-    	
-    	if (! $user->changePassword($s_passwordOld,$s_passwordNew) ){
-    		return false;
-    	}
-    	
-    	$this->session->delete('expired');
-    	
-    	$this->setLogin($user);
-    	
-    	return true;
+
+    public function changePassword($s_passwordOld, $s_passwordNew)
+    {
+        if (! $this->session->exists('expired')) {
+            $this->headers->redirect('index/view');
+        }
+        
+        $a_data = $this->session->get('expired');
+        $user = $this->user->createUser();
+        $user->setData($a_data);
+        
+        if (! $user->changePassword($s_passwordOld, $s_passwordNew)) {
+            return false;
+        }
+        
+        $this->session->delete('expired');
+        
+        $this->setLogin($user);
+        
+        return true;
     }
 
     /**
      * Sends the activation email
      *
-     * @param \core\models\data\User $user            
+     * @param \youconix\core\models\data\User $user            
      * @throws \RuntimeException If the sending of the email failes
      */
-    private function sendActivationEmail(\core\models\data\User $user)
+    private function sendActivationEmail(\youconix\core\models\data\User $user)
     {
         if (! $this->mailer->registrationMail($user->getUsername(), $user->getEmail(), $user->getActivation())) {
             throw new \RuntimeException("Sending registration mail to '.$user->getEmail().' failed.");

@@ -1,18 +1,18 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
-class ControlPanelModules extends \core\models\Model
+class ControlPanelModules extends \youconix\core\models\Model
 {
 
     /**
      * 
-     * @var \core\services\File
+     * @var \youconix\core\services\File
      */
     private $file;
 
     /**
      * 
-     * @var \core\services\Xml
+     * @var \youconix\core\services\Xml
      */
     private $xml;
     
@@ -22,11 +22,11 @@ class ControlPanelModules extends \core\models\Model
      * PHP5 constructor
      *
      * @param \Builder $builder
-     * @param \core\services\Validation $validation
-     * @param \core\services\File $file
-     * @param \core\services\XML $xml
+     * @param \youconix\core\services\Validation $validation
+     * @param \youconix\core\services\File $file
+     * @param \youconix\core\services\XML $xml
      */
-    public function __construct(\Builder $builder, \core\services\Validation $validation, \core\services\File $file, \core\services\Xml $xml)
+    public function __construct(\Builder $builder, \youconix\core\services\Validation $validation, \youconix\core\services\File $file, \youconix\core\services\Xml $xml)
     {
         parent::__construct($builder, $validation);
         
@@ -58,7 +58,7 @@ class ControlPanelModules extends \core\models\Model
      *
      * @return array The names
      */
-    private function getModules()
+    protected function getModules()
     {
         $s_dir = $this->getDirectory();
         $a_directory = $this->file->readDirectory($s_dir, false, true);
@@ -228,7 +228,7 @@ class ControlPanelModules extends \core\models\Model
      *
      * @param string $s_name
      *            The module name
-     * @throws Exception If the module throws an exception
+     * @throws \Exception If the module throws an exception
      */
     public function installModule($s_name)
     {
@@ -280,7 +280,7 @@ class ControlPanelModules extends \core\models\Model
      *
      * @param int $i_id
      *            The module ID
-     * @throws Exception If the module throws an exception
+     * @throws \Exception If the module throws an exception
      */
     public function removeModule($i_id)
     {
@@ -330,7 +330,7 @@ class ControlPanelModules extends \core\models\Model
      *
      * @param int $i_id
      *            The module ID
-     * @throws Exception If the module throws an exception
+     * @throws \Exception If the module throws an exception
      */
     public function updateModule($i_id)
     {

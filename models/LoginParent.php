@@ -2,13 +2,7 @@
 namespace core\models;
 
 /**
- * Account authorization models Handles login from the accounts This file is part of Miniature-happiness
- * Miniature-happiness is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser
- * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the
- * GNU Lesser General Public License along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
+ * Parent authorisation class
  *
  * @copyright Youconix
  * @author Rachelle Scheijen
@@ -18,7 +12,7 @@ abstract class LoginParent extends Model
 {
     /**
      *
-     * @var \Psr\Log\LoggerInterface
+     * @var \Logger
      */
     protected $logs;
 
@@ -36,7 +30,7 @@ abstract class LoginParent extends Model
 
     /**
      *
-     * @var \core\models\User
+     * @var \youconix\core\models\User
      */
     protected $user;
 
@@ -63,9 +57,9 @@ abstract class LoginParent extends Model
      * @param \Session $session
      * @param \Headers $headers
      * @param \Config $config
-     * @param \core\models\User $user;            
+     * @param \youconix\core\models\User $user;            
      */
-    public function __construct(\Cookie $cookie, \Builder $builder, \Logger $logs, \Session $session, \Headers $headers, \Config $config, \core\models\User $user)
+    public function __construct(\Cookie $cookie, \Builder $builder, \Logger $logs, \Session $session, \Headers $headers, \Config $config, \youconix\core\models\User $user)
     {    	
         $this->user = $user;
         $this->cookie = $cookie;
@@ -210,9 +204,9 @@ abstract class LoginParent extends Model
 
     /**
      * Logs the user in
-     * @param \core\models\data\User $user  The user to log in. 
+     * @param \youconix\core\models\data\User $user  The user to log in. 
      */
-    protected function perform_login(\core\models\data\User $user)
+    protected function perform_login(\youconix\core\models\data\User $user)
     {
         if ($user->isBot() || ! $user->isEnabled() || $user->isBlocked()) {
             return;
@@ -233,9 +227,9 @@ abstract class LoginParent extends Model
     /**
      * Sets the login session and redirects to the given page or the set default
      *
-     * @param \core\models\data\User $user  The user
+     * @param \youconix\core\models\data\User $user  The user
      */
-    public function setLogin(\core\models\data\User $user)
+    public function setLogin(\youconix\core\models\data\User $user)
     {
         $s_redirection = $this->config->getLoginRedirect();
     
@@ -415,15 +409,15 @@ abstract class LoginParent extends Model
     /**
      * Writes the data to the login log or makes a new one
      *
-     * @param String $s_username
+     * @param string $s_username
      *            username
-     * @param String $s_status
+     * @param string $s_status
      *            status (failed|success)
      * @param int $i_tries
      *            of login tries
-     * @param String $s_openID
+     * @param string $s_openID
      *            default empty
-     * @throws Exception when the log can not be written
+     * @throws \Exception when the log can not be written
      */
     protected function loginLog($s_username, $s_status, $i_tries, $s_openID = '')
     {
@@ -438,7 +432,12 @@ abstract class LoginParent extends Model
     	));
     }
     
-    protected function setAutoLogin(\core\models\data\User $user) {
+    /**
+     * Sets the auto login
+     * 
+     * @param \youconix\core\models\data\User $user
+     */
+    protected function setAutoLogin(\youconix\core\models\data\User $user) {
         
             /* Set auto login for the next time */
             $this->builder->delete('autologin')

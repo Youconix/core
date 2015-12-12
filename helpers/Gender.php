@@ -1,24 +1,46 @@
 <?php
+namespace youconix\core\helpers;
 
-class Helper_Gender extends Helper
+/**
+ * Gender list generator
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 1.0
+ */
+
+class Gender extends \youconix\core\helpers\Helper
 {
+    /**
+     * 
+     * @var \youconix\core\helpers\HTML
+     */
+    protected $html;
+    protected $a_genders;
 
-    private $a_genders;
-
-    public function __construct()
+    /**
+     * Constructor
+     * 
+     * @param \Language $language
+     * @param \youconix\core\helpers\HTML $html
+     */
+    public function __construct(\Language $language,\youconix\core\helpers\HTML $html)
     {
-        $service_language = Memory::services('Language');
+        $this->html = $html;
+        
         $this->a_genders = array(
-            'M' => $service_language->get('gender/male'),
-            'F' => $service_language->get('gender/female'),
-            'O' => $service_language->get('gender/other')
+            'M' => $language->get('system/gender/male'),
+            'F' => $language->get('system/gender/female'),
+            'O' => $language->get('system/gender/other')
         );
     }
 
     /**
      * Returns the gender's text.
      *
-     * @param String $s_code            
+     * @param string $s_code            
      * @throws \InvalidArgumentException
      */
     public function getGender($s_code)
@@ -29,17 +51,25 @@ class Helper_Gender extends Helper
         return $this->a_genders[$s_code];
     }
 
-    public function getList($s_field, $s_id, $s_gender = '')
+    /**
+     * Generates the list
+     * 
+     * @param string $s_name
+     * @param unknown $s_id
+     * @param string $s_gender
+     * @return string
+     */
+    public function getList($s_name, $s_id, $s_gender = '')
     {
-        $obj_Select = Memory::helpers('HTML')->select($s_field);
-        $obj_Select->setID($s_id);
+        $select = $this->html->select($s_name);
+        $select->setID($s_id);
         
         foreach ($this->a_genders as $s_key => $s_value) {
             ($s_key == $s_gender) ? $bo_selected = true : $bo_selected = false;
             
-            $obj_Select->setOption($s_value, $bo_selected, $s_key);
+            $select->setOption($s_value, $bo_selected, $s_key);
         }
         
-        return $obj_Select->generateItem();
+        return $select->generateItem();
     }
 }

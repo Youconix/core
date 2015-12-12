@@ -1,7 +1,7 @@
 <?php
-namespace\core\services\data;
+namespace \youconix\core\services\data;
 
-class AuthorizationLDAP extends AuthorizationNormal
+class AuthorizationLDAP extends \youconix\core\services\data\AuthorizationNormal
 {
 
     private $service_LDAP;
@@ -13,7 +13,7 @@ class AuthorizationLDAP extends AuthorizationNormal
 
     private $model_PM;
 
-    public function __construct(\core\services\LDAP $service_LDAP, \Builder $builder, \Logger $service_Logs, \core\models\User $model_User, \core\models\PM $model_PM)
+    public function __construct(\youconix\core\services\LDAP $service_LDAP, \Builder $builder, \Logger $service_Logs, \youconix\core\models\User $model_User, \youconix\core\models\PM $model_PM)
     {
         parent::__construct($builder, $service_Logs, $model_User, $model_PM);
         $this->service_LDAP = $service_LDAP;
@@ -60,7 +60,7 @@ class AuthorizationLDAP extends AuthorizationNormal
             }
         } catch (\LdapException $e) {
             /* Server error */
-            \core\Memory::services('ErrorHandler')->error($e);
+            \youconix\core\Memory::services('ErrorHandler')->error($e);
             return false;
         } catch (\LdapConnectionException $e) {
             /* Login incorrect */
@@ -123,7 +123,7 @@ class AuthorizationLDAP extends AuthorizationNormal
             $this->service_LDAP->unbind();
         } catch (\LdapException $e) {
             /* Server error */
-            \core\Memory::services('ErrorHandler')->error($e);
+            \youconix\core\Memory::services('ErrorHandler')->error($e);
             return false;
         } catch (\LdapConnectionException $e) {
             /* Login incorrect */

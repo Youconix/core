@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
  * Countries list widget
@@ -9,52 +9,38 @@ namespace core\helpers;
  * @copyright Youconix
  * @author Rachelle Scheijen
  * @since 1.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
 class Countries extends Helper
 {
-
-    private $a_countries = array();
+    /**
+     * 
+     * @var \youconix\core\helpers\HTML
+     */
+    protected $html;
+    protected $a_countries = array();
 
     /**
      * Creates the country helper
      *
-     * @param \Builder $service_Builder
-     *            The query builder
-     * @param \Ĺanguage $service_Language
-     *            The language service
-     *            
-     * @todo	Reimplement constructor
+     * @param \Builder $builder            
+     * @param \Ĺanguage $language
+     * @param \youconix\core\helpers\HTML $html            
      */
-    public function __construct(\Builder $service_Builder, \Language $service_Language)
+    public function __construct(\Builder $builder, \Language $language,\youconix\core\helpers\HTML $html)
     {
-        /*
-         * $service_Builder = $service_Builder->createBuilder();
-         * $s_language = $service_Language->getLanguage();
-         *
-         * $service_Builder->select("countries", "id," . $s_language . ' AS country');
-         * $service_Database = $service_Builder->getResult();
-         * if( $service_Database->num_rows() > 0 ){
-         * $a_data = $service_Database->fetch_assoc_key('country');
-         * ksort($a_data, SORT_STRING);
-         *
-         * foreach( $a_data AS $a_item ){
-         * $this->a_countries[ $a_item[ 'id' ] ] = $a_item;
-         * }
-         * }
-         */
+        $this->html = $html;
+        
+        $s_language = $language->getLanguage();
+        $builder->select("countries", "id," . $s_language . ' AS country');
+        $database = $builder->getResult();
+        if ($database->num_rows() > 0) {
+            $a_data = $database->fetch_assoc_key('country');
+            ksort($a_data, SORT_STRING);
+            
+            foreach ($a_data as $a_item) {
+                $this->a_countries[$a_item['id']] = $a_item;
+            }
+        }
     }
 
     /**
@@ -97,15 +83,15 @@ class Countries extends Helper
      */
     public function getList($s_field, $s_id, $i_default = -1)
     {
-        $s_list = '<select id="' . $s_id . '" name="' . $s_field . '">' . "\n";
-        
+        $list = $this->html->select($s_field);
+        $list->setId($s_id);
+                
         foreach ($this->a_countries as $a_country) {
-            ($a_country['id'] == $i_default) ? $s_selected = ' selected="selected"' : $s_selected = '';
-            
-            $s_list .= '<option value="' . $a_country['id'] . '"' . $s_selected . '>' . $a_country['country'] . "</option>\n";
+            ($a_country['id'] == $i_default) ? $bo_selected = true : $bo_selected = false;
+        
+            $option = $list->setOption($a_country['country'], $bo_selected,$a_country['id']);
         }
         
-        $s_list .= "</select>\n";
-        return $s_list;
+        return $list->generateItem();
     }
 }

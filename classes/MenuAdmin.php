@@ -1,20 +1,7 @@
 <?php
-namespace core\classes;
+namespace youconix\core\classes;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Displays the admin menu
  *
  * This file is part of Miniature-happiness
@@ -34,13 +21,13 @@ class MenuAdmin implements \Menu
 
     /**
      * 
-     * @var \core\models\ControlPanelModules
+     * @var \youconix\core\models\ControlPanelModules
      */
     private $controlPanelModules;
 
     /**
      * 
-     * @var \core\services\Xml
+     * @var \youconix\core\services\Xml
      */
     private $xml;
 
@@ -56,7 +43,7 @@ class MenuAdmin implements \Menu
     /**
      * Starts the class menuAdmin
      */
-    public function __construct(\Language $language, \core\services\Xml $xml, \Output $template, \core\models\ControlPanelModules $controlPanelModules)
+    public function __construct(\Language $language, \youconix\core\services\Xml $xml, \Output $template, \youconix\core\models\ControlPanelModules $controlPanelModules)
     {
         $this->language = $language;
         $this->xml = $xml;

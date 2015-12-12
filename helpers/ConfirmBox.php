@@ -1,31 +1,46 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
-class ConfirmBox extends \core\helpers\Helper
+/**
+ * Generates a styled confirm box
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 2.0
+ */
+class ConfirmBox extends \youconix\core\helpers\Helper
 {
+
     /**
      *
-     * @var \core\services\Template $service_Template
+     * @var \Output
      */
-    private $service_Template;
-    
+    protected $template;
+
+    protected $html;
+
     /**
-     * Constructor 
-     *  
-     * @param \core\services\Template $service_Template
+     * Constructor
+     *
+     * @param \Output $template            
+     * @param \youconix\core\helpers\HTML $html            
      */
-    
-    
-    public function __construct(\core\services\Template $service_Template)
+    public function __construct(\Output $template, \youconix\core\helpers\HTML $html)
     {
-        $this->service_Template = $service_Template;   
+        $this->template = $template;
+        $this->html = $html;
     }
-    
+
     /**
      * Creates the confirmbox
      */
-    public function create(){
-        $this->service_Template->setCssLink('<link rel="stylesheet" href="{NIV}{shared_style_dir}css/widgets/confirmbox.css" media="screen">');
-        $this->service_Template->setJavascriptLink('<script src="{NIV}js/widgets/confirmbox.js"></script>');
+    public function create()
+    {
+        $css = $this->html->stylesheetLink('{NIV}{shared_style_dir}css/widgets/confirmbox.css', 'screen');
+        $this->template->setCssLink($css->createItem());
+        $javascript = $this->html->javascriptLink('{NIV}js/widgets/confirmbox.js');
+        $this->template->setJavascriptLink($javascript->createItem());
     }
 }

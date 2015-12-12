@@ -1,6 +1,7 @@
 <?php
+namespace youconix\core\services\data;
 
-class AuthorizationNormal extends \core\services\Service implements \core\interfaces\Authorization
+class AuthorizationNormal extends \youconix\core\services\Service implements \youconix\core\interfaces\Authorization
 {
 
     private $builder;
@@ -19,12 +20,12 @@ class AuthorizationNormal extends \core\services\Service implements \core\interf
      * @param \Builder $builder	The query builder
      * @param \Logger $service_Logs
      *            The log service
-     * @param \core\models\User $model_User
+     * @param \youconix\core\models\User $model_User
      *            The user model
-     * @param \core\models\PM $model_PM
+     * @param \youconix\core\models\PM $model_PM
      *            The personal message service
      */
-    public function __construct(\Builder $builder, \Logger $service_Logs, \core\models\User $model_User, \core\models\PM $model_PM)
+    public function __construct(\Builder $builder, \Logger $service_Logs, \youconix\core\models\User $model_User, \youconix\core\models\PM $model_PM)
     {
         $this->builder = $builder;
         $this->service_Database = $this->builder->getDatabase();
@@ -130,7 +131,7 @@ class AuthorizationNormal extends \core\services\Service implements \core\interf
             return true;
         } catch (\Exception $e) {
             $this->builder->rollback();
-            \core\Memory::services('ErrorHandler')->error($e);
+            \youconix\core\Memory::services('ErrorHandler')->error($e);
             
             return false;
         }

@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Security class for checking user-input
  *
  * This file is part of Miniature-happiness
@@ -27,9 +14,10 @@ namespace core\services;
 class Security extends Service implements \Security
 {
 
-	/**
-	 * @var  \Validation
-	 */
+    /**
+     *
+     * @var \Validation
+     */
     protected $validation;
 
     public function __construct(\Validation $validation)
@@ -113,9 +101,9 @@ class Security extends Service implements \Security
     /**
      * Disables code in the given string
      *
-     * @param String $s_input
+     * @param string $s_input
      *            The value to make safe
-     * @return String The secured value
+     * @return string The secured value
      */
     public function secureString($s_input)
     {
@@ -138,9 +126,9 @@ class Security extends Service implements \Security
     /**
      * Disables code in the given string for DB input
      *
-     * @param String $s_input
+     * @param string $s_input
      *            The value to make safe
-     * @return String The secured value
+     * @return string The secured value
      */
     public function secureStringDB($s_input)
     {
@@ -161,7 +149,7 @@ class Security extends Service implements \Security
     /**
      * Validates the given email address
      *
-     * @param String $s_email
+     * @param string $s_email
      *            The email address
      * @deprecated
      *
@@ -169,8 +157,8 @@ class Security extends Service implements \Security
      */
     public function checkEmail($s_email)
     {
-        if (! \core\Memory::isTesting()) {
-            trigger_error("This function has been deprecated. Please use \core\services\Validation->checkEmail() instead.", E_USER_DEPRECATED);
+        if (! \youconix\core\Memory::isTesting()) {
+            trigger_error("This function has been deprecated. Please use \youconix\core\services\Validation->checkEmail() instead.", E_USER_DEPRECATED);
         }
         return $this->validation->checkEmail($s_email);
     }
@@ -178,7 +166,7 @@ class Security extends Service implements \Security
     /**
      * Validates the given URI
      *
-     * @param String $s_uri
+     * @param string $s_uri
      *            The URI
      * @deprecated
      *
@@ -186,8 +174,8 @@ class Security extends Service implements \Security
      */
     public function checkURI($s_uri)
     {
-        if (! \core\Memory::isTesting()) {
-            trigger_error("This function has been deprecated. Please use \core\services\Validation->checkURI() instead.", E_USER_DEPRECATED);
+        if (! \youconix\core\Memory::isTesting()) {
+            trigger_error("This function has been deprecated. Please use \youconix\core\services\Validation->checkURI() instead.", E_USER_DEPRECATED);
         }
         return $this->validation->checkURI($s_uri);
     }
@@ -195,7 +183,7 @@ class Security extends Service implements \Security
     /**
      * Validates the given dutch postal address
      *
-     * @param String $s_value
+     * @param string $s_value
      *            The postal address
      * @deprecated
      *
@@ -203,8 +191,8 @@ class Security extends Service implements \Security
      */
     public function checkPostalNL($s_value)
     {
-        if (! \core\Memory::isTesting()) {
-            trigger_error("This function has been deprecated. Please use \core\services\Validation->checkPostalNL() instead.", E_USER_DEPRECATED);
+        if (! \youconix\core\Memory::isTesting()) {
+            trigger_error("This function has been deprecated. Please use \youconix\core\services\Validation->checkPostalNL() instead.", E_USER_DEPRECATED);
         }
         return $this->validation->checkPostalNL($s_value);
     }
@@ -212,7 +200,7 @@ class Security extends Service implements \Security
     /**
      * Validates the given belgium postal address
      *
-     * @param String $s_value
+     * @param string $s_value
      *            The postal address
      * @deprecated
      *
@@ -220,15 +208,15 @@ class Security extends Service implements \Security
      */
     public function checkPostalBE($i_value)
     {
-        if (! \core\Memory::isTesting()) {
-            trigger_error("This function has been deprecated. Please use \core\services\Validation->checkPostalBE() instead.", E_USER_DEPRECATED);
+        if (! \youconix\core\Memory::isTesting()) {
+            trigger_error("This function has been deprecated. Please use \youconix\core\services\Validation->checkPostalBE() instead.", E_USER_DEPRECATED);
         }
         return $this->validation->checkPostalBE($i_value);
     }
 
     /**
      *
-     * @param String $s_type
+     * @param string $s_type
      *            Type of input (GET|POST|REQUEST)
      * @param array $a_declared
      *            De type declare array (init_get,init_post,init_request)
@@ -287,8 +275,8 @@ class Security extends Service implements \Security
                     $a_result[$s_key] = $a_source[$s_key];
                     unset($a_source[$s_key]);
                     break;
-                    
-                case 'ignore-keep' :
+                
+                case 'ignore-keep':
                     $a_result[$s_key] = $a_source[$s_key];
                     break;
                 
@@ -345,8 +333,8 @@ class Security extends Service implements \Security
                     $a_result[$s_key] = $this->parseArray('float-array', $a_source[$s_key]);
                     unset($a_source[$s_key]);
                     break;
-                    
-                default :
+                
+                default:
                     unset($a_source[$s_key]);
                     break;
             }
@@ -357,7 +345,7 @@ class Security extends Service implements \Security
     /**
      * Parses a sub input array
      *
-     * @param String $s_type
+     * @param string $s_type
      *            The data type
      * @param array $a_source
      *            The source array
@@ -402,9 +390,9 @@ class Security extends Service implements \Security
     /**
      * Prepares the decoding from AJAX requests
      *
-     * @param String $s_value
+     * @param string $s_value
      *            The encoded value
-     * @return String The decoded value
+     * @return string The decoded value
      */
     public function prepareJsDecoding($s_value)
     {
@@ -422,9 +410,9 @@ class Security extends Service implements \Security
     /**
      * Fixes the decodeUrl->htmlentities bug
      *
-     * @param String $s_text
+     * @param string $s_text
      *            input text
-     * @return String correct decoded text
+     * @return string correct decoded text
      */
     public function fixDecodeBug($s_text)
     {

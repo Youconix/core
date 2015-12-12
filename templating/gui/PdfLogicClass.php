@@ -1,4 +1,5 @@
 <?php
+namespace youconix\core\gui;
 
 /** 
  * Base GUI PDF class for the framework.  Use this file as parent for all GUI controllers with PDF download-functionality                           
@@ -8,33 +9,17 @@
  * @copyright Youconix                                
  * @author    Rachelle Scheijen                                                
  * @since     1.0
- *                                                                              
- * Miniature-happiness is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU Lesser General Public License as published by  
- * the Free Software Foundation, either version 3 of the License, or            
- * (at your option) any later version.                                          
- *                                                                              
- * Miniature-happiness is distributed in the hope that it will be useful,      
- * but WITHOUT ANY WARRANTY; without even the implied warranty of               
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
- * GNU General Public License for more details.                                 
- *                                                                              
- * You should have received a copy of the GNU Lesser General Public License     
- * along with Miniature-happiness.  If not, see <http://www.gnu.org/licenses/>.
  */
-if (! class_exists('\includes\BaseLogicClass')) {
-    require (NIV . 'includes/BaseLogicClass.php');
-}
 
-abstract class PdfLogicClass extends \includes\BaseLogicClass
+abstract class PdfLogicClass extends \youconix\core\templating\gui\BaseLogicClass
 {
 
     /**
      * Displays the PDF in the browser
      *
-     * @param String $s_name
+     * @param string $s_name
      *            name
-     * @param String $s_content
+     * @param string $s_content
      *            content
      * @param int $i_size
      *            size
@@ -74,9 +59,9 @@ abstract class PdfLogicClass extends \includes\BaseLogicClass
     /**
      * Force downloads the document
      *
-     * @param String $s_name
+     * @param string $s_name
      *            name
-     * @param String $s_content
+     * @param string $s_content
      *            content
      * @param int $i_size
      *            size

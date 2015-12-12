@@ -1,20 +1,7 @@
 <?php
-namespace core\classes;
+namespace youconix\core\classes;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Site menu
  *
  * This file is part of Miniature-happiness
@@ -28,7 +15,7 @@ class Menu implements \Menu
 
     /**
      *
-     * @var \core\services\Template
+     * @var \youconix\core\services\Template
      */
     protected $template;
 
@@ -40,7 +27,7 @@ class Menu implements \Menu
 
     /**
      *
-     * @var \core\models\data\User
+     * @var \youconix\core\models\data\User
      */
     protected $user;
 
@@ -49,9 +36,9 @@ class Menu implements \Menu
      *
      * @param \Output $template            
      * @param \Language $language            
-     * @param \core\models\User $user          
+     * @param \youconix\core\models\User $user          
      */
-    public function __construct(\Output $template, \Language $language, \core\models\User $user)
+    public function __construct(\Output $template, \Language $language, \youconix\core\models\User $user)
     {
         $this->template = $template;
         $this->language = $language;

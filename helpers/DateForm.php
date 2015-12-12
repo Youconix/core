@@ -1,33 +1,24 @@
 <?php
+namespace youconix\core\helpers;
 
 /**
- * Date for generator			                                                
- * Generates a date selection lists                                             
- *                                                                              
- * This file is part of Miniature-happiness                                    
- *                                                                              
- * @copyright Youconix                                
- * @author    Rachelle Scheijen                                                
- * @since     1.0                                                              
- * @changed   06/05/2014                                                    
- *                                                                              
- * Miniature-happiness is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU Lesser General Public License as published by  
- * the Free Software Foundation, either version 3 of the License, or            
- * (at your option) any later version.                                          
- *                                                                              
- * Miniature-happiness is distributed in the hope that it will be useful,      
- * but WITHOUT ANY WARRANTY; without even the implied warranty of               
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
- * GNU General Public License for more details.                                 
- *                                                                              
- * You should have received a copy of the GNU Lesser General Public License     
- * along with Miniature-happiness.  If not, see <http://www.gnu.org/licenses/>.
+ * Date for generator
+ * Generates a date selection lists
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 1.0
  */
 class DateForm extends Helper
 {
 
-    protected $helper_HTML;
+    /**
+     *
+     * @var \youconix\core\helpers\HTML
+     */
+    protected $html;
 
     protected $i_startYear;
 
@@ -44,12 +35,11 @@ class DateForm extends Helper
     /**
      * PHP 5 constructor
      *
-     * @param \core\helpers\html\HTML $helper_HTML
-     *            The HTML generator
+     * @param \youconix\core\helpers\html\HTML $HTML
      */
-    public function __construct(\core\helpers\html\HTML $helper_HTML)
+    public function __construct(\youconix\core\helpers\html\HTML $HTML)
     {
-        $this->helper_HTML = $helper_HTML;
+        $this->html = $HTML;
         
         $this->reset();
     }
@@ -70,9 +60,9 @@ class DateForm extends Helper
 
     /**
      * Sets the date scheme :
-     * d-m-y		(dd-mm-yyyy)
-     * m-d-y		(mm-dd-yyyy)
-     * y-m-d		(yyyy-mm-dd)
+     * d-m-y (dd-mm-yyyy)
+     * m-d-y (mm-dd-yyyy)
+     * y-m-d (yyyy-mm-dd)
      *
      * The default is d-m-y
      *
@@ -171,7 +161,7 @@ class DateForm extends Helper
         $obj_year = $this->generateList($this->i_startYear, $this->i_endYear, $this->i_yearSelected, $s_idYear);
         
         /* Generate widget */
-        $obj_out = $this->helper_HTML->div();
+        $obj_out = $this->html->div();
         $obj_out->setClass('dateForm');
         
         if ($this->s_scheme == 'd-m-y') {
@@ -198,7 +188,7 @@ class DateForm extends Helper
      *            selected year
      * @param string $s_id
      *            list name
-     * @return String The list
+     * @return string The list
      *        
      */
     public function createYearList($i_startYear, $i_endYear, $i_selected, $s_id)
@@ -217,11 +207,11 @@ class DateForm extends Helper
      *            selected value
      * @param string $s_id
      *            form name
-     * @return HTML_Select selection list
+     * @return \youconix\core\helpers\html\Select selection list
      */
     protected function generateList($i_start, $i_end, $i_selected, $s_id)
     {
-        $obj_item = $this->helper_HTML->select($s_id)->setID($s_id);
+        $obj_item = $this->html->select($s_id)->setID($s_id);
         if ($i_selected == - 1) {
             $i_selected = $i_start;
         }

@@ -1,12 +1,22 @@
 <?php
-namespace core\helpers\form;
+namespace youconix\core\helpers\form;
 
+/**
+ * Form generator
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 12.0
+ *       
+ */
 abstract class FormGenerator
 {
 
     /**
      *
-     * @var \core\helpers\form\FormItem
+     * @var \youconix\core\helpers\form\FormItem
      */
     protected $item;
 
@@ -14,7 +24,7 @@ abstract class FormGenerator
 
     protected $obj_data;
 
-    public function __construct(\core\helpers\form\FormItem $item, \core\helpers\HTML $generator, \Language $language)
+    public function __construct(\youconix\core\helpers\form\FormItem $item, \youconix\core\helpers\HTML $generator, \Language $language)
     {
         $this->item = $item;
         $this->generator = $generator;
@@ -23,11 +33,21 @@ abstract class FormGenerator
         $this->init();
     }
 
+    /**
+     * Inits the form generator
+     *
+     * @abstract
+     *
+     */
     protected function init()
     {
         trigger_error('Function init from core\helpers\form\FormGenerator must be overridden.', E_USER_ERROR);
     }
 
+    /**
+     *
+     * @return array
+     */
     public function getInputChecks()
     {
         $a_checks = array();
@@ -49,6 +69,11 @@ abstract class FormGenerator
         return $a_checks;
     }
 
+    /**
+     *
+     * @param \youconix\core\helpers\form\FormItem $item            
+     * @return string
+     */
     protected function validateItem($item)
     {
         $s_field = '';
@@ -83,21 +108,37 @@ abstract class FormGenerator
         return $s_field;
     }
 
+    /**
+     *
+     * @return array
+     */
     protected function getEditFields()
     {
         return $this->a_items;
     }
 
+    /**
+     *
+     * @return array
+     */
     protected function getAddFields()
     {
         return $this->a_items;
     }
 
+    /**
+     *
+     * @return array
+     */
     protected function getViewFields()
     {
         return $this->a_items;
     }
 
+    /**
+     *
+     * @return string[]
+     */
     public function getEditValidation()
     {
         $a_fields = $this->getEditFields();
@@ -110,6 +151,10 @@ abstract class FormGenerator
         return $a_checks;
     }
 
+    /**
+     *
+     * @return string[]
+     */
     public function getAddValidation()
     {
         $a_fields = $this->getAddFields();
@@ -122,6 +167,10 @@ abstract class FormGenerator
         return $a_checks;
     }
 
+    /**
+     *
+     * @return string
+     */
     public function createView()
     {
         $a_fields = $this->getViewFields();
@@ -152,6 +201,10 @@ abstract class FormGenerator
         return $s_html;
     }
 
+    /**
+     * 
+     * @return string
+     */
     public function createEdit()
     {
         $a_fields = $this->getEditFields();
@@ -162,7 +215,7 @@ abstract class FormGenerator
                 $s_getter = 'is' . ucfirst($s_name);
                 $s_value = false;
                 if (method_exists($this->obj_data, $s_getter) && $this->obj_data->$s_getter) {
-                    $s_value = true; 
+                    $s_value = true;
                 }
             } else {
                 $s_getter = 'get' . ucfirst($s_name);
@@ -179,6 +232,10 @@ abstract class FormGenerator
         return $s_html;
     }
 
+    /**
+     * 
+     * @return string
+     */
     public function createAdd()
     {
         $a_fields = $this->getAddFields();
@@ -197,6 +254,12 @@ abstract class FormGenerator
         return $s_html;
     }
 
+    /**
+     * 
+     * @param string $field
+     * @param string $s_value
+     * @return string
+     */
     protected function createField($field, $s_value)
     {
         $s_name = $field->getName();
@@ -261,6 +324,12 @@ abstract class FormGenerator
         return $item->generateItem();
     }
 
+    /**
+     * 
+     * @param string $field
+     * @param array $a_values
+     * @return string
+     */
     protected function createFieldArray($field, $a_values)
     {
         $s_name = $field->getName();
@@ -277,16 +346,16 @@ abstract class FormGenerator
             
             case 'checkbox':
                 foreach ($field->getValues() as $s_fieldValue) {
-                    $items[] = $factory->checkbox($s_name, $s_fieldValue,'html5');
+                    $items[] = $factory->checkbox($s_name, $s_fieldValue, 'html5');
                 }
-                if( count($items) == 0 ){
-                    $items[] = $factory->checkbox($s_name, $s_value,'html5');
+                if (count($items) == 0) {
+                    $items[] = $factory->checkbox($s_name, $s_value, 'html5');
                 }
                 break;
         }
         
         $s_html = '';
-        foreach($items AS $item){
+        foreach ($items as $item) {
             if ($field->isRequired()) {
                 $item->setRequired();
             }
@@ -296,7 +365,6 @@ abstract class FormGenerator
             
             $s_html .= $item->generateItem();
         }
-        
         
         return $s_html;
     }

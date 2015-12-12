@@ -1,21 +1,8 @@
 <?php
 
-namespace core\database;
+namespace youconix\core\database;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Database connection layer for PostgreSQL
  *
  * This file is part of Miniature-happiness
@@ -27,13 +14,27 @@ namespace core\database;
  *       
  */
 class PostgreSql implements \DAL {
-	private $obj_connection;
-	private $obj_query;
-	private $bo_connection;
-	private $s_lastDatabase;
-	private $i_id;
-	private $i_affected_rows;
-	private $bo_transaction = false;
+    /**
+     *
+     * @var \Settings
+     */
+    protected $settings;
+	protected $obj_connection;
+	protected $obj_query;
+	protected $bo_connection;
+	protected $s_lastDatabase;
+	protected $i_id;
+	protected $i_affected_rows;
+	protected $bo_transaction = false;
+	
+	/**
+	 * Loads the binded parameters class
+	 *
+	 * @param \Settings $settings
+	 */
+	public function __construct(\Settings $settings) {
+	    $this->settings = $settings;
+	}
 	
 	/**
 	 * Destructor
@@ -55,12 +56,10 @@ class PostgreSql implements \DAL {
 	/**
 	 * Connects to the database with the preset login data
 	 */
-	public function defaultConnect() {
-		$service_XmlSettings = Memory::services ( 'XmlSettings' );
-		
+	public function defaultConnect() {		
 		$this->bo_connection = false;
 		
-		$this->connection ( $service_XmlSettings->get ( 'settings/SQL/PostgreSQL/username' ), $service_XmlSettings->get ( 'settings/SQL/PostgreSQL/password' ), $service_XmlSettings->get ( 'settings/SQL/PostgreSQL/database' ), $service_XmlSettings->get ( 'settings/SQL/PostgreSQL/host' ), $service_XmlSettings->get ( 'settings/SQL/PostgreSQL/port' ) );
+		$this->connection ( $this->settings->get ( 'settings/SQL/PostgreSQL/username' ), $this->settings->get ( 'settings/SQL/PostgreSQL/password' ), $this->settings->get ( 'settings/SQL/PostgreSQL/database' ), $this->settings->get ( 'settings/SQL/PostgreSQL/host' ), $this->settings->get ( 'settings/SQL/PostgreSQL/port' ) );
 		
 		$this->reset ();
 	}
@@ -363,7 +362,7 @@ class PostgreSql implements \DAL {
 	 * @param Resource $qry_sql
 	 *        	query result
 	 */
-	private function parseResult($s_query, $qry_sql) {
+	protected function parseResult($s_query, $qry_sql) {
 		$s_command = strtoupper ( trim ( substr ( $s_query, 0, strpos ( $s_query, ' ' ) ) ) );
 		if ($s_command == 'SELECT' || $s_command == 'SHOW' || $s_command == 'ANALYZE') {
 			$this->obj_query = $qry_sql;

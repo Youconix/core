@@ -1,4 +1,5 @@
 <?php
+namespace youconix\core\openID;
 
 /**
  * Facebook OpenID class
@@ -8,7 +9,7 @@
  * @since     1.0
  * @see core/openID/OpenAuth.inc.php
  */
-class Facebook extends OpenAuth
+class Facebook extends youconix\core\openID\OpenAuth
 {
 
     protected $service_Security;
@@ -30,12 +31,10 @@ class Facebook extends OpenAuth
     /**
      * PHP 5 constructor
      *
-     * @param \core\services\Xml $service_XML
-     *            The XML service
-     * @param \core\services\Security $service_Security
-     *            The security handler
+     * @param \youconix\core\services\Xml $service_XML
+     * @param \Security $service_Security
      */
-    public function __construct(\core\services\Xml $service_XML, \core\services\Security $service_Security)
+    public function __construct(\youconix\core\services\Xml $service_XML, \Security $service_Security)
     {
         parent::__construct();
         

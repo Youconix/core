@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Mailer service
  * Wraps the class PHPMailer (GPL)
  *
@@ -27,34 +14,42 @@ namespace core\services;
 class Mailer extends Service
 {
 
-    private $obj_phpMailer;
+    /**
+     *
+     * @var \Mailer
+     */
+    protected $obj_phpMailer;
 
-    private $service_Language;
+    /**
+     *
+     * @var \Language
+     */
+    protected $language;
 
-    private $s_language;
+    protected $s_language;
 
-    private $service_File;
+    protected $service_File;
 
-    private $s_domain;
+    protected $s_domain;
 
-    private $s_domainUrl;
+    protected $s_domainUrl;
 
     /**
      * Inits the class Mailer
      *
-     * @param \Language $service_Language
+     * @param \Language $language
      *            The language service
      * @param core\services\File $service_File
      *            The file service
      * @param \Config $config
      *            The Config model.
      */
-    public function __construct(\Language $service_Language, \core\services\File $service_File, \Config $config,\Mailer $mailer)
+    public function __construct(\Language $language, \youconix\core\services\File $service_File, \Config $config, \Mailer $mailer)
     {
         $this->obj_phpMailer = $mailer;
         
-        $this->service_Language = $service_Language;
-        $this->s_language = $this->service_Language->getLanguage();
+        $this->language = $language;
+        $this->s_language = $this->language->getLanguage();
         $this->service_File = $service_File;
         
         $this->s_domain = $_SERVER['HTTP_HOST'];
@@ -64,7 +59,7 @@ class Mailer extends Service
     /**
      * Returns the PHPMailer
      *
-     * @param Boolean $bo_html
+     * @param boolean $bo_html
      *            true for html mail, default true
      * @return PHPMailer mailer
      */
@@ -80,25 +75,25 @@ class Mailer extends Service
     /**
      * Sends the registration activation email
      *
-     * @param String $s_username
+     * @param string $s_username
      *            username
-     * @param String $s_email
+     * @param string $s_email
      *            email address
-     * @param String $s_registrationKey
+     * @param string $s_registrationKey
      *            activation code
-     * @return Boolean if the email is send
+     * @return boolean if the email is send
      */
     public function registrationMail($s_username, $s_email, $s_registrationKey)
     {
         $a_mail = $this->getMail('registration');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'username',
             'code'
         ), array(
             $s_username,
             $s_registrationKey
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username',
             'code'
         ), array(
@@ -118,25 +113,25 @@ class Mailer extends Service
     /**
      * Sends the registration confirm email triggerd by a admin
      *
-     * @param String $s_username
+     * @param string $s_username
      *            username
-     * @param String $s_password
+     * @param string $s_password
      *            plain text password
-     * @param String $s_email
+     * @param string $s_email
      *            email address
-     * @return Boolean if the email is send
+     * @return boolean if the email is send
      */
     public function adminAdd($s_username, $s_password, $s_email)
     {
         $a_mail = $this->getMail('registrationAdmin');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'username',
             'password'
         ), array(
             $s_username,
             $s_password
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username',
             'password'
         ), array(
@@ -156,20 +151,20 @@ class Mailer extends Service
     /**
      * Sends the password reset email
      *
-     * @param String $s_username
+     * @param string $s_username
      *            username
-     * @param String $s_email
+     * @param string $s_email
      *            email address
-     * @param String $s_newPassword
+     * @param string $s_newPassword
      *            new plain text password
-     * @param String $s_hash
+     * @param string $s_hash
      *            reset confirm code
-     * @return Boolean if the email is send
+     * @return boolean if the email is send
      */
     public function passwordResetMail($s_username, $s_email, $s_newPassword, $s_hash)
     {
         $a_mail = $this->getMail('passwordReset');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'username',
             'password',
             'code'
@@ -178,7 +173,7 @@ class Mailer extends Service
             $s_newPassword,
             $s_hash
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username',
             'password',
             'code'
@@ -200,25 +195,25 @@ class Mailer extends Service
     /**
      * Sends the password reset email triggerd by a admin
      *
-     * @param String $s_username
+     * @param string $s_username
      *            username
-     * @param String $s_email
+     * @param string $s_email
      *            email address
-     * @param String $s_newPassword
+     * @param string $s_newPassword
      *            new plain text password
-     * @return Boolean if the email is send
+     * @return boolean if the email is send
      */
     public function adminPasswordReset($s_username, $s_email, $s_newPassword)
     {
         $a_mail = $this->getMail('passwordResetAdmin');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'username',
             'password'
         ), array(
             $s_username,
             $s_newPassword
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username',
             'password'
         ), array(
@@ -238,21 +233,21 @@ class Mailer extends Service
     /**
      * Sends the account disable notification email
      *
-     * @param String $s_username
+     * @param string $s_username
      *            username
-     * @param String $s_email
+     * @param string $s_email
      *            email address
-     * @return Boolean if the email is send
+     * @return boolean if the email is send
      */
     public function accountDisableMail($s_username, $s_email)
     {
         $a_mail = $this->getMail('accountDisabled');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'username'
         ), array(
             $s_username
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username'
         ), array(
             $s_username
@@ -270,22 +265,22 @@ class Mailer extends Service
     /**
      * Sends the personal message notification email
      *
-     * @param \core\models\data\User $obj_receiver
+     * @param \youconix\core\models\data\User $obj_receiver
      *            The receiver
-     * @return Boolean True if the email is send
+     * @return boolean True if the email is send
      */
-    public function PM(\core\models\data\User $obj_receiver)
+    public function PM(\youconix\core\models\data\User $obj_receiver)
     {
         $s_email = $obj_receiver->getEmail();
         $s_username = $obj_receiver->getUsername();
         
         $a_mail = $this->getMail('PM');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'username'
         ), array(
             $s_username
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username'
         ), array(
             $s_username
@@ -309,7 +304,7 @@ class Mailer extends Service
      *            The name and emailaddress
      * @param string $s_domain
      *            The domain
-     * @return Boolean True if the email is send
+     * @return boolean True if the email is send
      */
     public function logDeamon($s_message, $a_address, $s_domain)
     {
@@ -317,7 +312,7 @@ class Mailer extends Service
         $s_name = $a_address['name'];
         
         $a_mail = $this->getMail('log');
-        $s_body = $this->service_Language->insert($a_mail['body'], array(
+        $s_body = $this->language->insert($a_mail['body'], array(
             'name',
             'message',
             'domain'
@@ -326,7 +321,7 @@ class Mailer extends Service
             nl2br($s_message),
             $s_domain
         ));
-        $s_bodyAlt = $this->service_Language->insert($a_mail['bodyAlt'], array(
+        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'name',
             'message',
             'domain'
@@ -348,14 +343,14 @@ class Mailer extends Service
     /**
      * Collects the email template
      *
-     * @param String $s_code
+     * @param string $s_code
      *            template code
-     * @param String $s_language
+     * @param string $s_language
      *            The language, optional
-     * @throws Exception the template does not exist
+     * @throws \Exception the template does not exist
      * @return array templates
      */
-    private function getMail($s_code, $s_language = '')
+    protected function getMail($s_code, $s_language = '')
     {
         if (empty($s_language))
             $s_language = $this->s_language;
@@ -386,16 +381,16 @@ class Mailer extends Service
     /**
      * Sets the main email data
      *
-     * @param String $s_mail
+     * @param string $s_mail
      *            email
-     * @return String processed email
+     * @return string processed email
      */
     protected function setMainMail($s_mail)
     {
         $s_domain = $this->s_domain;
         $s_domainUrl = $this->s_domainUrl;
         
-        $s_mail = $this->service_Language->insert($s_mail, array(
+        $s_mail = $this->language->insert($s_mail, array(
             'domain',
             'domainUrl'
         ), array(
@@ -412,7 +407,7 @@ class Mailer extends Service
      * @param PHPMailer $obj_mailer
      *            mailer
      */
-    private function sendMail($obj_mailer)
+    protected function sendMail($obj_mailer)
     {
         return $obj_mailer->send();
     }

@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Session service class for managing sessions and login status
  *
  * This file is part of Miniature-Happiness
@@ -24,24 +11,22 @@ namespace core\services;
  * @version 1.0
  * @since 1.0
  */
-class Session extends \core\services\Service implements \Session
+class Session extends \youconix\core\services\Service implements \Session
 {
 
     /**
-     * 
+     *
      * @var \Builder
      */
-    private $builder;
+    protected $builder;
 
     /**
      * PHP 5 constructor
      *
-     * @param core\services\Settings $settings
-     *            The settings service
-     * @param Builder $builder
-     *            The query builder
+     * @param \Settings $settings            
+     * @param \Builder $builder            
      */
-    public function __construct(\core\services\Settings $settings, \Builder $builder)
+    public function __construct(\Settings $settings, \Builder $builder)
     {
         $this->builder = $builder;
         $s_sessionSetName = $settings->get('settings/session/sessionName');
@@ -64,7 +49,7 @@ class Session extends \core\services\Service implements \Session
     /**
      * Returns if the object schould be treated as singleton
      *
-     * @return boolean True if the object is a singleton
+     * @return boolean
      */
     public static function isSingleton()
     {
@@ -84,12 +69,12 @@ class Session extends \core\services\Service implements \Session
      *
      * @param string $s_sessionName
      *            of the session
-     * @param mixed $s_sessionData
+     * @param string $s_sessionData
      *            of the session
      */
     public function set($s_sessionName, $s_sessionData)
     {
-        \core\Memory::type('string', $s_sessionName);
+        \youconix\core\Memory::type('string', $s_sessionName);
         
         /* Set session */
         $_SESSION[$s_sessionName] = $s_sessionData;
@@ -100,11 +85,11 @@ class Session extends \core\services\Service implements \Session
      *
      * @param string $s_sessionName
      *            of the session
-     * @throws IOException if the session does not exist
+     * @throws \IOException if the session does not exist
      */
     public function delete($s_sessionName)
     {
-        \core\Memory::type('string', $s_sessionName);
+        \youconix\core\Memory::type('string', $s_sessionName);
         
         if (! $this->exists($s_sessionName)) {
             throw new \IOException('Session ' . $s_sessionName . ' does not exist');
@@ -119,11 +104,11 @@ class Session extends \core\services\Service implements \Session
      * @param string $s_sessionName
      *            name of the session
      * @return string asked session
-     * @throws IOException if the session does not exist
+     * @throws \IOException if the session does not exist
      */
     public function get($s_sessionName)
     {
-        \Core\Memory::type('string', $s_sessionName);
+        \youconix\core\Memory::type('string', $s_sessionName);
         
         if (! $this->exists($s_sessionName)) {
             throw new \IOException('Session ' . $s_sessionName . ' does not exist');
@@ -143,7 +128,7 @@ class Session extends \core\services\Service implements \Session
      */
     public function exists($s_sessionName)
     {
-        \core\Memory::type('string', $s_sessionName);
+        \youconix\core\Memory::type('string', $s_sessionName);
         
         if (isset($_SESSION[$s_sessionName])) {
             return true;
@@ -160,7 +145,7 @@ class Session extends \core\services\Service implements \Session
      */
     public function renew($s_sessionName)
     {
-        \core\Memory::type('string', $s_sessionName);
+        \youconix\core\Memory::type('string', $s_sessionName);
         
         if ($this->exists($s_sessionName)) {
             $_SESSION[$s_sessionName] = $_SESSION[$s_sessionName];
@@ -261,6 +246,10 @@ class Session extends \core\services\Service implements \Session
     public function getFingerprint()
     {
         $s_encoding = str_replace(', sdch', '', $_SERVER['HTTP_ACCEPT_ENCODING']);
-        return sha1($_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']) . '-' . $s_encoding);
+        if ($this->exists('bind_ip')) {
+            return sha1($_SERVER['REMOTE_ADDR'] . '-' . $_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']) . '-' . $s_encoding);
+        } else {
+            return sha1($_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']) . '-' . $s_encoding);
+        }
     }
 }

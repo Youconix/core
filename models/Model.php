@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Model is the general model class.
  * This class is abstract and
  * should be inheritanced by every model.
@@ -26,35 +13,37 @@ namespace core\models;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-abstract class Model extends \core\Object
+abstract class Model extends \youconix\core\Object
 {
 
     /**
-     * 
-     * @var \core\services\Validation
+     *
+     * @var \Validation
      */
     protected $validation;
 
     /**
-     * 
-     * @var \core\database\DAL
+     *
+     * @var \DAL
      * @deprecated
+     *
      */
     protected $service_Database;
-    
+
     /**
      *
      * @var \Builder
      * @deprecated
+     *
      */
     protected $service_QueryBuilder;
-    
+
     /**
      *
      * @var \DAL
      */
     protected $database;
-    
+
     /**
      *
      * @var \Builder
@@ -68,10 +57,10 @@ abstract class Model extends \core\Object
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \core\services\Validation $validation
+     * @param \Builder $builder            
+     * @param \Validation $validation            
      */
-    public function __construct(\Builder $builder, \core\services\Validation $validation)
+    public function __construct(\Builder $builder, \youconix\core\services\Validation $validation)
     {
         $this->builder = $builder;
         $this->service_QueryBuilder = $this->builder;
@@ -83,7 +72,7 @@ abstract class Model extends \core\Object
     /**
      * Clones the model
      *
-     * @return Model The cloned model
+     * @return \youconix\core\models\Model The cloned model
      */
     public function cloneModel()
     {
@@ -93,7 +82,7 @@ abstract class Model extends \core\Object
     /**
      * Validates the model
      *
-     * @return Boolean if the model is valid, otherwise false
+     * @return boolean if the model is valid, otherwise false
      */
     public function validate()
     {
@@ -108,7 +97,7 @@ abstract class Model extends \core\Object
     /**
      * Performs the model validation
      *
-     * @throws ValidationException the model is invalid
+     * @throws \ValidationException the model is invalid
      */
     protected function performValidation()
     {
@@ -121,10 +110,10 @@ abstract class Model extends \core\Object
                 continue;
             }
             
-            $this->validation->validateField($s_key,$this->$s_key, $this->a_validation[$s_key]);
+            $this->validation->validateField($s_key, $this->$s_key, $this->a_validation[$s_key]);
         }
         
-        $a_error = array_merge($a_error,$this->validation->getErrors());
+        $a_error = array_merge($a_error, $this->validation->getErrors());
         
         if (! $this->bo_throwError) {
             return $a_error;

@@ -1,4 +1,5 @@
 <?php
+
 interface Authorization
 {
 
@@ -16,7 +17,7 @@ interface Authorization
     /**
      * Activates the user
      *
-     * @param String $s_code
+     * @param string $s_code
      *            The activation code
      * @return boolean True if the user is activated
      */
@@ -32,10 +33,10 @@ interface Authorization
     /**
      * Logs the user in
      *
-     * @param String $s_username            
-     * @param String $s_password
+     * @param string $s_username            
+     * @param string $s_password
      *            text password
-     * @param Boolean $bo_autologin
+     * @param boolean $bo_autologin
      *            true for auto login
      * @return array id, username and password_expired if the login is correct, otherwise null
      */
@@ -44,7 +45,7 @@ interface Authorization
     /**
      * Logs the user out
      *
-     * @param String $s_url
+     * @param string $s_url
      *            The redirectUrl
      */
     public function logout($s_url);

@@ -1,7 +1,10 @@
 <?php
-interface Menu {
-	/**
-	 * Generates the menu
-	 */
-	public function generateMenu();
+
+interface Menu
+{
+
+    /**
+     * Generates the menu
+     */
+    public function generateMenu();
 }

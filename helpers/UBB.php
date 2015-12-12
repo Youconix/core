@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
  * Helper for generating and parsing UBB-code
@@ -9,36 +9,26 @@ namespace core\helpers;
  * @copyright Youconix
  * @author Rachelle Scheijen
  * @since 1.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
-class UBB extends Helper
+class UBB extends \youconix\core\helpers\Helper
 {
 
-    private $service_Builder;
+    /**
+     *
+     * @var \Builder
+     */
+    protected $builder;
 
-    private $a_smileys;
+    protected $a_smileys;
 
     /**
      * PHP5 constructor
      *
-     * @param \Builder $service_Builder
-     *            The query builder
+     * @param \Builder $builder            
      */
-    public function __construct(\Builder $service_Builder)
+    public function __construct(\Builder $builder)
     {
-        $this->service_Builder = $service_Builder;
+        $this->builder = $builder;
         
         $this->loadSmileys();
     }
@@ -46,13 +36,13 @@ class UBB extends Helper
     /**
      * Loads the smileys from the database
      */
-    private function loadSmileys()
+    protected function loadSmileys()
     {
         $this->a_smileys = array();
         
         try {
-            $this->service_Builder->select('smileys', 'code,url');
-            $service_Database = $this->service_Builder->getResult();
+            $this->builder->select('smileys', 'code,url');
+            $service_Database = $this->builder->getResult();
             
             if ($service_Database->num_rows() > 0) {
                 $a_smileys = $service_Database->fetch_assoc();
@@ -70,9 +60,9 @@ class UBB extends Helper
     /**
      * Changes the UBB-code into HTML and writes the smileys
      *
-     * @param String $s_text
+     * @param string $s_text
      *            The message that need to be transformed
-     * @return String The transformed message
+     * @return string The transformed message
      */
     public function parse($s_text)
     {
@@ -88,9 +78,9 @@ class UBB extends Helper
     /**
      * Changes the XHTML-code into UBB code and reverses the smileys
      *
-     * @param String $s_text
+     * @param string $s_text
      *            The message that need to be transformed
-     * @return String The transformed message
+     * @return string The transformed message
      */
     public function revert($s_text)
     {
@@ -106,9 +96,9 @@ class UBB extends Helper
     /**
      * Parses the UBB-code into XHTML-code
      *
-     * @param String $s_text
+     * @param string $s_text
      *            The text to parse
-     * @return String The given string with XHTML-code
+     * @return string The given string with XHTML-code
      */
     private function fromUBB($s_text)
     {
@@ -221,9 +211,9 @@ class UBB extends Helper
     /**
      * Parses the XHTML-code into UBB-code
      *
-     * @param String $s_text
+     * @param string $s_text
      *            The text to parse
-     * @return String The given string with UBB-code
+     * @return string The given string with UBB-code
      */
     private function toUBB($s_text)
     {

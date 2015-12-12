@@ -1,5 +1,5 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
  * Xml-handler for parsing XML-files
@@ -10,19 +10,6 @@ namespace core\services;
  * @author Rachelle Scheijen
  * @version 1.0
  * @since 1.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
 class Xml extends Service
 {
@@ -45,7 +32,7 @@ class Xml extends Service
     /**
      * Creates a new XML-file
      *
-     * @param String $s_encoding
+     * @param string $s_encoding
      *            The encoding, defautl iso-8859-1
      * @param bool $bo_skipXPath
      *            Set to true to skip loading XPath
@@ -69,11 +56,11 @@ class Xml extends Service
     /**
      * Loads the requested XML-file
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The path to the XML-file
-     * @param String $s_encoding
+     * @param string $s_encoding
      *            The encoding, defautl iso-8859-1
-     * @throws IOException when the file does not exist
+     * @throws \IOException when the file does not exist
      */
     public function load($s_file, $s_encoding = 'iso-8859-1')
     {
@@ -85,8 +72,9 @@ class Xml extends Service
         
         $this->obj_document = new \DOMXPath($this->dom_document);
     }
-    
-    public function loadXML($s_content,$s_encoding = 'UTF-8'){
+
+    public function loadXML($s_content, $s_encoding = 'UTF-8')
+    {
         $this->createDocument($s_encoding, true);
         
         if (! $this->dom_document->loadXML($s_content)) {
@@ -95,8 +83,9 @@ class Xml extends Service
         
         $this->obj_document = new \DOMXPath($this->dom_document);
     }
-    
-    public function loadHTML($s_content,$s_encoding = 'UTF-8'){
+
+    public function loadHTML($s_content, $s_encoding = 'UTF-8')
+    {
         $this->createDocument($s_encoding, true);
         
         if (! $this->dom_document->loadHTML($s_content)) {
@@ -109,10 +98,10 @@ class Xml extends Service
     /**
      * Gives the asked part of the loaded file
      *
-     * @param String $s_path
+     * @param string $s_path
      *            The path to the language-part
-     * @return String The content of the requested part
-     * @throws XMLException when the path does not exist
+     * @return string The content of the requested part
+     * @throws \XMLException when the path does not exist
      */
     public function get($s_path)
     {
@@ -139,11 +128,11 @@ class Xml extends Service
     /**
      * Gives the asked block of the loaded file
      *
-     * @param String $s_path
+     * @param string $s_path
      *            The path to the language-part
-     * @return String The content of the requested part
-     * @throws XMLException when the path does not exist
-     * @return DOMNodeList The block
+     * @return string The content of the requested part
+     * @throws \XMLException when the path does not exist
+     * @return \DOMNodeList The block
      */
     public function getBlock($s_path)
     {
@@ -166,15 +155,15 @@ class Xml extends Service
     /**
      * Saves the value at the given place
      *
-     * @param String $s_path
+     * @param string $s_path
      *            The path to the language-part
-     * @param String $s_content
+     * @param string $s_content
      *            The content to save
-     * @throws XMLException when the path does not exist
+     * @throws \XMLException when the path does not exist
      */
     public function set($s_path, $s_content)
     {
-        \core\Memory::type('String', $s_content);
+        \youconix\core\Memory::type('String', $s_content);
         
         $s_path = $this->getRealPath($s_path);
         
@@ -204,47 +193,49 @@ class Xml extends Service
      */
     public function add($s_path, $s_content)
     {
-        \core\Memory::type('String', $s_path);
-        \core\Memory::type('String', $s_content);
+        \youconix\core\Memory::type('String', $s_path);
+        \youconix\core\Memory::type('String', $s_content);
         
         if ($this->exists($s_path)) {
             throw new \XMLException("Can not add existing " . $s_path);
         }
         
-        if( substr($s_path,0,9) == 'settings/' ){
-            $s_path = substr($s_path,9); 
+        if (substr($s_path, 0, 9) == 'settings/') {
+            $s_path = substr($s_path, 9);
         }
-                    
+        
         $s_parent = substr($s_path, 0, strrpos($s_path, '/'));
         $a_path = explode('/', $s_path);
         $s_name = end($a_path);
         
         $this->addBlocks($s_parent);
-   
+        
         $element = $this->getBlock($s_parent);
         $element = $element->item(0);
         $node = $this->dom_document->createElement($s_name, $s_content);
         $element->appendChild($node);
     }
-    
-    protected function addBlocks($s_path){
+
+    protected function addBlocks($s_path)
+    {
         $a_path = explode('/', $s_path);
         
         $i_length = count($a_path);
         $s_lastPath = '';
         $s_path = '';
-        for($i=0; $i<$i_length; $i++ ){
+        for ($i = 0; $i < $i_length; $i ++) {
             $s_lastPath = $s_path;
             
-            if( !empty($s_path) ){ $s_path .'/'; }
+            if (! empty($s_path)) {
+                $s_path . '/';
+            }
             $s_path .= $a_path[$i];
             
             try {
                 $element = $this->getBlock($s_path);
-            }
-            catch(\XMLException $e){                
+            } catch (\XMLException $e) {
                 /* Block does not exist */
-                $element = $this->dom_document->createElement($a_path[$i],'');
+                $element = $this->dom_document->createElement($a_path[$i], '');
                 $parent = $this->getBlock($s_lastPath);
                 
                 $parent = $parent->item(0);
@@ -256,17 +247,17 @@ class Xml extends Service
     /**
      * Saves the XML file loaded to the given file
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The filename
-     * @throws Exception the directory is not writable
+     * @throws \Exception the directory is not writable
      */
     public function save($s_file)
     {
-        \core\Memory::type('String', $s_file);
+        \youconix\core\Memory::type('String', $s_file);
         
         $s_dir = dirname($s_file);
         
-        if (! is_writable($s_dir) && (!file_exists($s_dir) || !is_writable($s_file))) {
+        if (! is_writable($s_dir) && (! file_exists($s_dir) || ! is_writable($s_file))) {
             throw new \Exception("Can not write to " . $s_file . '. Check the permissions.');
         }
         
@@ -276,7 +267,7 @@ class Xml extends Service
     /**
      * Checks of the given part of the loaded file exists
      *
-     * @param String $s_path
+     * @param string $s_path
      *            The path to the language-part
      * @return boolean, true if the part exists otherwise false
      */
@@ -297,14 +288,14 @@ class Xml extends Service
     /**
      * Replaces the geven keys in the given text with the given values
      *
-     * @param String $s_path
+     * @param string $s_path
      *            The path to the text that need to be changed
      * @param array $a_keys
      *            The keys for the change. Also accepts a string
      * @param array $a_values
      *            The values for the change. Also accepts a string
-     * @return String The changed text
-     * @throws Exception when the path does not exist
+     * @return string The changed text
+     * @throws \Exception when the path does not exist
      */
     public function insert($s_path, $a_keys, $a_values)
     {
@@ -324,14 +315,14 @@ class Xml extends Service
     /**
      * Checks the path and adds the default start tag
      *
-     * @param String $s_path
+     * @param string $s_path
      *            path
-     * @return String real path
-     * @throws XMLException If the path is invalid
+     * @return string real path
+     * @throws \XMLException If the path is invalid
      */
     protected function getRealPath($s_path)
     {
-        \core\Memory::type('String', $s_path);
+        \youconix\core\Memory::type('String', $s_path);
         
         if (substr($s_path, - 1) == '/') {
             throw new \XMLException('Invalid XML query : ' . $s_path);
@@ -346,8 +337,8 @@ class Xml extends Service
             $s_path = $this->s_startTag . '/' . $s_path;
         }
         
-        if( substr($s_path, -1) == '/' ){
-            $s_path = substr($s_path, 0,-1);
+        if (substr($s_path, - 1) == '/') {
+            $s_path = substr($s_path, 0, - 1);
         }
         
         return $s_path;

@@ -1,5 +1,5 @@
 <?php
-namespace core\services\data;
+namespace youconix\core\services\data;
 
 /**
  * Language-handler for making your website language-independand
@@ -10,48 +10,35 @@ namespace core\services\data;
  * @author Rachelle Scheijen
  * @version 2.0
  * @since 2.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
-class LanguageMO extends \core\services\Language
+class LanguageMO extends \youconix\core\services\Language
 {
 
     /**
      * 
-     * @var \core\services\File
+     * @var \youconix\core\services\File
      */
-    private $service_File;
+    protected $service_File;
 
-    private $s_language = null;
+    protected $s_language = null;
     
-    private $s_languageFallback = null;
+    protected $s_languageFallback = null;
 
     protected $a_documents = array();
     
-    private $a_documentsFallback = array();
+    protected $a_documentsFallback = array();
 
     /**
      * PHP 5 constructor
      *
-     * @param \core\services\File $service_File
+     * @param \youconix\core\services\File $service_File
      *            parser
      * @param string $s_language
      *            language code
      * @param string $s_languageFallback
      * 			   fallback  language code 
      */
-    public function __construct(\core\services\File $service_File, $s_language,$s_languageFallback)
+    public function __construct(\youconix\core\services\File $service_File, $s_language,$s_languageFallback)
     {
         $this->service_File = $service_File;
         $this->s_language = $s_language;
@@ -74,7 +61,7 @@ class LanguageMO extends \core\services\Language
      * @param	string	$s_language	The language code
      * @return	array	The documents
      */
-    private function readLanguages($s_language)
+    protected function readLanguages($s_language)
     {
     	$a_documents = array();
         $a_files = $this->service_File->readDirectory(NIV . 'language/' . $s_language . '/LC_MESSAGES');
@@ -170,7 +157,7 @@ class LanguageMO extends \core\services\Language
      */
     public function insert($s_text, $a_fields, $a_values)
     {
-        \core\Memory::type('string', $s_text);
+        \youconix\core\Memory::type('string', $s_text);
         
         if (! is_array($a_fields)) {
             $s_text = str_replace('[' . $a_fields . ']', $a_values, $s_text);

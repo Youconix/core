@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * FTP abstraction layer
  * Handles S-FTP, FTP and FTP-S connections
  *
@@ -28,25 +15,28 @@ namespace core\services;
 class FTP extends Service
 {
 
-    private $service_Settings;
+    /**
+     *
+     * @var \Settings
+     */
+    protected $settings;
 
-    private $s_type;
+    protected $s_type;
 
-    private $obj_con;
+    protected $obj_con;
 
-    private $obj_stream;
+    protected $obj_stream;
 
-    private $i_timeout = 3;
+    protected $i_timeout = 3;
 
     /**
      * PHP 5 constructor
      *
-     * @param \core\services\Settings $service_Settings
-     *            The settings service
+     * @param \Settings $settings            
      */
-    public function __construct(\core\services\Settings $service_Settings)
+    public function __construct(\Settings $settings)
     {
-        $this->service_Settings = $service_Settings;
+        $this->settings = $settings;
     }
 
     /**
@@ -64,11 +54,11 @@ class FTP extends Service
      */
     public function defaultConnect()
     {
-        $s_username = $this->service_Settings->get('settings/ftp/username');
-        $s_password = $this->service_Settings->get('settings/ftp/password');
-        $s_host = $this->service_Settings->get('settings/ftp/host');
-        $i_port = $this->service_Settings->get('settings/ftp/port');
-        $s_type = $this->service_Settings->get('settings/ftp/type');
+        $s_username = $this->settings->get('settings/ftp/username');
+        $s_password = $this->settings->get('settings/ftp/password');
+        $s_host = $this->settings->get('settings/ftp/host');
+        $i_port = $this->settings->get('settings/ftp/port');
+        $s_type = $this->settings->get('settings/ftp/type');
         
         $this->connectFTP($s_username, $s_password, $s_host, $i_port, $s_type);
     }
@@ -88,12 +78,12 @@ class FTP extends Service
     /**
      * Connects the DAL with the given data
      *
-     * @param String $s_username            
-     * @param String $s_password            
-     * @param String $s_host            
+     * @param string $s_username            
+     * @param string $s_password            
+     * @param string $s_host            
      * @param int $i_port
      *            default 21
-     * @param String $s_type
+     * @param string $s_type
      *            (S-FTP|FTP|FTP-S), default FTP
      */
     public function connectFTP($s_username, $s_password, $s_host, $i_port = 21, $s_type = 'FTP')
@@ -105,16 +95,16 @@ class FTP extends Service
     /**
      * Connects with the given data
      *
-     * @param String $s_username            
-     * @param String $s_password            
-     * @param String $s_host            
+     * @param string $s_username            
+     * @param string $s_password            
+     * @param string $s_host            
      * @param int $i_port
      *            default 21
-     * @param String $s_type
+     * @param string $s_type
      *            (S-FTP|FTP|FTP-S), default FTP
      * @return Resource connection resource
      */
-    private function connect($s_username, $s_password, $s_host, $i_port = 21, $s_type = 'FTP')
+    protected function connect($s_username, $s_password, $s_host, $i_port = 21, $s_type = 'FTP')
     {
         $this->s_type = $s_type;
         
@@ -155,12 +145,12 @@ class FTP extends Service
     /**
      * Checks the connection with the given data
      *
-     * @param String $s_username            
-     * @param String $s_password            
-     * @param String $s_host            
+     * @param string $s_username            
+     * @param string $s_password            
+     * @param string $s_host            
      * @param int $i_port
      *            default 21
-     * @param String $s_type
+     * @param string $s_type
      *            (S-FTP|FTP|FTP-S), default FTP
      * @return boolean if the data is correct
      */
@@ -181,11 +171,11 @@ class FTP extends Service
      *
      * @param Resource $obj_connection
      *            resource
-     * @param String $s_username            
-     * @param String $s_password            
-     * @throws Exception the username or password is incorrect
+     * @param string $s_username            
+     * @param string $s_password            
+     * @throws \Exception the username or password is incorrect
      */
-    private function loginFTP($obj_connection, $s_username, $s_password)
+    protected function loginFTP($obj_connection, $s_username, $s_password)
     {
         switch ($this->s_type) {
             case 'FTP':
@@ -208,11 +198,11 @@ class FTP extends Service
      *
      * @param Resource $obj_connection
      *            resource
-     * @param String $s_type
+     * @param string $s_type
      *            (S-FTP|FTP|FTP-S)
-     * @throws Exception the connection was allready closed
+     * @throws \Exception the connection was allready closed
      */
-    private function closeFTP($obj_connection, $s_type)
+    protected function closeFTP($obj_connection, $s_type)
     {
         if ($obj_connection == null) {
             throw new Exception("Unable to close connection. Allready closed?");
@@ -235,7 +225,7 @@ class FTP extends Service
     /**
      * Changes the current directory
      *
-     * @param String $s_directory
+     * @param string $s_directory
      *            The new directory
      * @return boolean True if the direcetory is changed
      */
@@ -251,9 +241,9 @@ class FTP extends Service
     /**
      * Returns the last changed date
      *
-     * @param String $s_file
+     * @param string $s_file
      *            The file name
-     * @return String The date
+     * @return string The date
      */
     public function getChangedDate($s_file)
     {
@@ -263,13 +253,13 @@ class FTP extends Service
     /**
      * Puts a local file on the server
      *
-     * @param String $s_filename
+     * @param string $s_filename
      *            file path
-     * @param String $s_localFilename
+     * @param string $s_localFilename
      *            file path
      * @param boolean $bo_binairy
      *            true for binairy transfer
-     * @throws IOException the local file is not readable
+     * @throws \IOException the local file is not readable
      * @return boolean if the file is uploaded
      */
     public function put($s_filename, $s_localFilename, $bo_binairy = false, $i_permissions = 0644)
@@ -315,13 +305,13 @@ class FTP extends Service
     /**
      * Downloads a local file from the server
      *
-     * @param String $s_filename
+     * @param string $s_filename
      *            file path
-     * @param String $s_localFilename
+     * @param string $s_localFilename
      *            file path
      * @param boolean $bo_binairy
      *            true for binairy transfer
-     * @throws IOException the local directory is not writable
+     * @throws \IOException the local directory is not writable
      * @return boolean if the file is downloaded
      */
     public function get($s_filename, $s_localFilename, $bo_binairy = false)
@@ -354,7 +344,7 @@ class FTP extends Service
     /**
      * Deletes the given file on the server
      *
-     * @param String $s_filename
+     * @param string $s_filename
      *            remote file path
      * @return boolean if the file is deleted
      */
@@ -377,7 +367,7 @@ class FTP extends Service
     /**
      * Creates a new directory on the server
      *
-     * @param String $s_name
+     * @param string $s_name
      *            remote directory path
      * @param octal $i_mode
      *            permissions, default 755
@@ -428,7 +418,7 @@ class FTP extends Service
     /**
      * Sets the given permissions on the given file
      *
-     * @param String $s_file
+     * @param string $s_file
      *            file path
      * @param octal $i_rights
      *            permissions, default 644
@@ -450,7 +440,7 @@ class FTP extends Service
     /**
      * Returns the last modified date as a timestamp
      *
-     * @param String $s_file
+     * @param string $s_file
      *            file path
      * @return int date
      */
@@ -470,10 +460,10 @@ class FTP extends Service
     /**
      * Reads the given directory
      *
-     * @param String $s_directory
+     * @param string $s_directory
      *            directory path
      * @return array files
-     * @throws IOException the remote directory can not be accesed
+     * @throws \IOException the remote directory can not be accesed
      */
     public function readDirectory($s_directory)
     {
@@ -505,7 +495,7 @@ class FTP extends Service
     /**
      * Deletes the directory on the server
      *
-     * @param String $s_name
+     * @param string $s_name
      *            remote directory path
      * @return boolean if the directory is deleted
      */
@@ -528,9 +518,9 @@ class FTP extends Service
     /**
      * Renames the file or directory on the server
      *
-     * @param String $s_currentName
+     * @param string $s_currentName
      *            remote path
-     * @param String $s_newName
+     * @param string $s_newName
      *            new remote path
      * @return boolean if the file or directory is renamed
      */

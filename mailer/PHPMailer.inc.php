@@ -1,7 +1,7 @@
 <?php
 namespace core\mailer;
 
-class PHPMailer extends \core\services\Service implements \Mailer
+class PHPMailer extends \youconix\core\services\Service implements \Mailer
 {
 
     private $obj_phpMailer;
@@ -45,10 +45,10 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function checkSmtpDetails($s_host, $i_port, $s_username, $s_password)
     {
-        \core\Memory::type('string',$s_host,true);
-        \core\Memory::type('int', $i_port,true);
-        \core\Memory::type('string',$s_username,true);
-        \core\Memory::type('password',$s_password,true);
+        \youconix\core\Memory::type('string',$s_host,true);
+        \youconix\core\Memory::type('int', $i_port,true);
+        \youconix\core\Memory::type('string',$s_username,true);
+        \youconix\core\Memory::type('password',$s_password,true);
         
         if( $i_port < 1 ){
             throw new \RangeException('SMTP port number must be a whole number greater then 0.');
@@ -75,7 +75,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setSubject($s_subject)
     {
-        \core\Memory::type('string',$s_subject,true);
+        \youconix\core\Memory::type('string',$s_subject,true);
         
         $this->obj_phpMailer->Subject = $s_subject;
     }
@@ -91,7 +91,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setBody($s_body)
     {
-        \core\Memory::type('string', $s_body,true);
+        \youconix\core\Memory::type('string', $s_body,true);
         
         $this->obj_phpMailer->Body = $s_body;
     }
@@ -109,7 +109,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setAltBody($s_body)
     {
-        \core\Memory::type('string', $s_body,true);
+        \youconix\core\Memory::type('string', $s_body,true);
         
         $this->obj_phpMailer->AltBody = $s_body;
         
@@ -127,7 +127,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setWordWrap($i_wrap)
     {
-        \core\Memory::type('int', $i_wrap);
+        \youconix\core\Memory::type('int', $i_wrap);
         if( $i_wrap < 0 ){
             throw new InvalidArgumentException('Wrap must be a whole number greater of equal to 0.');
         }
@@ -168,7 +168,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setCharset($s_charset)
     {
-        \core\Memory::type('string',$s_charset,true);
+        \youconix\core\Memory::type('string',$s_charset,true);
         
         $this->obj_phpMailer->CharSet = $s_charset;
     }
@@ -183,7 +183,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setContentType($s_contentType)
     {
-        \core\Memory::type('string', $s_contentType,true);
+        \youconix\core\Memory::type('string', $s_contentType,true);
         
         $this->obj_phpMailer->ContentType = $s_contentType;
     }
@@ -230,7 +230,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setReadingConfirmation($s_address)
     {
-        \core\Memory::type('string',$s_address,true);
+        \youconix\core\Memory::type('string',$s_address,true);
         
         $this->obj_phpMailer->ConfirmReadingTo = $s_address;
     }
@@ -247,7 +247,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setHostName($s_hostname)
     {
-        \core\Memory::type('string',$s_hostname,true);
+        \youconix\core\Memory::type('string',$s_hostname,true);
         
         $this->obj_phpMailer->Hostname = $s_hostname;
     }
@@ -262,7 +262,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setMessageID($s_id)
     {
-        \core\Memory::type('string',$s_id,true);
+        \youconix\core\Memory::type('string',$s_id,true);
         
         $this->obj_phpMailer->MessageID = $s_id;
     }
@@ -319,10 +319,10 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function setDKIM($s_selector, $s_indentity = '', $s_domain = '', $s_private = '')
     {
-        \core\Memory::type('string',$s_selector,true);
-        \core\Memory::type('string',$s_indentity);
-        \core\Memory::type('string',$s_domain);
-        \core\Memory::type('string',$s_private);
+        \youconix\core\Memory::type('string',$s_selector,true);
+        \youconix\core\Memory::type('string',$s_indentity);
+        \youconix\core\Memory::type('string',$s_domain);
+        \youconix\core\Memory::type('string',$s_private);
         
         $this->obj_phpMailer->DKIM_selector = $s_selector;
         $this->obj_phpMailer->DKIM_identity = $s_indentity;
@@ -357,7 +357,7 @@ class PHPMailer extends \core\services\Service implements \Mailer
      */
     public function useHTML($bo_html = true)
     {
-        \core\Memory::type('bool',$bo_html);
+        \youconix\core\Memory::type('bool',$bo_html);
         
         return $this->obj_phpMailer->IsHTML($bo_html);
     }

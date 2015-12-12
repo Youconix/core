@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
  * Helper for generating page navigation
@@ -9,43 +9,30 @@ namespace core\helpers;
  * @copyright Youconix
  * @author Rachelle Scheijen
  * @since 1.0
- *       
- *        Miniature-happiness is free software: you can redistribute it and/or modify
- *        it under the terms of the GNU Lesser General Public License as published by
- *        the Free Software Foundation, either version 3 of the License, or
- *        (at your option) any later version.
- *       
- *        Miniature-happiness is distributed in the hope that it will be useful,
- *        but WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *        GNU General Public License for more details.
- *       
- *        You should have received a copy of the GNU Lesser General Public License
- *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
-class PageNavigation extends Helper
+class PageNavigation extends \youconix\core\helpers\Helper
 {
 
-    private $s_class;
+    protected $s_class;
 
-    private $i_itemsProPage;
+    protected $i_itemsProPage;
 
-    private $i_items;
+    protected $i_items;
 
-    private $i_page;
+    protected $i_page;
 
-    private $s_url;
+    protected $s_url;
 
     /**
      * Creates a new page navigation
      * The current page is transmitted via the GET variable page
      *
      * Default settings :
-     * class					pageNav
-     * itemsProPage	25
-     * items					0
-     * page					1
-     * url						$_SERVER['PHP_SELF']
+     * class pageNav
+     * itemsProPage 25
+     * items 0
+     * page 1
+     * url $_SERVER['PHP_SELF']
      */
     public function __construct()
     {
@@ -59,7 +46,7 @@ class PageNavigation extends Helper
     /**
      * Sets the class name
      *
-     * @param String $s_class
+     * @param string $s_class
      *            class name
      */
     public function setClass($s_class)
@@ -98,7 +85,7 @@ class PageNavigation extends Helper
     /**
      * Sets the page url
      *
-     * @param String $s_url
+     * @param string $s_url
      *            url
      */
     public function setUrl($s_url)
@@ -124,7 +111,7 @@ class PageNavigation extends Helper
     /**
      * Generates the navigation code
      *
-     * @return String The code
+     * @return string The code
      */
     public function generateCode()
     {

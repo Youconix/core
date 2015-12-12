@@ -84,7 +84,7 @@ abstract class HtmlItem extends \youconix\core\helpers\html\CoreHtmlItem
 	 * Adds the value if a value is allready set
 	 *
 	 * @param string $s_value
-	 *            value
+	 *            value,  also accepts \youconix\core\helpers\html\CoreHtmlItem
 	 */
 	public function setValue($s_value)
 	{

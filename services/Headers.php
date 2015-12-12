@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Headers generating service
  *
  * This file is part of Miniature-happiness
@@ -31,11 +18,11 @@ class Headers extends Service implements \Headers
 	 * 
 	 * @var \Config
 	 */
-    private $config;
+    protected $config;
 
-    private $a_headers = array();
+    protected $a_headers = array();
 
-    private $bo_forceDownload = false;
+    protected $bo_forceDownload = false;
 
     /**
      * PHP5 constructor
@@ -72,7 +59,7 @@ class Headers extends Service implements \Headers
     /**
      * Sets the given content type
      *
-     * @param String $s_contentType
+     * @param string $s_contentType
      *            content type
      */
     public function contentType($s_contentType)
@@ -177,9 +164,9 @@ class Headers extends Service implements \Headers
      * Force downloads a file
      * Program wil halt
      *
-     * @param String $s_file
+     * @param string $s_file
      *            file location
-     * @param String $s_contentType
+     * @param string $s_contentType
      *            content type
      */
     public function forceDownloadFile($s_file, $s_contentType)
@@ -202,11 +189,11 @@ class Headers extends Service implements \Headers
      * Force downloads the given content
      * Program wil halt
      *
-     * @param String $s_content
+     * @param string $s_content
      *            content to download
-     * @param String $s_contentType
+     * @param string $s_contentType
      *            content type
-     * @param String $s_name
+     * @param string $s_name
      *            name of the download
      */
     public function forceDownloadContent($s_content, $s_contentType, $s_name)
@@ -228,9 +215,9 @@ class Headers extends Service implements \Headers
     /**
      * Sets a header
      *
-     * @param String $s_key
+     * @param string $s_key
      *            header key
-     * @param String $s_content
+     * @param string $s_content
      *            header value
      */
     public function setHeader($s_key, $s_content)
@@ -322,7 +309,7 @@ class Headers extends Service implements \Headers
      * Sends the 301 redirect header
      * Program wil halt
      *
-     * @param String $s_location
+     * @param string $s_location
      *            redirect location
      */
     public function redirect($s_location)

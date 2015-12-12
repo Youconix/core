@@ -1,10 +1,9 @@
 <?php
-namespace core\helpers\form;
+namespace youconix\core\helpers\form;
 
-class User extends \core\helpers\form\FormGenerator {
+class User extends \youconix\core\helpers\form\FormGenerator {
     protected function init()
     {
-        // username
         $username = clone $this->item;
         $username->setName('username');
         $username->setRequired();
@@ -22,28 +21,63 @@ class User extends \core\helpers\form\FormGenerator {
         $bot = clone $this->item;
         $bot->setName('bot');
         $bot->setType('checkbox');
-        $bot->setDefault(1);
+        $bot->setDefault(0);
         $bot->setRequired();
         $bot->setLabel($this->language->get('system/admin/users/bot'));
         $this->a_items['bot'] = $bot;
-        /*
         
-        protected $i_bot = 0;
+        $registrated = clone $this->item;
+        $registrated->setName('registrated');
+        $registrated->setType('number');
+        $registrated->setlabel($this->language->get('system/admin/users/registrated'));
+        $this->a_items['registrated'] = $registrated;
         
-        protected $i_registrated = 0;
+        $loggedIn = clone $this->item;
+        $loggedIn->setName('loggedIn');
+        $loggedIn->setType('number');
+        $loggedIn->setLabel($this->language->get('system/admin/users/loggedIn'));
+        $this->a_items['loggedIn'] = $loggedIn;
         
-        protected $i_loggedIn = 0;
+        $active = clone $this->item;
+        $active->setName('active');
+        $active->setType('checkbox');
+        $active->setDefault(1);
+        $active->setLabel($this->language->get('system/admin/users/active'));
+        $this->a_items['active'] = $active;
         
-        protected $i_active = 0;
+        $blocked = clone $this->item;
+        $blocked->setName('blocked');
+        $blocked->setType('checkbox');
+        $blocked->setDefault(0);
+        $blocked->setLabel($this->language->get('system/admin/users/blocked'));
+        $this->a_items['blocked'] = $blocked;
         
-        protected $i_blocked = 0;
+        $passwordExpired = clone $this->item;
+        $passwordExpired->setName('passwordExpired');
+        $passwordExpired->setType('checkbox');
+        $passwordExpired->setDefault(0);
+        $passwordExpired->setLabel($this->language->get('system/admin/users/passwordExpired'));
+        $this->a_items['passwordExpired'] = $passwordExpired;
         
-        protected $i_passwordExpired = 0;
+        $password = clone $this->item;
+        $password->setName('password');
+        $password->setType('password');
+        $password->setRequired();
+        $password->setLabel($this->language->get('system/admin/users/password'));
+        $this->a_items['password'] = $password;
         
-        protected $s_password;
+        $password = clone $this->item;
+        $password->setName('password_repeat');
+        $password->setType('password');
+        $password->setRequired();
+        $password->setLabel($this->language->get('system/admin/users/passwordAgain'));
+        $this->a_items['password_repeat'] = $password;
         
-        protected $s_profile = '';
-        
-        protected $s_loginType */
+        $bindToIp = clone $this->item;
+        $bindToIp->setName('bindToIp');
+        $bindToIp->setType('checkbox');
+        $bindToIp->setDefault(0);
+        $bindToIp->setLabel($this->language->get('system/admin/users/bindToIp'));
+        $this->a_items['bindToIp'] = $bindToIp;
     }
 }

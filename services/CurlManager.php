@@ -1,20 +1,7 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Service class for handling GET and POST requests to external sites
  *
  * This file is part of Miniature-happiness
@@ -27,11 +14,11 @@ namespace core\services;
 class CurlManager extends Service
 {
 
-    private $i_timeout = 4000;
+    protected $i_timeout = 4000;
 
-    private $s_header;
+    protected $s_header;
     
-    private $i_headerSize;
+    protected $i_headerSize;
 
     /**
      * Returns if the object schould be treated as singleton
@@ -52,7 +39,7 @@ class CurlManager extends Service
      */
     public function setTimeout($i_timeout)
     {
-        \core\Memory::type('int', $i_timeout);
+        \youconix\core\Memory::type('int', $i_timeout);
         
         if ($i_timeout > 0) {
             $this->i_timeout = $i_timeout;
@@ -72,11 +59,11 @@ class CurlManager extends Service
     /**
      * Performs a GET call
      *
-     * @param String $s_url
+     * @param string $s_url
      *            The URI to call
      * @param array $a_params
      *            The parameters to add to the URI
-     * @return String The content of the called URI
+     * @return string The content of the called URI
      */
     public function performGetCall($s_url, $a_params)
     {
@@ -108,13 +95,13 @@ class CurlManager extends Service
     /**
      * Performs a POST call
      *
-     * @param String $s_url
+     * @param string $s_url
      *            The URI to call
      * @param array $a_params
      *            The parameters to add to the URI
      * @param array $a_body
      *            The body to send
-     * @return String The content of the called URI
+     * @return string The content of the called URI
      */
     public function performPostCall($s_url, $a_params, $a_body)
     {
@@ -148,13 +135,13 @@ class CurlManager extends Service
     /**
      * Prepares the parameters for sending
      *
-     * @param String $s_url
+     * @param string $s_url
      *            The URI to call
      * @param array $a_params
      *            The parameters to add to the URI
-     * @return String The prepared URI
+     * @return string The prepared URI
      */
-    private function prepareUrl($s_url, $a_params)
+    protected function prepareUrl($s_url, $a_params)
     {
         if (count($a_params) > 0) {
             $s_params = '';
@@ -179,9 +166,9 @@ class CurlManager extends Service
      *
      * @param array $a_body
      *            The body to send
-     * @return String The prepared body
+     * @return string The prepared body
      */
-    private function prepareBody($a_body)
+    protected function prepareBody($a_body)
     {
         if ($a_body == array()) {
             return '';
@@ -214,7 +201,7 @@ class CurlManager extends Service
     /**
      * Returns the response header
      *
-     * @return String The response header
+     * @return string The response header
      */
     public function getHeader()
     {

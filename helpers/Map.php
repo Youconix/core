@@ -1,19 +1,22 @@
 <?php
+namespace youconix\core\helpers;
 
 /**
- * Map service
+ * Crates a map
  * Contains the calls for the google maps API
  *
- * @author:		Rachelle Scheijen <rachelle.scheijen@unixerius.nl>
- * @copyright	The au pair BV	2013
- * @since     1.0
+ * This file is part of Miniature-happines
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 1.0
  */
-class Service_Map extends Service
+class Map extends \youconix\core\helpers\Helper
 {
 
-    private $s_api;
+    protected $s_api;
 
-    private $s_template = 'maps';
+    protected $s_template = 'maps';
 
     /**
      * PHP 5 constructor

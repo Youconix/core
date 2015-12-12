@@ -1,33 +1,29 @@
 <?php
+namespace youconix\core\helpers;
 
-/** 
- * Checkbox list widget                           
- *                                                                              
- * This file is part of Miniature-happiness                                    
- *                                                                              
- * @copyright Youconix                                
- * @author    Rachelle Scheijen                                                
- * @since     1.0                                                              
- *                                                                              
- * Miniature-happiness is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU Lesser General Public License as published by  
- * the Free Software Foundation, either version 3 of the License, or            
- * (at your option) any later version.                                          
- *                                                                              
- * Miniature-happiness is distributed in the hope that it will be useful,      
- * but WITHOUT ANY WARRANTY; without even the implied warranty of               
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
- * GNU General Public License for more details.                                 
- *                                                                              
- * You should have received a copy of the GNU Lesser General Public License     
- * along with Miniature-happiness.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Checkbox list widget
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author Rachelle Scheijen
+ * @since 1.0
  */
 class Helper_CheckList extends Helper
 {
 
-    protected $service_Template;
+    /**
+     *
+     * @var \Output
+     */
+    protected $template;
 
-    protected $helper_HTML;
+    /**
+     *
+     * @var \youconix\core\helpers\HTML
+     */
+    protected $html;
 
     protected $s_callback = null;
 
@@ -37,13 +33,16 @@ class Helper_CheckList extends Helper
 
     /**
      * PHP 5 constructor
+     *
+     * @param \youconix\core\helpers\HTML $html
+     *            @parma \Output $template
      */
-    public function __construct()
+    public function __construct(\youconix\core\helpers\HTML $html, \Output $template)
     {
         $this->a_values = array();
         
-        $this->helper_HTML = Memory::helpers('HTML');
-        $this->service_Template = Memory::services('Template');
+        $this->html = $html;
+        $this->template = $template;
     }
 
     /**
@@ -93,7 +92,7 @@ class Helper_CheckList extends Helper
         }
         
         /* Generate widget */
-        $obj_out = $this->helper_HTML->div();
+        $obj_out = $this->html->div();
         $obj_out->setID('checkList')->setClass('widget');
         $obj_out->setContent($s_output);
         
@@ -110,7 +109,7 @@ class Helper_CheckList extends Helper
         $a_list = array();
         $a_keys = array_keys($this->a_values);
         foreach ($a_keys as $s_key) {
-            $obj_checkbox = $this->helper_HTML->checkbox();
+            $obj_checkbox = $this->html->checkbox();
             $obj_checkbox->setID($s_key);
             $obj_checkbox->setName($s_key);
             $obj_checkbox->setValue($this->a_values[$s_key][0]);

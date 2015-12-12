@@ -1,20 +1,7 @@
 <?php
-namespace core;
+namespace youconix\core\templating\gui;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * General admin GUI parent class
  * This class is abstract and should be inheritanced by every admin controller with a gui
  *
@@ -26,27 +13,26 @@ namespace core;
  * @since 1.0
  * @see core/BaseClass.php
  */
-include_once (NIV . 'core/BaseLogicClass.php');
-
-abstract class AdminLogicClass extends \core\BaseLogicClass
+abstract class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
 {
+
     /**
-     * 
-     * @var \Psr\Log\LoggerInterface
+     *
+     * @var \Logger
      */
     protected $logs;
-    
+
     /**
      * Admin class constructor
      *
-     * @param \Input $Input
-     * @param \Config $config
-     * @param \Language $language
-     * @param \Output $template
-     * @param \Logger $logs
+     * @param \Input $Input            
+     * @param \Config $config            
+     * @param \Language $language            
+     * @param \Output $template            
+     * @param \Logger $logs            
      */
-    public function __construct(\Input $Input,\Config $config,\Language $language,\Output $template,\Logger $logs)
-    {        
+    public function __construct(\Input $Input, \Config $config, \Language $language, \Output $template, \Logger $logs)
+    {
         $this->config = $config;
         $this->language = $language;
         $this->template = $template;
@@ -56,7 +42,7 @@ abstract class AdminLogicClass extends \core\BaseLogicClass
         
         $this->init();
     }
-    
+
     /**
      * Routes the controller
      *
@@ -65,7 +51,7 @@ abstract class AdminLogicClass extends \core\BaseLogicClass
     public function route($s_command)
     {
         if (! method_exists($this, $s_command)) {
-            throw new \BadMethodCallException('Call to unkown method '.$s_command.' on class '.get_class($this).'.');
+            throw new \BadMethodCallException('Call to unkown method ' . $s_command . ' on class ' . get_class($this) . '.');
         }
         
         $this->$s_command();
@@ -82,7 +68,7 @@ abstract class AdminLogicClass extends \core\BaseLogicClass
             exit();
         }
         
-        parent::init();            
+        parent::init();
     }
 }
 

@@ -1,20 +1,7 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Image is an image manipulatie class
  *
  * This file is part of Miniature-happiness
@@ -23,29 +10,34 @@ namespace core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-class Image extends Model
+class Image extends \youconix\core\models\Model
 {
 
     /**
-     * 
-     * @var \core\services\FileData
+     *
+     * @var \youconix\core\services\FileData
      */
     private $fileData;
 
     /**
      * PHP 5 constructor
      *
-     * @param \Builder $builder
-     * @param \core\services\Validation $validation
-     * @param \core\services\FileData $fileData
+     * @param \Builder $builder            
+     * @param \youconix\core\services\Validation $validation            
+     * @param \youconix\core\services\FileData $fileData            
      */
-    public function __construct(\Builder $builder, \core\services\Validation $validation, \core\services\FileData $fileData)
+    public function __construct(\Builder $builder, \youconix\core\services\Validation $validation, \youconix\core\services\FileData $fileData)
     {
         parent::__construct($builder, $validation);
         
         $this->fileData = $fileData;
     }
 
+    /**
+     *
+     * @param string $s_file            
+     * @return string
+     */
     public function getMimeType($s_file)
     {
         return $this->fileData->getMimeType($s_file, true);
@@ -137,7 +129,7 @@ class Image extends Model
      * Generates a trumbnail with max width 50 pixels.
      * Works only with jpg, gif and png
      *
-     * @param String $s_file
+     * @param string $s_file
      *            file url
      */
     public function makeTrumb($s_file)
@@ -175,7 +167,7 @@ class Image extends Model
      *
      * @param resource $obj_image
      *            image
-     * @param String $s_type
+     * @param string $s_type
      *            type (gif|png|jpeg)
      * @return resource The trumbnail
      */
@@ -197,7 +189,7 @@ class Image extends Model
      *
      * @param resource $obj_image
      *            image
-     * @param String $s_type
+     * @param string $s_type
      *            type (gif|png|jpeg)
      * @param int $i_desiredWidth
      *            width

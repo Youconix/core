@@ -1,21 +1,8 @@
 <?php
 
-namespace core\database;
+namespace youconix\core\database;
 
 /**
- * Miniature-happiness is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Miniature-happiness is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
- *
  * Database connection layer for MySQL
  *
  * This file is part of Miniature-happiness
@@ -25,23 +12,26 @@ namespace core\database;
  * @since 1.0
  */
 class Mysqli implements \DAL {
-	private $service_Settings;
-	private $obj_connection;
-	private $obj_query;
-	private $bo_connection;
-	private $s_lastDatabase;
-	private $i_id;
-	private $i_affected_rows;
-	private $bo_transaction = false;
+    /**
+     * 
+     * @var \Settings
+     */
+	protected $settings;
+	protected $obj_connection;
+	protected $obj_query;
+	protected $bo_connection;
+	protected $s_lastDatabase;
+	protected $i_id;
+	protected $i_affected_rows;
+	protected $bo_transaction = false;
 	
 	/**
 	 * Loads the binded parameters class
 	 *
-	 * @param \Settings $service_Settings
-	 *        	The settings service
+	 * @param \Settings $settings
 	 */
-	public function __construct(\Settings $service_Settings) {
-		$this->service_Settings = $service_Settings;
+	public function __construct(\Settings $settings) {
+		$this->settings = $settings;
 	}
 	
 	/**
@@ -52,7 +42,7 @@ class Mysqli implements \DAL {
 			$this->connectionEnd ();
 		}
 		
-		$this->service_Settings = null;
+		$this->settings = null;
 		$this->obj_connection = null;
 		$this->obj_query = null;
 		$this->bo_connection = null;
@@ -69,8 +59,8 @@ class Mysqli implements \DAL {
 		\Profiler::profileSystem('core/database/Mysqli.inc.php','Connecting to database');
 		$this->bo_connection = false;
 		
-		$s_type = $this->service_Settings->get ( 'settings/SQL/type' );
-		$this->connection ( $this->service_Settings->get ( 'settings/SQL/' . $s_type . '/username' ), $this->service_Settings->get ( 'settings/SQL/' . $s_type . '/password' ), $this->service_Settings->get ( 'settings/SQL/' . $s_type . '/database' ), $this->service_Settings->get ( 'settings/SQL/' . $s_type . '/host' ), $this->service_Settings->get ( 'settings/SQL/' . $s_type . '/port' ) );
+		$s_type = $this->settings->get ( 'settings/SQL/type' );
+		$this->connection ( $this->settings->get ( 'settings/SQL/' . $s_type . '/username' ), $this->settings->get ( 'settings/SQL/' . $s_type . '/password' ), $this->settings->get ( 'settings/SQL/' . $s_type . '/database' ), $this->settings->get ( 'settings/SQL/' . $s_type . '/host' ), $this->settings->get ( 'settings/SQL/' . $s_type . '/port' ) );
 		
 		$this->reset ();
 
@@ -89,7 +79,7 @@ class Mysqli implements \DAL {
 	/**
 	 * Resets the internal query cache.
 	 */
-	private function reset() {
+	protected function reset() {
 		if (is_object ( $this->obj_query ) && ! $this->bo_transaction) {
 			$this->clearResult ();
 		}
@@ -318,7 +308,7 @@ class Mysqli implements \DAL {
 	 * @param array		$a_values		The paramenter values
 	 * @throws \DBException
 	 */
-	private function bindParams($query, $a_types, $a_values) {
+	protected function bindParams($query, $a_types, $a_values) {
 		$params = array (
 				0 => '' 
 		);
@@ -357,7 +347,7 @@ class Mysqli implements \DAL {
 	 *        	arguments
 	 * @return array arguments
 	 */
-	private function refValues($a_arguments) {
+	protected function refValues($a_arguments) {
 		if (strnatcmp ( phpversion (), '5.3' ) >= 0) { // Reference is required for PHP 5.3+
 			$a_refs = array ();
 			foreach ( $a_arguments as $s_key => $value )
@@ -667,7 +657,7 @@ class Mysqli implements \DAL {
 	 *
 	 * @throws DBException when no SELECT-query was excequeted
 	 */
-	private function checkSelect() {
+	protected function checkSelect() {
 		if ($this->obj_query == null) {
 			throw new \DBException ( "Database-error : trying to get data on a non-SELECT-query" );
 		}
@@ -706,7 +696,7 @@ class Mysqli implements \DAL {
 	/**
 	 * Resets the data result pointer
 	 */
-	private function resetPointer() {
+	protected function resetPointer() {
 		if (! is_null ( $this->obj_query ))
 			$this->obj_query->data_seek ( 0 );
 	}
@@ -714,7 +704,7 @@ class Mysqli implements \DAL {
 	/**
 	 * Clears the previous result set
 	 */
-	private function clearResult() {
+	protected function clearResult() {
 		if (! is_null ( $this->obj_query )) {
 			$this->obj_query->free_result ();
 			$this->obj_query->close ();

@@ -1,5 +1,15 @@
 <?php
-namespace core\classes;
+namespace youconix\core\classes;
+
+/**
+ * Filters the read directory
+ *
+ * This file is part of Miniature-happiness
+ *
+ * @copyright Youconix
+ * @author    Rachelle Scheijen
+ * @since     2.0
+ */
 
 class DirectoryFilterIteractor extends \FilterIterator {
     private $a_directoryFilter;

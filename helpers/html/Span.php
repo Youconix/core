@@ -1,7 +1,7 @@
 <?php
 namespace youconix\core\helpers\html;
 
-class Span extends HtmlItem
+class Span extends \youconix\core\helpers\html\HtmlItem
 {
 
     /**
