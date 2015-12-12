@@ -1,19 +1,19 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
-class Form extends CoreHtmlItem
+class Form extends \youconix\core\helpers\html\CoreHtmlItem
 {
 
-    private $s_eventSubmit = '';
+    protected $s_eventSubmit = '';
 
     /**
      * Generates a new form element
      *
-     * @param String $s_link
+     * @param string $s_link
      *            link
-     * @param String $s_method
+     * @param string $s_method
      *            method (get|post)
-     * @param Boolean $bo_multidata
+     * @param boolean $bo_multidata
      *            true for a multidata form
      */
     public function __construct($s_link, $s_method, $bo_multidata)
@@ -29,7 +29,7 @@ class Form extends CoreHtmlItem
     /**
      * Parses the content
      *
-     * @param String/CoreHtmLItem $s_content
+     * @param string/CoreHtmLItem $s_content
      *            content
      */
     public function setContent($s_content)
@@ -42,7 +42,7 @@ class Form extends CoreHtmlItem
     /**
      * Sets the submit action
      *
-     * @param String $s_value
+     * @param string $s_value
      *            event value
      */
     public function setSubmit($s_value)
@@ -55,8 +55,8 @@ class Form extends CoreHtmlItem
     /**
      * Generates the (X)HTML-code
      *
-     * @see CoreHtmlItem::generateItem()
-     * @return String The (X)HTML code
+     * @see \youconix\core\helpers\html\CoreHtmlItem::generateItem()
+     * @return string The (X)HTML code
      */
     public function generateItem()
     {

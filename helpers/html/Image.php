@@ -1,17 +1,17 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
-class Image extends HtmlItem
+class Image extends \youconix\core\helpers\html\HtmlItem
 {
 
-    private $s_title = '';
+    protected $s_title = '';
 
     /**
      * Generates a new image element
      *
-     * @param String $s_url
+     * @param string $s_url
      *            The url of the image
-     * @param String $s_htmlType
+     * @param string $s_htmlType
      *            type
      */
     public function __construct($s_url, $s_htmlType)
@@ -27,7 +27,7 @@ class Image extends HtmlItem
     /**
      * Sets the title text
      *
-     * @param String $s_title
+     * @param string $s_title
      *            The title text
      */
     public function setTitle($s_title)
@@ -40,7 +40,7 @@ class Image extends HtmlItem
     /**
      * Sets the alt text
      *
-     * @param String $s_alt
+     * @param string $s_alt
      *            The alternative text (when the image doesn't work/is not supported)
      */
     public function setValue($s_alt)
@@ -51,8 +51,8 @@ class Image extends HtmlItem
     /**
      * Generates the (X)HTML-code
      *
-     * @see HtmlItem::generateItem()
-     * @return String The (X)HTML code
+     * @see \youconix\core\helpers\html\HtmlItem::generateItem()
+     * @return string The (X)HTML code
      */
     public function generateItem()
     {

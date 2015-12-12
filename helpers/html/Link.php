@@ -1,10 +1,10 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
-class Link extends HtmlItem
+class Link extends \youconix\core\helpers\html\HtmlItem
 {
 
-    private $s_url = '';
+    protected $s_url = '';
 
     /**
      * Generates a new link element
@@ -29,7 +29,7 @@ class Link extends HtmlItem
     /**
      * Generates the (X)HTML-code
      *
-     * @see HtmlItem::generateItem()
+     * @see \youconix\core\helpers\html\HtmlItem::generateItem()
      * @return string The (X)HTML code
      */
     public function generateItem()

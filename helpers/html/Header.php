@@ -1,7 +1,7 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
-class Header extends HtmlItem
+class Header extends \youconix\core\helpers\html\HtmlItem
 {
 
     /**
@@ -9,7 +9,7 @@ class Header extends HtmlItem
      *
      * @param int $i_level
      *            The type of header (1|2|3|4|5)
-     * @param String $s_content
+     * @param string $s_content
      *            The content of the header
      */
     public function __construct($i_level, $s_content)

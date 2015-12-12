@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
 /**
  * Core HTML class
@@ -38,10 +38,10 @@ abstract class CoreHtmlItem
     /**
      * Parses the incoming content
      *
-     * @param String/CoreHTMLItem $s_content
+     * @param string/CoreHTMLItem $s_content
      *            content
-     * @throws Exception if the type is incompatible
-     * @return String parses content
+     * @throws \Exception if the type is incompatible
+     * @return string parses content
      */
     protected function parseContent($s_content)
     {
@@ -60,7 +60,7 @@ abstract class CoreHtmlItem
      * Sets the id on the item.
      * Overwrites the id if a id is allready active
      *
-     * @param String $s_id
+     * @param string $s_id
      *            ID
      */
     public function setID($s_id)
@@ -74,9 +74,9 @@ abstract class CoreHtmlItem
      * Sets a data item
      * HTML 5 only
      *
-     * @param String $s_name
+     * @param string $s_name
      *            name
-     * @param String $s_value
+     * @param string $s_value
      *            value
      */
     public function setData($s_name, $s_value)
@@ -94,7 +94,7 @@ abstract class CoreHtmlItem
     /**
      * Sets the rel-attribute
      *
-     * @param String $s_relation
+     * @param string $s_relation
      *            value
      */
     public function setRelation($s_relation)
@@ -107,7 +107,7 @@ abstract class CoreHtmlItem
     /**
      * Sets the HTML type
      *
-     * @param String $s_type
+     * @param string $s_type
      *            html type
      */
     protected function setHtmlType($s_type)
@@ -120,7 +120,7 @@ abstract class CoreHtmlItem
     /**
      * Generates the (X)HTML-code
      *
-     * @return String The (X)HTML code
+     * @return string The (X)HTML code
      */
     public function generateItem()
     {
@@ -149,176 +149,5 @@ abstract class CoreHtmlItem
         ), $this->s_tag);
 
         return $s_value;
-    }
-}
-
-/**
- * HTML parent class
- */
-abstract class HtmlItem extends CoreHtmlItem
-{
-
-    protected $a_eventName = array();
-
-    protected $a_eventValue = array();
-
-    protected $s_style = '';
-
-    protected $s_class = '';
-
-    protected $s_javascript = '';
-
-    /**
-     * Destructor
-     */
-    public function __destruct()
-    {
-        $this->a_eventName = null;
-        $this->a_eventValue = null;
-        $this->s_style = null;
-        $this->s_class = null;
-        $this->s_javascript = null;
-
-        parent::__destruct();
-    }
-
-    /**
-     * Sets the given event on the item
-     *
-     * @param String $s_name
-     *            event name
-     * @param String $s_value
-     *            event value
-     */
-    public function setEvent($s_name, $s_value)
-    {
-        $this->a_eventName[] = $s_name;
-        $this->a_eventValue[] = $s_value;
-
-        return $this;
-    }
-
-    /**
-     * Sets the style on the item.
-     * Adds the style if a style is allready active
-     *
-     * @param String $s_style
-     *            style
-     */
-    public function setStyle($s_style)
-    {
-        if (! empty($this->s_style))
-            $this->s_style .= '; ';
-        $this->s_style .= $s_style;
-
-        return $this;
-    }
-
-    /**
-     * Sets the class on the item.
-     * Adds the class if a class is allready active
-     *
-     * @param String $s_class
-     *            class
-     */
-    public function setClass($s_class)
-    {
-        if (! empty($this->s_class))
-            $this->s_class .= ' ';
-        $this->s_class .= $s_class;
-
-        return $this;
-    }
-
-    /**
-     * Sets the value on the item.
-     * Adds the value if a value is allready set
-     *
-     * @param String $s_value
-     *            value
-     */
-    public function setValue($s_value)
-    {
-        $s_value = $this->parseContent($s_value);
-
-        $this->s_value .= $s_value;
-
-        return $this;
-    }
-
-    /**
-     * Generates the (X)HTML-code
-     *
-     * @see CoreHtmlItem::generateItem()
-     * @return String The (X)HTML code
-     */
-    public function generateItem()
-    {
-        $this->s_javascript = '';
-        for ($i = 0; $i < count($this->a_eventName); $i ++) {
-            $this->s_javascript .= $this->a_eventName[$i] . '="' . $this->a_eventValue[$i] . '" ';
-        }
-
-        if (! empty($this->s_style)) {
-            $this->s_between .= 'style="' . trim($this->s_style) . '"';
-        }
-        if (! empty($this->s_class)) {
-            $this->s_between .= ' class="' . trim($this->s_class) . '"';
-        }
-        if (! empty($this->s_javascript)) {
-            $this->s_between .= ' ' . trim($this->s_javascript);
-        }
-
-        return parent::generateItem();
-    }
-}
-
-/**
- * HTML form parent class
- */
-abstract class HtmlFormItem extends HtmlItem
-{
-
-    private $bo_disabled = false;
-
-    protected $s_name;
-
-    /**
-     * Destructor
-     */
-    public function __destruct()
-    {
-        $this->bo_disabled = null;
-        $this->s_name = null;
-
-        parent::__destruct();
-    }
-
-    /**
-     * Enables or disables the item
-     *
-     * @param Boolean $bo_disabled
-     *            to true to disable the item
-     */
-    public function setDisabled($bo_disabled)
-    {
-        $this->bo_disabled = $bo_disabled;
-    }
-
-    /**
-     * Generates the (X)HTML-code
-     *
-     * @see HtmlItem::generateItem()
-     * @return String The (X)HTML code
-     */
-    public function generateItem()
-    {
-        if ($this->bo_disabled) {
-            $this->s_between .= ' disabled="disabled"';
-        }
-
-        $this->s_tag = str_replace('{name}', $this->s_name, $this->s_tag);
-
-        return parent::generateItem();
     }
 }

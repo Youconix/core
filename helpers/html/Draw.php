@@ -1,7 +1,7 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
-class Canvas extends HtmlItem
+class Canvas extends \youconix\core\helpers\html\HtmlItem
 {
 
     /**

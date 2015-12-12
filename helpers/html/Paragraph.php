@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers\html;
+namespace youconix\core\helpers\html;
 
 class Paragraph extends HtmlItem
 {
