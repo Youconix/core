@@ -66,7 +66,7 @@ interface Routable
  * Start framework
  */
 define('CORE','vendor'.DIRECTORY_SEPARATOR.'youconix'.DIRECTORY_SEPARATOR.'core'.DIRECTORY_SEPARATOR);
-require_once (NIV.CORE.'Profiler.inc.php');
+require_once (NIV.CORE.'Profiler.php');
 Profiler::reset();
 
 require_once (NIV.CORE. 'Memory.php');
