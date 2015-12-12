@@ -12,11 +12,11 @@ class Loader
     private static function getFileName($s_className)
     {
         /* Check for interfaces */
-        if (file_exists(NIV.CORE .'interfaces' . DS . $s_className . '.inc.php')) {
-            return CORE . 'interfaces' . DS . $s_className . '.inc.php';
+        if (file_exists(NIV.CORE .'interfaces' . DS . $s_className . '.php')) {
+            return CORE . 'interfaces' . DS . $s_className . '.php';
         }
-        if (file_exists(NIV . 'includes' . DS . 'interfaces' . DS . $s_className . '.inc.php')) {
-            return 'includes' . DS . 'interfaces' . DS . $s_className . '.inc.php';
+        if (file_exists(NIV . 'includes' . DS . 'interfaces' . DS . $s_className . '.php')) {
+            return 'includes' . DS . 'interfaces' . DS . $s_className . '.php';
         }
         
         $s_className = ltrim($s_className, '\\');
@@ -28,8 +28,8 @@ class Loader
             $s_fileName = str_replace('\\', DS, $s_namespace) . DS;
         }
         
-        if( file_exists(NIV.str_replace('core/',CORE,$s_fileName).DS.$s_className.'.inc.php') ){
-            return str_replace('core/',CORE,$s_fileName).DS.$s_className.'.inc.php';
+        if( file_exists(NIV.str_replace('core/',CORE,$s_fileName).DS.$s_className.'.php') ){
+            return str_replace('core/',CORE,$s_fileName).DS.$s_className.'.php';
         }
         
         if (file_exists(NIV . $s_fileName.DS.$s_className.'.inc.php')) {
@@ -75,8 +75,8 @@ class Loader
     {
         if (preg_match('/Exception$/', $s_className)) {
             $s_fileName = null;
-            if (file_exists(NIV . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.inc.php')) {
-                $s_fileName = NIV . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.inc.php';
+            if (file_exists(NIV . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php')) {
+                $s_fileName = NIV . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php';
             }
         } else {
             $s_fileName = Loader::getFileName($s_className);
@@ -103,11 +103,7 @@ class Loader
             $check = $IoC::check($s_className);
             if (! is_null($check)) {
                 $s_className = $check;
-                if ((strpos($check, 'core\\') !== false) || (strpos($check, 'includes\\') !== false)) {
-                    $s_fileName = str_replace('\\', DS, $check) . '.inc.php';
-                } else {
-                    $s_fileName = str_replace('\\', DS, $check) . '.php';
-                }
+               	$s_fileName = str_replace('\\', DS, $check) . '.php';
                 
                 while (substr($s_fileName, 0, 1) == DS) {
                     $s_fileName = substr($s_fileName, 1);
@@ -132,7 +128,7 @@ class Loader
         if (! class_exists($s_caller) && ! interface_exists($s_caller)) {
             require (NIV . $s_fileName);
         }
-        if ((substr($s_fileName, 0, 5) == 'core/') && (file_exists(NIV . str_replace('core/', 'includes/', $s_fileName) . '.inc.php'))) {
+        if ((substr($s_fileName, 0, 5) == 'core/') && (file_exists(NIV . str_replace('core/', 'includes/', $s_fileName) . '.inc.php') || file_exists(NIV . str_replace('core/', 'includes/', $s_fileName) . '.php') )) {
             $s_fileName = str_replace('core\\', 'includes\\', $s_fileName);
             $caller = str_replace('\core', '\includes', $caller);
             
@@ -273,17 +269,17 @@ class Loader
             switch ($a_matches[1]) {
                 case '\core\models\Model':
                 case 'Model':
-                    $s_filename = NIV . 'core/models/Model.inc.php';
+                    $s_filename = NIV . 'core/models/Model.php';
                     break;
                 
                 case '\core\services\Service':
                 case 'Service':
-                    $s_filename = NIV . 'core/services/Service.inc.php';
+                    $s_filename = NIV . 'core/services/Service.php';
                     break;
                 
                 case '\core\helpers\Helper':
                 case 'Helper':
-                    $s_filename = NIV . 'core/helpers/Helper.inc.php';
+                    $s_filename = NIV . 'core/helpers/Helper.php';
                     break;
                 
                 default:
@@ -291,12 +287,12 @@ class Loader
                     preg_match('#extends\\s+(\\\\{1}[\\\a-zA-Z0-9_\-]+)#si', $s_file, $a_matches2);
                     if (count($a_matches2) > 0) {
                         
-                        if (strpos($a_matches2[1], '\core') !== false || strpos($a_matches2[1], '\includes') !== false || strpos($a_matches2[1], '\admin') !== false) {
-                            $s_filename = NIV . $a_matches2[1] . '.inc.php';
-                        } else 
-                            if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.php')) {
-                                $s_filename = NIV . $a_matches2[1] . '.php';
-                            } 
+                       if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.php')) {
+                       	$s_filename = NIV . $a_matches2[1] . '.php';
+                       }
+                       else if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.inc.php')) {
+                       	$s_filename = NIV . $a_matches2[1] . '.inc.php';
+                       }
 
                             else 
                                 if (file_exists(NIV . str_replace('\\', DS, strtolower($a_matches2[1])) . '.php')) {
@@ -315,9 +311,9 @@ class Loader
                         /* Check for namespace */
                         preg_match('#namespace\\s+([\\a-z-_0-9]+);#', $s_file, $a_namespaces);
                         if (count($a_namespaces) > 0) {
-                            $s_filename = NIV . str_replace('\\', '/', $a_namespaces[1] . '/' . $a_matches[1]) . '.inc.php';
+                            $s_filename = NIV . str_replace('\\', '/', $a_namespaces[1] . '/' . $a_matches[1]) . '.php';
                         } else {
-                            $s_filename = NIV . str_replace('\\', '/', $a_matches[1]) . '.inc.php';
+                            $s_filename = NIV . str_replace('\\', '/', $a_matches[1]) . '.php';
                         }
                     }
             }

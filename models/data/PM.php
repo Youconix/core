@@ -24,7 +24,7 @@ namespace core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class DataPM extends \core\models\Model
+class PM extends \core\models\Model
 {
 
     /**
