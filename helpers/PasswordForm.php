@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
  * Contains the password form with a password strength test

@@ -11,7 +11,7 @@ namespace youconix\core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class PM extends \youconix\core\models\Model
+class PM extends \youconix\core\models\Equivalent
 {
 
     /**
@@ -20,23 +20,47 @@ class PM extends \youconix\core\models\Model
      */
     protected $user;
 
-    protected $i_id = null;
+    /**
+     *
+     * @var int
+     */
+    protected $id = null;
 
     /**
      *
-     * @var \youconix\core\models\data\User
+     * @var int
      */
-    protected $obj_sender;
+    protected $fromUserid;
 
-    protected $i_receiverID;
+    /**
+     *
+     * @var int
+     */
+    protected $toUserid;
 
-    protected $s_title;
+    /**
+     *
+     * @var string
+     */
+    protected $title;
 
-    protected $s_message;
+    /**
+     *
+     * @var string
+     */
+    protected $message;
 
-    protected $i_sendTime;
+    /**
+     *
+     * @var int
+     */
+    protected $sendTime;
 
-    protected $i_unread = 1;
+    /**
+     *
+     * @var int
+     */
+    protected $unread = 1;
 
     /**
      * PHP5 constructor
@@ -51,73 +75,24 @@ class PM extends \youconix\core\models\Model
         
         $this->user = $user;
         
-        $this->a_validation = array(
-            'i_receiverID' => array(
-                'type' => 'int',
-                'required' => 1
-            ),
-            's_title' => array(
-                'type' => 'string',
-                'required' => 1
-            ),
-            's_message' => array(
-                'type' => 'string',
-                'required' => 1
-            ),
-            'i_sendTime' => array(
-                'type' => 'int',
-                'min-value' => time()
-            ),
-            'i_unread' => array(
-                'type' => 'enum',
-                'set' => array(
-                    0,
-                    1
-                )
-            )
-        );
+        $this->a_validation['sendTime'] .= '|min-value:' . time();
     }
 
     /**
-     * Loads the PM
+     * Sets the data
      *
-     * @param int $i_id
-     *            message ID
-     * @throws \DBException the message does not exist
+     * @param array $a_data
+     *            The data
      */
-    public function loadData($i_id)
+    public function setData($a_data)
     {
-        $this->builder->select('pm', '*')
-            ->order('send', 'DESC')
-            ->getWhere()
-            ->addAnd('id', 'i', $i_id);
-        $service_Database = $this->builder->getResult();
-        
-        if ($service_Database->num_rows() == 0) {
-            throw new \DBException("Requesting unknown message with id " . $i_id);
-        }
-        
-        $a_message = $service_Database->fetch_assoc();
-        $this->setData($a_message[0]);
-    }
-
-    /**
-     * Fills the object
-     *
-     * @param array $a_message
-     *            The message data from the database
-     */
-    public function setData($a_message)
-    {
-        \youconix\core\Memory::type('array', $a_message);
-        
-        $this->i_id = $a_message['id'];
-        $this->obj_sender = $this->user->get($a_message['fromUserid']);
-        $this->i_receiverID = $a_message['toUserid'];
-        $this->s_title = $a_message['title'];
-        $this->s_message = $a_message['message'];
-        $this->i_sendTime = $a_message['send'];
-        $this->i_unread = $a_message['unread'];
+        $this->id = $a_data['id'];
+        $this->fromUserid = $a_data['fromUserid'];
+        $this->toUserid = $a_data['toUserid'];
+        $this->title = $a_data['title'];
+        $this->message = $a_data['message'];
+        $this->sendTime = $a_data['send'];
+        $this->unread = $a_data['unread'];
     }
 
     /**
@@ -127,7 +102,7 @@ class PM extends \youconix\core\models\Model
      */
     public function getID()
     {
-        return $this->i_id;
+        return $this->id;
     }
 
     /**
@@ -137,20 +112,17 @@ class PM extends \youconix\core\models\Model
      */
     public function getSender()
     {
-        return $this->obj_sender;
+        return $this->user->get($this->fromUserid);
     }
 
     /**
      * Sets the sender
      *
-     * @param int $i_sender
-     *            The ID from the sender
+     * @param \youconix\core\models\data\User $sender The sender
      */
-    public function setSender($i_sender)
-    {
-        \youconix\core\Memory::type('int', $i_sender);
-        
-        $this->obj_sender = $this->user->get($i_sender);
+    public function setSender(\youconix\core\models\data\User $sender)
+    {        
+        $this->fromUserid = $sender->getID();
     }
 
     /**
@@ -164,7 +136,7 @@ class PM extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('int', $i_receiver);
         
-        $this->i_receiverID = $i_receiver;
+        $this->toUserid = $i_receiver;
     }
 
     /**
@@ -174,7 +146,7 @@ class PM extends \youconix\core\models\Model
      */
     public function getReceiver()
     {
-        return $this->i_receiverID;
+        return $this->toUserid;
     }
 
     /**
@@ -184,7 +156,7 @@ class PM extends \youconix\core\models\Model
      */
     public function getTitle()
     {
-        return $this->s_title;
+        return $this->title;
     }
 
     /**
@@ -197,7 +169,7 @@ class PM extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_title);
         
-        $this->s_title = $s_title;
+        $this->title = $s_title;
     }
 
     /**
@@ -207,7 +179,7 @@ class PM extends \youconix\core\models\Model
      */
     public function getMessage()
     {
-        return $this->s_message;
+        return $this->message;
     }
 
     /**
@@ -220,7 +192,7 @@ class PM extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_message);
         
-        $this->s_message = $s_message;
+        $this->message = $s_message;
     }
 
     /**
@@ -230,7 +202,7 @@ class PM extends \youconix\core\models\Model
      */
     public function isUnread()
     {
-        return ($this->i_unread == 1);
+        return ($this->unread == 1);
     }
 
     /**
@@ -238,9 +210,13 @@ class PM extends \youconix\core\models\Model
      */
     public function setRead()
     {
-        if ($this->i_unread == 1) {
-            $this->i_unread = 0;
-            $this->builder->update('pm', 'id', 'i', $this->i_id)->getResult();
+        if ($this->unread == 1) {
+            $this->unread = 0;
+            $this->builder->update('pm')
+                ->bindString('unread', 0)
+                ->getWhere()
+                ->bindInt('id', $this->id);
+            $this->builder->getResult();
         }
     }
 
@@ -251,53 +227,16 @@ class PM extends \youconix\core\models\Model
      */
     public function getTime()
     {
-        return $this->i_sendTime;
+        return $this->sendTime;
     }
 
     /**
-     * Deletes the message
-     */
-    public function deleteMessage()
-    {
-        $this->builder->delete('pm')
-            ->getWhere()
-            ->addAnd('id', 'i', $this->i_id);
-        $this->builder->getResult();
-    }
-
-    /**
-     * Saves the new message
+     * Saves the item
      */
     public function save()
     {
-        if (! is_null($this->i_id)) {
-            return;
+        if (is_null($this->id)) {
+            $this->add();
         }
-        $this->performValidation();
-        
-        $this->i_sendTime = time();
-        $this->builder->insert('pm', array(
-            'toUserid',
-            'fromUserid',
-            'title',
-            'message',
-            'send'
-        ), array(
-            'i',
-            'i',
-            's',
-            's',
-            'i'
-        ), array(
-            $this->i_receiverID,
-            $this->obj_sender->getID(),
-            $this->s_title,
-            $this->s_message,
-            $this->i_sendTime
-        ));
-        
-        $service_Database = $this->builder->getResult();
-        
-        $this->i_id = (int) $service_Database->getId();
     }
 }

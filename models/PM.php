@@ -133,12 +133,12 @@ class PM extends \youconix\core\models\Model
         $this->builder->select('pm', '*')
             ->order('send', 'DESC')
             ->getWhere()
-            ->addAnd('toUserid', 'i', $i_receiver);
-        $service_Database = $this->builder->getResult();
+            ->bindInt('toUserid', $i_receiver);
+        $database = $this->builder->getResult();
         
         $a_messages = array();
-        if ($service_Database->num_rows() != 0) {
-            $a_preMessages = $service_Database->fetch_assoc();
+        if ($database->num_rows() != 0) {
+            $a_preMessages = $database->fetch_assoc();
             foreach ($a_preMessages as $a_message) {
                 $obj_message = $this->pm->cloneModel();
                 $obj_message->setData($a_message);

@@ -5,26 +5,26 @@ class ControlPanelModules extends \youconix\core\models\Model
 {
 
     /**
-     * 
+     *
      * @var \youconix\core\services\File
      */
     private $file;
 
     /**
-     * 
+     *
      * @var \youconix\core\services\Xml
      */
     private $xml;
-    
+
     private $a_coreModules = array();
 
     /**
      * PHP5 constructor
      *
-     * @param \Builder $builder
-     * @param \youconix\core\services\Validation $validation
-     * @param \youconix\core\services\File $file
-     * @param \youconix\core\services\XML $xml
+     * @param \Builder $builder            
+     * @param \youconix\core\services\Validation $validation            
+     * @param \youconix\core\services\File $file            
+     * @param \youconix\core\services\XML $xml            
      */
     public function __construct(\Builder $builder, \youconix\core\services\Validation $validation, \youconix\core\services\File $file, \youconix\core\services\Xml $xml)
     {
@@ -43,14 +43,15 @@ class ControlPanelModules extends \youconix\core\models\Model
     {
         return NIV . 'admin' . DS . 'modules';
     }
-    
+
     /**
      * Returns the built in admin modules directory
      *
      * @return string The directory
      */
-    public function getCoreDirectory(){
-        return NIV . 'vendor'.DS.'youconix'.DS.'admin' . DS . 'modules';
+    public function getCoreDirectory()
+    {
+        return NIV . 'vendor' . DS . 'youconix' . DS . 'admin' . DS . 'modules';
     }
 
     /**
@@ -79,7 +80,7 @@ class ControlPanelModules extends \youconix\core\models\Model
             if (! is_dir($s_dir . DIRECTORY_SEPARATOR . $s_module) || ! $this->file->exists($s_dir . DIRECTORY_SEPARATOR . $s_module . '/settings.xml')) {
                 continue;
             }
-        
+            
             $a_files[] = $s_module;
             $this->a_coreModules[] = $s_module;
         }
@@ -235,7 +236,7 @@ class ControlPanelModules extends \youconix\core\models\Model
         /* Check if module not exists */
         $this->builder->select('admin_modules', 'id')
             ->getWhere()
-            ->addAnd('name', 's', $s_name);
+            ->bindString('name', $s_name);
         $database = $this->builder->getResult();
         if ($database->num_rows() != 0) {
             return;
@@ -248,25 +249,13 @@ class ControlPanelModules extends \youconix\core\models\Model
         
         $a_data = $this->getModuleData($s_name, true);
         
-        $this->builder->insert('admin_modules', array(
-            'name',
-            'installed',
-            'author',
-            'description',
-            'version'
-        ), array(
-            's',
-            'i',
-            's',
-            's',
-            's'
-        ), array(
-            $a_data['name'],
-            time(),
-            $a_data['author'],
-            $a_data['description'],
-            $a_data['version']
-        ));
+        $this->builder->insert('admin_modules')
+            ->bindString('name', $a_data['name'])
+            ->bindInt('installed', time())
+            ->bindString('author', $a_data['author'])
+            ->bindString('description', $a_data['description'])
+            ->bindString('version', $a_data['version']);
+        
         $this->builder->getResult();
         
         if (! empty($a_data['install'])) {
@@ -287,7 +276,7 @@ class ControlPanelModules extends \youconix\core\models\Model
         /* Check if module exists */
         $this->builder->select('admin_modules', 'name')
             ->getWhere()
-            ->addAnd('name', 's', $s_name);
+            ->bindString('name', $s_name);
         $database = $this->builder->getResult();
         if ($database->num_rows() == 0) {
             return;
@@ -310,7 +299,7 @@ class ControlPanelModules extends \youconix\core\models\Model
         
         $this->builder->delete('admin_modules')
             ->getWhere()
-            ->addAnd('id', 'i', $i_id);
+            ->bindInt('id', $i_id);
         $this->builder->getResult();
         
         if ($this->file->exists($s_dir . DIRECTORY_SEPARATOR . $s_name . DIRECTORY_SEPARATOR . 'settings.xml')) {
@@ -337,7 +326,7 @@ class ControlPanelModules extends \youconix\core\models\Model
         /* Check if module exists */
         $this->builder->select('admin_modules', 'name')
             ->getWhere()
-            ->addAnd('name', 's', $s_name);
+            ->bindString('name', $s_name);
         $database = $this->builder->getResult();
         if ($database->num_rows() == 0) {
             return;
@@ -352,7 +341,7 @@ class ControlPanelModules extends \youconix\core\models\Model
         
         $this->builder->update('admin_modules', 'version', 's', $a_data['version'])
             ->getWhere()
-            ->addAnd('id', 'i', $i_id);
+            ->bindInt('id', $i_id);
         $this->builder->getResult();
         
         $a_data = $this->getModuleData($s_name, true);
@@ -362,8 +351,9 @@ class ControlPanelModules extends \youconix\core\models\Model
             require ($s_dir . DIRECTORY_SEPARATOR . $s_name . DIRECTORY_SEPARATOR . $a_data['upgrade']);
         }
     }
-    
-    public function getCoreModules(){
+
+    public function getCoreModules()
+    {
         return $this->a_coreModules;
     }
 }

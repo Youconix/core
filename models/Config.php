@@ -37,27 +37,67 @@ class Config extends Model implements \Config, \SplSubject
      */
     protected $builder;
 
-    protected $s_templateDir;
+    /**
+     * 
+     * @var string
+     */
+    protected $templateDir;
 
-    protected $s_stylesDir;
+    /**
+     *
+     * @var string
+     */
+    protected $stylesDir;
 
-    protected $bo_ajax = false;
+    /**
+     * 
+     * @var bool
+     */
+    protected $_ajax = false;
 
-    protected $s_base;
+    /**
+     *
+     * @var string
+     */
+    protected $base;
 
-    protected $s_page;
+    /**
+     *
+     * @var string
+     */
+    protected $page;
 
-    protected $s_protocol;
+    /**
+     *
+     * @var string
+     */
+    protected $protocol;
 
-    protected $s_command = 'view';
+    /**
+     *
+     * @var string
+     */
+    protected $command = 'view';
 
-    protected $s_layout = 'default';
+    /**
+     *
+     * @var string
+     */
+    protected $layout = 'default';
 
+    /**
+     * 
+     * @var \SplObjectStorage
+     */
     protected $a_observers;
 
     const LOG_MAX_SIZE = 10000000;
 
-    protected $s_language;
+    /**
+     *
+     * @var string
+     */
+    protected $language;
 
     /**
      * PHP 5 constructor
@@ -80,6 +120,8 @@ class Config extends Model implements \Config, \SplSubject
         $this->setDefaultValues($settings);
         
         $this->detectTemplateDir();
+	
+	$this->detectPage();
     }
 
     /**
@@ -119,7 +161,7 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function detach(\SplObserver $observer)
     {
-        $this->_observers->detach($observer);
+        $this->a_observers->detach($observer);
     }
 
     /**
@@ -141,20 +183,20 @@ class Config extends Model implements \Config, \SplSubject
     {
         /* Check language */
         $a_languages = $this->getLanguages();
-        $this->s_language = $this->settings->get('defaultLanguage');
+        $this->language = $this->settings->get('defaultLanguage');
         
         if (isset($_GET['lang'])) {
             if (in_array($_GET['lang'], $a_languages)) {
-                $this->s_language = $_GET['lang'];
-                $this->cookie->set('language', $this->s_language, '/');
+                $this->language = $_GET['lang'];
+                $this->cookie->set('language', $this->language, '/');
             }
             unset($_GET['lang']);
         } else {
             if ($this->cookie->exists('language')) {
                 if (in_array($this->cookie->get('language'), $a_languages)) {
-                    $this->s_language = $this->cookie->get('language');
+                    $this->language = $this->cookie->get('language');
                     /* Renew cookie */
-                    $this->cookie->set('language', $this->s_language, '/');
+                    $this->cookie->set('language', $this->language, '/');
                 } else {
                     $this->cookie->delete('language', '/');
                 }
@@ -234,34 +276,17 @@ class Config extends Model implements \Config, \SplSubject
         
         $s_base = $settings->get('settings/main/base');
         if (substr($s_base, 0, 1) != '/') {
-            $this->s_base = '/' . $s_base;
+            $this->base = '/' . $s_base;
         } else {
-            $this->s_base = $s_base;
+            $this->base = $s_base;
         }
         
         if (! defined('BASE')) {
             define('BASE', NIV);
         }
         
-        /* Get page */
-        $s_page = $_SERVER['SCRIPT_NAME'];
-        while (substr($s_page, 0, 1) == '/') {
-            $s_page = substr($s_page, 1);
-        }
-        
-        if ($s_base != '/') {
-            if (stripos($s_page, $s_base) !== false) {
-                $s_page = substr($s_page, strlen($s_base));
-            }
-        }
-        
-        while (substr($s_page, 0, 1) == '/') {
-            $s_page = substr($s_page, 1);
-        }
-        $this->s_page = $s_page;
-        
         /* Get protocol */
-        $this->s_protocol = ((! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
+        $this->protocol = ((! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
         
         $this->detectAjax();
         
@@ -269,17 +294,26 @@ class Config extends Model implements \Config, \SplSubject
             define('LEVEL', '/');
         }
         
-        $this->s_command = 'index';
-        if (isset($_GET['command'])) {
-            $this->s_command = $_GET['command'];
-        } else 
-            if (isset($_POST['command'])) {
-                $this->s_command = $_POST['command'];
-            }
         if (! defined('WEBSITE_ROOT')) {
-            define('WEBSITE_ROOT', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . $this->s_base);
+            define('WEBSITE_ROOT', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . $this->base);
         }
     }
+    
+    protected function detectPage(){
+      /* Get page */
+        $s_page = $_SERVER['SCRIPT_NAME'];
+	
+	$pos = strrpos($s_page,'/');
+	$this->page = substr($s_page,0,$pos);
+	$this->command = substr($s_page, ($pos+1));
+	
+	if (isset($_GET['command'])) {
+	  $this->command = $_GET['command'];
+	  } else 
+	      if (isset($_POST['command'])) {
+		  $this->command = $_POST['command'];
+	      }
+      }
 
     /**
      * Detects an AJAX call
@@ -287,14 +321,14 @@ class Config extends Model implements \Config, \SplSubject
     protected function detectAjax()
     {
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
-            $this->bo_ajax = true;
+            $this->ajax = true;
         } else 
             if (function_exists('apache_request_headers')) {
                 $a_headers = apache_request_headers();
-                $this->bo_ajax = (isset($a_headers['X-Requested-With']) && $a_headers['X-Requested-With'] == 'XMLHttpRequest');
+                $this->ajax = (isset($a_headers['X-Requested-With']) && $a_headers['X-Requested-With'] == 'XMLHttpRequest');
             }
-        if (! $this->bo_ajax && ((isset($_GET['AJAX']) && $_GET['AJAX'] == 'true') || (isset($_POST['AJAX']) && $_POST['AJAX'] == 'true'))) {
-            $this->bo_ajax = true;
+        if (! $this->ajax && ((isset($_GET['AJAX']) && $_GET['AJAX'] == 'true') || (isset($_POST['AJAX']) && $_POST['AJAX'] == 'true'))) {
+            $this->ajax = true;
         }
     }
 
@@ -303,18 +337,18 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function detectTemplateDir()
     {
-        $this->s_stylesDir = 'styles';
+        $this->stylesDir = 'styles';
         
-        $s_uri = $this->s_page;
+        $s_uri = $this->getPage();
         while (strpos($s_uri, '//') !== false) {
             $s_uri = str_replace('//', '/', $s_uri);
         }
         if (preg_match('#^/?vendor/#', $s_uri)) {
             $this->loadTemplateDir();
             preg_match('#^/?vendor/([a-zA-Z0-9\-_]+/[a-zA-Z0-0\-_]+)/#', $s_uri, $a_matches);
-            $this->s_templateDir = 'vendor' . DS . $a_matches[1];
+            $this->templateDir = 'vendor' . DS . $a_matches[1];
             
-            $this->s_stylesDir = substr($this->s_templateDir, 0, strrpos($this->s_templateDir, '/'));
+            $this->stylesDir = substr($this->templateDir, 0, strrpos($this->templateDir, '/'));
         } else 
             if (preg_match('#^/?admin/#', $s_uri)) {
                 $this->loadAdminTemplateDir();
@@ -330,8 +364,8 @@ class Config extends Model implements \Config, \SplSubject
      */
     protected function loadAdminTemplateDir()
     {
-        $this->s_templateDir = $this->settings->get('settings/templates/admin_dir');
-        $this->s_layout = $this->settings->get('settings/templates/admin_layout');
+        $this->templateDir = $this->settings->get('settings/templates/admin_dir');
+        $this->layout = $this->settings->get('settings/templates/admin_layout');
     }
 
     /**
@@ -341,10 +375,10 @@ class Config extends Model implements \Config, \SplSubject
     {
         if ($this->isMobile()) {
             $s_templateDir = $this->settings->get('settings/templates/mobile_dir');
-            $this->s_layout = $this->settings->get('settings/templates/mobile_layout');
+            $this->layout = $this->settings->get('settings/templates/mobile_layout');
         } else {
             $s_templateDir = $this->settings->get('settings/templates/default_dir');
-            $this->s_layout = $this->settings->get('settings/templates/default_layout');
+            $this->layout = $this->settings->get('settings/templates/default_layout');
         }
         
         if (isset($_GET['protected_style_dir'])) {
@@ -366,10 +400,10 @@ class Config extends Model implements \Config, \SplSubject
                     $this->cookie->delete('protected_style_dir', '/');
                 }
             }
-        $this->s_templateDir = $s_templateDir;
+        $this->templateDir = $s_templateDir;
         
         if (defined('LAYOUT')) {
-            $this->s_layout = LAYOUT;
+            $this->layout = LAYOUT;
         }
     }
 
@@ -401,7 +435,7 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function getTemplateDir()
     {
-        return $this->s_templateDir;
+        return $this->templateDir;
     }
 
     /**
@@ -411,7 +445,7 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function getStylesDir()
     {
-        return $this->s_stylesDir .DS. $this->s_templateDir . '/';
+        return $this->stylesDir .DS. $this->templateDir . '/';
     }
 
     /**
@@ -431,7 +465,7 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function getLayout()
     {
-        return $this->s_layout;
+        return $this->layout;
     }
 
     /**
@@ -441,17 +475,17 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function getLanguage()
     {
-        return $this->s_language;
+        return $this->language;
     }
 
     /**
      * Returns the used protocol
      *
-     * @return string protocol
+     * @return string
      */
     public function getProtocol()
     {
-        return $this->s_protocol;
+        return $this->protocol;
     }
 
     /**
@@ -467,27 +501,25 @@ class Config extends Model implements \Config, \SplSubject
     /**
      * Returns the current page
      *
-     * @return string page
+     * @return string
      */
     public function getPage()
     {
-        return $this->s_page;
+        return $this->page;
     }
 
     /**
      * Sets the current page
      *
      * @param string $s_page
-     *            The new page
      * @param string $s_command
-     *            The new command
-     *            @parma String $s_layout The new layout
+     * @param string $s_layout
      */
     public function setPage($s_page, $s_command, $s_layout = 'default')
     {
-        $this->s_page = $s_page;
-        $this->s_command = $s_command;
-        $this->s_layout = $s_layout;
+        $this->page = $s_page;
+        $this->command = $s_command;
+        $this->layout = $s_layout;
         
         $this->detectTemplateDir();
     }
@@ -496,11 +528,10 @@ class Config extends Model implements \Config, \SplSubject
      * Sets the layout
      *
      * @param string $s_layout
-     *            The layout
      */
     public function setLayout($s_layout)
     {
-        $this->s_layout = $s_layout;
+        $this->layout = $s_layout;
         
         $this->notify();
     }
@@ -508,11 +539,11 @@ class Config extends Model implements \Config, \SplSubject
     /**
      * Checks if ajax-mode is active
      *
-     * @return boolean if ajax-mode is active
+     * @return boolean True if ajax-mode is active
      */
     public function isAjax()
     {
-        return $this->bo_ajax;
+        return $this->ajax;
     }
 
     /**
@@ -520,23 +551,23 @@ class Config extends Model implements \Config, \SplSubject
      */
     public function setAjax()
     {
-        $this->bo_ajax = true;
+        $this->ajax = true;
     }
 
     /**
      * Returns the request command
      *
-     * @return string The command
+     * @return string
      */
     public function getCommand()
     {
-        return $this->s_command;
+        return $this->command;
     }
 
     /**
      * Returns the server host
      *
-     * @return string The host
+     * @return string 
      */
     public function getHost()
     {
@@ -547,17 +578,17 @@ class Config extends Model implements \Config, \SplSubject
      * Returns the path to the website root
      * This value gets set in {LEVEL}
      *
-     * @return string path
+     * @return string
      */
     public function getBase()
     {
-        return $this->s_base;
+        return $this->base;
     }
 
     /**
      * Returns the login redirect url
      *
-     * @return string The url
+     * @return string
      */
     public function getLoginRedirect()
     {
@@ -704,8 +735,7 @@ class Config extends Model implements \Config, \SplSubject
         if (! $this->settings->exists('main/admin/email')) {
             /* Send to first user */
             $this->builder->select('users', 'nick,email')
-                ->getWhere()
-                ->addAnd('id', 'i', 1);
+                ->getWhere()->bindInt('id', 1);
             $database = $this->builder->getResult();
             $a_data = $database->fetch_assoc();
             

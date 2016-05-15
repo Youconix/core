@@ -8,7 +8,8 @@
  */
 class Loader
 {
-
+    private static $a_uses = array();
+    
     private static function getFileName($s_className)
     {
         /* Check for interfaces */
@@ -38,10 +39,6 @@ class Loader
         
         if (file_exists(WEB_ROOT . $s_fileName . DS . $s_className . '.inc.php')) {
             return $s_fileName . DS . $s_className . '.inc.php';
-        }
-        
-        if (file_exists(WEB_ROOT . str_replace('core/', CORE, $s_fileName) . DS . $s_className . '.php')) {
-            return str_replace('core/', CORE, $s_fileName) . DS . $s_className . '.php';
         }
         
         if (file_exists(WEB_ROOT . $s_fileName . DS . $s_className . '.php')) {
@@ -124,14 +121,14 @@ class Loader
             $s_caller = '\\' . $s_caller;
         }
         
-        if (! class_exists($s_caller) && ! interface_exists($s_caller)) {
+        if (! class_exists($s_caller,false) && ! interface_exists($s_caller,false)) {
             require (WEB_ROOT . $s_fileName);
         }
         if ((substr($s_fileName, 0, 5) == 'core/') && (file_exists(WEB_ROOT . str_replace('core/', 'includes/', $s_fileName) . '.inc.php') || file_exists(WEB_ROOT . str_replace('core/', 'includes/', $s_fileName) . '.php'))) {
             $s_fileName = str_replace('core\\', 'includes\\', $s_fileName);
             $caller = str_replace('\youconix\core', '\includes', $caller);
             
-            if (! class_exists($s_caller)) {
+            if (! class_exists($s_caller,false)) {
                 require (WEB_ROOT . $s_fileName);
             }
         }
@@ -194,6 +191,10 @@ class Loader
             }
             
             $a_item = explode(' ', $s_name);
+            if( array_key_exists($a_item[0], Loader::$a_uses) ){
+                $a_item[0] = Loader::$a_uses[$a_item[0]];
+            }
+            
             $a_argumentNames[] = $a_item[0];
         }
         
@@ -258,11 +259,29 @@ class Loader
                     throw new \Exception('Call to unknown file ' . $s_filename . '.');
                 }
         
+        // Find use statements
+        preg_match_all('#use\\s+([\\\a-z0-9\-_]+\\s+as\\s+[a-z0-9\-_]+)#si', $s_file,$a_uses);
+        Loader::$a_uses = array();
+        foreach($a_uses AS $a_use){
+            foreach($a_use AS $s_use){
+                if( substr($s_use, 0,3) == 'use' ){ continue; }
+                
+                $s_use = str_replace(' AS ',' as ',$s_use);
+                $a_parts = explode(' as ',$s_use);
+                
+                Loader::$a_uses[ trim($a_parts[1])] = trim($a_parts[0]);
+            }
+        }
+                
         if (stripos($s_file, '__construct') === false) {
             /* Check if file has parent */
             preg_match('#class\\s+[a-zA-Z0-9\-_]+\\s+extends\\s+([\\\a-zA-Z0-9_\-]+)#si', $s_file, $a_matches);
             if (count($a_matches) == 0) {
                 return array();
+            }
+            
+            if( array_key_exists($a_matches[1], Loader::$a_uses) ){
+                $a_matches[1] = Loader::$a_uses[$a_matches[1]];
             }
             
             switch ($a_matches[1]) {
@@ -286,15 +305,19 @@ class Loader
                     preg_match('#extends\\s+(\\\\{1}[\\\a-zA-Z0-9_\-]+)#si', $s_file, $a_matches2);
                     if (count($a_matches2) > 0) {
                         
-                        if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.php')) {
-                            $s_filename = NIV . $a_matches2[1] . '.php';
+                        if( file_exists(WEB_ROOT.DS.'vendor'.$a_matches2[1].'.php') ){
+                            $s_filename = 'vendor'.DS .$a_matches2[1].'.php'; 
+                        }
+                        else 
+                        if (file_exists(WEB_ROOT . str_replace('\\', DS, $a_matches2[1]) . '.php')) {
+                            $s_filename = $a_matches2[1] . '.php';
                         } else 
-                            if (file_exists(NIV . str_replace('\\', DS, $a_matches2[1]) . '.inc.php')) {
-                                $s_filename = NIV . $a_matches2[1] . '.inc.php';
+                            if (file_exists(WEB_ROOT . str_replace('\\', DS, $a_matches2[1]) . '.inc.php')) {
+                                $s_filename = $a_matches2[1] . '.inc.php';
                             } 
 
                             else 
-                                if (file_exists(NIV . str_replace('\\', DS, strtolower($a_matches2[1])) . '.php')) {
+                                if (file_exists(WEB_ROOT . str_replace('\\', DS, strtolower($a_matches2[1])) . '.php')) {
                                     $s_filename = strtolower($a_matches2[1]) . '.php';
                                 } else {
                                     $s_filename = 'vendor' . DS . $a_matches2[1] . '.php';
@@ -310,9 +333,9 @@ class Loader
                         /* Check for namespace */
                         preg_match('#namespace\\s+([\\a-z-_0-9]+);#', $s_file, $a_namespaces);
                         if (count($a_namespaces) > 0) {
-                            $s_filename = NIV . str_replace('\\', '/', $a_namespaces[1] . '/' . $a_matches[1]) . '.php';
+                            $s_filename = str_replace('\\', '/', $a_namespaces[1] . '/' . $a_matches[1]) . '.php';
                         } else {
-                            $s_filename = NIV . str_replace('\\', '/', $a_matches[1]) . '.php';
+                            $s_filename = str_replace('\\', '/', $a_matches[1]) . '.php';
                         }
                     }
             }

@@ -2,15 +2,15 @@
 namespace youconix\core\database;
 
 /**
- * Mysql query builder
+ * PostgreSql query builder
  *
  * This file is part of Miniature-happiness
  *
  * @copyright Youconix
  * @author Rachelle Scheijen
- * @since 1.0
+ * @since 2.0
  */
-class Builder_Mysqli implements \Builder
+class Builder_PostgreSql implements \Builder
 {
 
     /**
@@ -39,15 +39,19 @@ class Builder_Mysqli implements \Builder
 
     protected $bo_create;
 
+    protected $bo_upsert = false;
+
+    protected $bo_supportUpsert = false;
+
     protected $s_resultQuery;
+
+    protected $s_upsert;
 
     protected $obj_where;
 
     protected $obj_create;
 
     protected $obj_having;
-
-    protected $bo_upsert = false;
 
     /**
      * PHP 5 constructor
@@ -56,19 +60,19 @@ class Builder_Mysqli implements \Builder
      */
     public function __construct(\DAL $service_Database)
     {
-        \Profiler::profileSystem('core/database/Builder_Mysql.inc.php', 'Loading query builder');
+        \Profiler::profileSystem('core/database/Builder_PostgreSql.inc.php', 'Loading query builder');
         
         $this->service_Database = $service_Database;
         if (! $this->service_Database->isConnected()) {
             $this->service_Database->defaultConnect();
         }
         
-        $this->obj_where = new Where_Mysqli($this);
-        $this->obj_create = new Create_Mysqli($this);
-        $this->obj_having = new Having_Mysqli($this);
+        $this->obj_where = new Where_PostgreSql($this);
+        $this->obj_create = new Create_PostgreSql($this);
+        $this->obj_having = new Having_PostgreSql($this);
         $this->reset();
         
-        \Profiler::profileSystem('core/database/Builder_Mysql.inc.php', 'Loaded query builder');
+        \Profiler::profileSystem('core/database/Builder_PostgreSql.inc.php', 'Loaded query builder');
     }
 
     /**
@@ -98,24 +102,24 @@ class Builder_Mysqli implements \Builder
         $this->a_types = [];
         $this->bo_create = false;
         $this->s_resultQuery = '';
+        $this->s_upsert = '';
         $this->obj_where->reset();
         $this->obj_create->reset();
         $this->obj_having->reset();
-        $this->bo_upsert = false;
     }
 
     public function __clone()
     {
-        $this->obj_where = new Where_Mysqli($this);
-        $this->obj_create = new Create_Mysqli($this);
-        $this->obj_having = new Having_Mysqli($this);
+        $this->obj_where = new Where_PostgreSql($this);
+        $this->obj_create = new Create_PostgreSql($this);
+        $this->obj_having = new Having_PostgreSql($this);
         $this->reset();
     }
 
     /**
      * Returns if the object schould be treated as singleton
      *
-     * @return boolean True if the object is a singleton
+     * @return bool True if the object is a singleton
      */
     public static function isSingleton()
     {
@@ -129,7 +133,7 @@ class Builder_Mysqli implements \Builder
     {
         $this->bo_create = false;
         
-        $this->s_query = 'SHOW TABLES';
+        $this->s_query = "SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'";
     }
 
     /**
@@ -139,7 +143,7 @@ class Builder_Mysqli implements \Builder
     {
         $this->bo_create = false;
         
-        $this->s_query = 'SHOW DATABASES';
+        $this->s_query = 'SELECT table_schema,table_name FROM information_schema.tables ORDER BY table_schema,table_name';
     }
 
     /**
@@ -223,7 +227,12 @@ class Builder_Mysqli implements \Builder
     public function upsert($s_table, $s_unique)
     {
         $this->bo_create = false;
-        $this->bo_upsert = true;
+        
+        if ($this->service_Database->getVersion() < 9.5) {
+            throw new \DBException('You need at least PostgreSql version 9.5 to use upsert.');
+        }
+        
+        $this->s_upsert = $s_unique;
         
         return $this->insert($s_table);
     }
@@ -322,9 +331,9 @@ class Builder_Mysqli implements \Builder
      *
      * @param string $s_table
      *            table name
-     * @param Boolean $bo_dropTable
+     * @param bool $bo_dropTable
      *            to true to drop the given table before creating it
-     * @return Create The create table generation class
+     * @return \Create The create table generation class
      */
     public function getCreate($s_table, $bo_dropTable = false)
     {
@@ -345,7 +354,7 @@ class Builder_Mysqli implements \Builder
      */
     public function innerJoin($s_table, $s_field1, $s_field2)
     {
-        $this->a_joins[] = "INNER JOIN " . DB_PREFIX . $s_table . " ON " . $s_field1 . " = " . $s_field2 . " ";
+        $this->a_joins[] = "INNER JOIN " . DB_PREFIX . $s_table . " ON (" . $s_field1 . " = " . $s_field2 . ") ";
         
         return $this;
     }
@@ -362,7 +371,7 @@ class Builder_Mysqli implements \Builder
      */
     public function outerJoin($s_table, $s_field1, $s_field2)
     {
-        $this->a_joins[] = "OUTER JOIN " . DB_PREFIX . $s_table . " ON " . $s_field1 . " = " . $s_field2 . " ";
+        $this->a_joins[] = "OUTER JOIN " . DB_PREFIX . $s_table . " ON (" . $s_field1 . " = " . $s_field2 . ") ";
         
         return $this;
     }
@@ -379,7 +388,7 @@ class Builder_Mysqli implements \Builder
      */
     public function leftJoin($s_table, $s_field1, $s_field2)
     {
-        $this->a_joins[] = "LEFT JOIN " . DB_PREFIX . $s_table . " ON " . $s_field1 . " = " . $s_field2 . " ";
+        $this->a_joins[] = "LEFT JOIN " . DB_PREFIX . $s_table . " ON (" . $s_field1 . " = " . $s_field2 . ") ";
         
         return $this;
     }
@@ -396,7 +405,7 @@ class Builder_Mysqli implements \Builder
      */
     public function rightJoin($s_table, $s_field1, $s_field2)
     {
-        $this->a_joins[] = "RIGHT JOIN " . DB_PREFIX . $s_table . " ON " . $s_field1 . " = " . $s_field2 . " ";
+        $this->a_joins[] = "RIGHT JOIN " . DB_PREFIX . $s_table . " ON (" . $s_field1 . " = " . $s_field2 . ") ";
         
         return $this;
     }
@@ -404,7 +413,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Returns the where generation class
      *
-     * @return Where where generation class
+     * @return \Where where generation class
      */
     public function getWhere()
     {
@@ -442,7 +451,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Returns the having generation class
      *
-     * @return Having having generation class
+     * @return \Having having generation class
      */
     public function getHaving()
     {
@@ -605,9 +614,9 @@ class Builder_Mysqli implements \Builder
     {
         $this->s_resultQuery = $this->s_query;
         if (! is_array($this->a_fields))
-            $this->a_fields = [
+            $this->a_fields = array(
                 $this->a_fields
-            ];
+            );
         
         $s_command = strtoupper(substr($this->s_query, 0, strpos($this->s_query, ' ')));
         
@@ -624,7 +633,6 @@ class Builder_Mysqli implements \Builder
                 $this->addOrder();
                 
                 $this->addLimit();
-                
                 break;
             case 'UPDATE':
                 $this->addJoins();
@@ -651,7 +659,6 @@ class Builder_Mysqli implements \Builder
                 $this->addLimit();
                 
                 $this->addLimit();
-                
                 break;
             case 'INSERT':
                 $a_values = [];
@@ -664,16 +671,10 @@ class Builder_Mysqli implements \Builder
                         unset($this->a_types[$field]);
                     }
                 }
-                
                 $this->s_resultQuery .= '(' . implode(',', $this->a_fields) . ') VALUES (' . implode(',', $a_values) . ') ';
                 
                 if ($this->bo_upsert) {
-                    $a_updateFields = [];
-                    foreach ($this->a_fields as $s_field) {
-                        $a_updateFields[] = $s_field . ' = VALUES(' . $s_field . ')';
-                    }
-                    
-                    $this->s_resultQuery .= 'ON DUPLICATE KEY UPDATE ' . implode(',', $a_updateFields);
+                    $this->s_resultQuery .= 'ON CONFLICT DO UPDATE SET ' . $this->s_upsert . '=excluded.' . $this->s_upsert;
                 }
                 break;
             case 'DELETE':
@@ -684,7 +685,6 @@ class Builder_Mysqli implements \Builder
             case 'SHOW':
                 $this->addWhere();
                 break;
-            
             default:
                 if ($this->bo_create) {
                     $s_dropTable = $this->obj_create->getDropTable();
@@ -698,11 +698,11 @@ class Builder_Mysqli implements \Builder
                 break;
         }
         
-        $a_data = [
+        $a_data = array(
             'query' => $this->s_resultQuery,
             'values' => $this->a_values,
             'types' => $this->a_types
-        ];
+        );
         $this->reset();
         return $a_data;
     }
@@ -774,7 +774,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Starts a new transaction
      *
-     * @throws DBException a transaction is allready active
+     * @throws \DBException a transaction is allready active
      */
     public function transaction()
     {
@@ -786,7 +786,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Commits the current transaction
      *
-     * @throws DBException no transaction is active
+     * @throws \DBException no transaction is active
      */
     public function commit()
     {
@@ -798,7 +798,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Rolls the current transaction back
      *
-     * @throws DBException no transaction is active
+     * @throws \DBException no transaction is active
      */
     public function rollback()
     {
@@ -810,7 +810,7 @@ class Builder_Mysqli implements \Builder
     /**
      * Returns the DAL
      *
-     * @return DAL The DAL
+     * @return \DAL The DAL
      */
     public function getDatabase()
     {
@@ -842,7 +842,7 @@ class Builder_Mysqli implements \Builder
             $sql .= "\n-- --------------------------\n";
         }
         
-        $this->service_Database->query('SHOW TABLES');
+        $this->service_Database->query("SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
         $a_tables = $this->service_Database->fetch_row();
         foreach ($a_tables as $s_table) {
             $s_table = str_replace(DB_PREFIX, '', $s_table);
@@ -920,14 +920,14 @@ class Builder_Mysqli implements \Builder
         $this->service_Database->bindString('table', DB_PREFIX . $s_table);
         $this->service_Database->exequte();
         
-        $a_data = $this->service_Database->fetch_assoc_key('COLUMN_NAME');
+        $a_data = $this->service_Database->fetch_assoc();
         return $a_data;
     }
 
     /**
      * Returns the fields description
      *
-     * @param string $s_table            
+     * @param string $s_table
      * @return array
      */
     public function decribeFields($s_table)
@@ -936,32 +936,32 @@ class Builder_Mysqli implements \Builder
         
         $a_description = [];
         foreach ($a_descriptionRaw as $row) {
-            $a_description[$row['COLUMN_NAME']] = [
+            $a_description[$row['COLUMN_NAME']] = array(
                 'type' => $row['DATA_TYPE'],
                 'null' => ($row['IS_NULLABLE'] != 'NO'),
                 'primary' => ($row['COLUMN_KEY'] == 'PRI'),
                 'max' => $row['CHARACTER_MAXIMUM_LENGTH'],
                 'default' => $row['COLUMN_DEFAULT'],
                 'set' => []
-            ];
+            );
             
             if ($row['DATA_TYPE'] == 'enum') {
-                $field = str_replace([
+                $field = str_replace(array(
                     'enum(',
                     ')'
-                ], [
+                ), array(
                     '',
                     ''
-                ], $row['COLUMN_TYPE']);
+                ), $row['COLUMN_TYPE']);
                 $field = explode(',', $field);
                 foreach ($field as $item) {
-                    $a_description[$row['COLUMN_NAME']]['set'][] = str_replace([
+                    $a_description[$row['COLUMN_NAME']]['set'][] = str_replace(array(
                         "'",
                         '"'
-                    ], [
+                    ), array(
                         '',
                         ''
-                    ], $item);
+                    ), $item);
                 }
             }
         }
@@ -970,12 +970,11 @@ class Builder_Mysqli implements \Builder
     }
 }
 
-abstract class QueryConditions_Mysqli
+abstract class QueryConditions_PostgreSql
 {
-
     /**
      *
-     * @var \Builder_Mysqli
+     * @var \Builder_PostgreSql
      */
     protected $parent;
 
@@ -985,7 +984,7 @@ abstract class QueryConditions_Mysqli
 
     protected $a_values;
 
-    protected $a_keys = [
+    protected $a_keys = array(
         '=' => '=',
         '==' => '=',
         '<>' => '<>',
@@ -997,10 +996,9 @@ abstract class QueryConditions_Mysqli
         'BETWEEN' => 'BETWEEN',
         '<=' => '<=',
         '>=' => '>='
-    ];
-
-    public function __construct(Builder_Mysqli $parent)
-    {
+    );
+    
+    public function __construct(Builder_PostgreSql $parent){
         $this->parent = $parent;
     }
 
@@ -1025,7 +1023,7 @@ abstract class QueryConditions_Mysqli
      *            The type (AND|OR), leave empty for AND
      * @param string $s_key
      *            (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
-     * @return \Where
+     * @return \Builder
      */
     public function bindString($s_field, $s_value, $s_type = 'AND', $s_key = '=')
     {
@@ -1045,7 +1043,7 @@ abstract class QueryConditions_Mysqli
      *            The type (AND|OR), leave empty for AND
      * @param string $s_key
      *            (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
-     * @return \Where
+     * @return \Builder
      */
     public function bindInt($s_field, $i_value, $s_type = 'AND', $s_key = '=')
     {
@@ -1065,7 +1063,7 @@ abstract class QueryConditions_Mysqli
      *            The type (AND|OR), leave empty for AND
      * @param string $s_key
      *            (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
-     * @return \Where
+     * @return \Builder
      */
     public function bindFloat($s_field, $fl_value, $s_type = 'AND', $s_key = '=')
     {
@@ -1085,7 +1083,7 @@ abstract class QueryConditions_Mysqli
      *            The type (AND|OR), leave empty for AND
      * @param string $s_key
      *            (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
-     * @return \Where
+     * @return \Builder
      */
     public function bindBlob($s_field, $value, $s_type = 'AND', $s_key = '=')
     {
@@ -1104,7 +1102,7 @@ abstract class QueryConditions_Mysqli
      *            The type (AND|OR), leave empty for AND
      * @param string $s_key
      *            (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
-     * @return \Where
+     * @return \Builder
      */
     public function bindLiteral($s_field, $statement, $s_type = 'AND', $s_key = '=')
     {
@@ -1132,7 +1130,7 @@ abstract class QueryConditions_Mysqli
         if (! in_array($s_glue, [
             'AND',
             'OR'
-        ])) {
+        ] )) {
             $s_glue = 'AND';
         }
         
@@ -1174,25 +1172,24 @@ abstract class QueryConditions_Mysqli
                 $this->a_types[$s_field] = $s_type;
             }
     }
-
+    
     /**
      * Returns the query result (parent)
      *
      * @return DAL query result as a database object
      */
-    public function getResult()
-    {
+    public function getResult(){
         return $this->parent->getResult();
     }
 }
 
-class Where_Mysqli extends QueryConditions_Mysqli implements \Where
+class Where_PostgreSql extends QueryConditions_PostgreSql implements \Where
 {
 
     protected $a_builder;
 
     /**
-     * Resets the class Where_Mysqli
+     * Resets the class Where_PostgreSql
      */
     public function reset()
     {
@@ -1242,18 +1239,18 @@ class Where_Mysqli extends QueryConditions_Mysqli implements \Where
             throw new \DBException('Unknown where key ' . $s_key . '.');
         
         $s_command = strtoupper($s_command);
-        if (! in_array($s_command, [
+        if (! in_array($s_command, array(
             'OR',
             'AND'
-        ]))
+        )))
             throw new \DBException('Unknown where command ' . $s_command . '.  Only AND & OR are supported.');
         
-        $this->a_builder = [
+        $this->a_builder = array(
             'object' => $obj_builder,
             'field' => $s_field,
             'key' => $s_key,
             'command' => $s_command
-        ];
+        );
         
         return $this;
     }
@@ -1275,25 +1272,23 @@ class Where_Mysqli extends QueryConditions_Mysqli implements \Where
             $this->a_types[] = $obj_builder['types'];
         }
         
-        return [
+        return array(
             'where' => ' WHERE ' . $this->s_query,
             'values' => $this->a_values,
             'types' => $this->a_types
-        ];
+        );
     }
 }
 
-class Having_Mysqli extends QueryConditions_Mysqli implements \Having
+class Having_PostgreSql extends QueryConditions_PostgreSql implements \Having
 {
-
     /**
      *
-     * @var \Builder_Mysqli
+     * @var \Builder_PostgreSql
      */
     protected $parent;
-
-    public function __construct(Builder_Mysqli $parent)
-    {
+    
+    public function __construct(Builder_PostgreSql $parent){
         $this->parent = $parent;
     }
 
@@ -1327,15 +1322,24 @@ class Having_Mysqli extends QueryConditions_Mysqli implements \Having
         if (empty($this->s_query))
             return null;
         
-        return [
+        return array(
             'having' => ' HAVING ' . $this->s_query,
             'values' => $this->a_values,
             'types' => $this->a_types
-        ];
+        );
+    }
+    
+    /**
+     * Returns the query result (parent)
+     *
+     * @return DAL query result as a database object
+     */
+    public function getResult(){
+        return $this->parent->getResult();
     }
 }
 
-class Create_Mysqli implements \Create
+class Create_PostgreSql implements \Create
 {
 
     private $s_query;
@@ -1347,9 +1351,19 @@ class Create_Mysqli implements \Create
     private $s_engine;
 
     private $s_dropTable;
+    
+    /**
+     *
+     * @var \Builder_PostgreSql
+     */
+    protected $parent;
+    
+    public function __construct(Builder_PostgreSql $parent){
+        $this->parent = $parent;
+    }
 
     /**
-     * Resets the class Create_Mysql
+     * Resets the class Create_PostgreSql
      */
     public function reset()
     {
@@ -1365,7 +1379,7 @@ class Create_Mysqli implements \Create
      *
      * @param string $s_table
      *            name
-     * @param Boolean $bo_dropTable
+     * @param bool $bo_dropTable
      *            to true to drop the given table before creating it
      */
     public function setTable($s_table, $bo_dropTable = false)
@@ -1412,13 +1426,13 @@ class Create_Mysqli implements \Create
         ($bo_autoIncrement) ? $s_autoIncrement = ' AUTO_INCREMENT' : $s_autoIncrement = '';
         $s_type = strtoupper($s_type);
         
-        if (in_array($s_type, [
+        if (in_array($s_type, array(
             'VARCHAR',
             'SMALLINT',
             'MEDIUMINT',
             'INT',
             'BIGINT'
-        ])) {
+        ))) {
             $this->a_createRows[$s_field] = $s_field . ' ' . strtoupper($s_type) . '(' . $i_length . ') ' . $s_default . $s_null . $s_autoIncrement;
         } else 
             if ($s_type == 'DECIMAL') {
@@ -1576,7 +1590,7 @@ class Create_Mysqli implements \Create
     /**
      * Parses the null setting
      *
-     * @param boolean $bo_null
+     * @param bool $bo_null
      *            null setting
      * @return string null text
      */
@@ -1616,14 +1630,13 @@ class Create_Mysqli implements \Create
         
         return $this->s_query;
     }
-
+    
     /**
      * Returns the query result (parent)
      *
      * @return DAL query result as a database object
      */
-    public function getResult()
-    {
+    public function getResult(){
         return $this->parent->getResult();
     }
 }

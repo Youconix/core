@@ -82,8 +82,9 @@ interface Session
      *            of the user
      * @param int $i_lastLogin
      *            login as a timestamp
+     * @param bool  $bo_binded  Set true to bind the session to the ip
      */
-    public function setLogin($i_userid, $s_username, $i_lastLogin);
+    public function setLogin($i_userid, $s_username, $i_lastLogin,$bo_binded);
 
     /**
      * Logs the admin in with the given userid and username

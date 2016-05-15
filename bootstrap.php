@@ -53,12 +53,6 @@ function exception_handler($exception)
 
 set_exception_handler('exception_handler');
 
-interface Routable
-{
-
-    public function route($s_command);
-}
-
 /**
  * Start framework
  */
@@ -71,8 +65,3 @@ Profiler::reset();
 
 require_once (WEB_ROOT.DIRECTORY_SEPARATOR.CORE. 'Memory.php');
 \youconix\core\Memory::startUp();
-
-/* Check login */
-\Profiler::profileSystem('core/models/Provileges', 'Checking access level');
-\Loader::inject('\youconix\core\models\Privileges')->checkLogin();
-\Profiler::profileSystem('core/models/Provileges', 'Checking access level completed');

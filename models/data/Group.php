@@ -11,60 +11,46 @@ namespace youconix\core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class Group extends \youconix\core\models\Model
-{
+class Group extends \youconix\core\models\Equivalent
+{    
+    protected $s_table = 'groups';
 
-    protected $i_id;
+    /**
+     *
+     * @var int
+     */
+    protected $id;
 
-    protected $s_name;
+    /**
+     *
+     * @var string
+     */
+    protected $name;
 
-    protected $i_default = 0;
+    /**
+     *
+     * @var bool
+     */
+    protected $automatic = 0;
+
+    /**
+     *
+     * @var string
+     */
+    protected $description;
 
     protected $a_users;
-
-    protected $s_description;
 
     /**
      * PHP5 constructor
      *
      * @param \Builder $builder            
      * @param \Validation $validation            
+     * @param \youconix\core\models\EquavalentHelper $helper     
      */
-    public function __construct(\Builder $builder, \Validation $validation)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\models\EquavalentHelper $helper)
     {
-        parent::__construct($builder, $validation);
-        
-        $this->a_validation = array(
-            's_name' => array(
-                'type' => 'string',
-                'required' => 1
-            ),
-            'i_default' => array(
-                'type' => 'enum',
-                'set' => array(
-                    0,
-                    1
-                )
-            ),
-            's_description' => array(
-                'type' => 'string',
-                'required' => 1
-            )
-        );
-    }
-
-    /**
-     * Sets the group data
-     *
-     * @param array $a_data
-     *            group data
-     */
-    public function setData($a_data)
-    {
-        $this->i_id = $a_data['id'];
-        $this->s_name = $a_data['name'];
-        $this->i_default = $a_data['automatic'];
-        $this->s_description = $a_data['description'];
+        parent::__construct($builder, $validation, $helper);
     }
 
     /**
@@ -73,7 +59,7 @@ class Group extends \youconix\core\models\Model
      */
     public function getID()
     {
-        return $this->i_id;
+        return $this->id;
     }
 
     /**
@@ -82,7 +68,7 @@ class Group extends \youconix\core\models\Model
      */
     public function getName()
     {
-        return $this->s_name;
+        return $this->name;
     }
 
     /**
@@ -93,7 +79,7 @@ class Group extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_name);
         
-        $this->s_name = $s_name;
+        $this->name = $s_name;
     }
 
     /**
@@ -102,7 +88,7 @@ class Group extends \youconix\core\models\Model
      */
     public function getDescription()
     {
-        return $this->s_description;
+        return $this->description;
     }
 
     /**
@@ -113,7 +99,7 @@ class Group extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_description);
         
-        $this->s_description = $s_description;
+        $this->description = $s_description;
     }
 
     /**
@@ -123,7 +109,7 @@ class Group extends \youconix\core\models\Model
      */
     public function isDefault()
     {
-        return $this->i_default == 1;
+        return ($this->automatic == 1);
     }
 
     /**
@@ -137,9 +123,9 @@ class Group extends \youconix\core\models\Model
         \youconix\core\Memory::type('boolean', $bo_default);
         
         if ($bo_default) {
-            $this->i_default = 1;
+            $this->automatic = 1;
         } else {
-            $this->i_default = 0;
+            $this->automatic = 0;
         }
     }
 
@@ -165,23 +151,15 @@ class Group extends \youconix\core\models\Model
         /* Get groupname */
         $this->builder->select('group_users', 'level')
             ->getWhere()
-            ->addAnd(array(
-            'groupID',
-            'userid'
-        ), array(
-            'i',
-            'i'
-        ), array(
-            $this->i_id,
-            $i_userid
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindInt('groupID', $this->i_id)
+            ->bindInt('userid', $i_userid);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() == 0) {
+        if ($database->num_rows() == 0) {
             /* No record found. Access denied */
             $this->a_users[$i_userid] = \Session::ANONYMOUS;
         } else {
-            $this->a_users[$i_userid] = $service_Database->result(0, 'level');
+            $this->a_users[$i_userid] = $database->result(0, 'level');
         }
         
         return $this->a_users[$i_userid];
@@ -197,102 +175,54 @@ class Group extends \youconix\core\models\Model
         $this->builder->select('group_users g', 'g.level,u.nick AS username,u.id')
             ->innerJoin('users u', 'g.userid', 'u.id')
             ->order('u.nick', 'ASC');
-        $this->builder->getWhere()->addAnd('g.groupID', 'i', $this->i_id);
-        $service_Database = $this->builder->getResult();
+        $this->builder->getWhere()->bindInt('g.groupID', $this->i_id);
+        $database = $this->builder->getResult();
         
         $a_result = array();
-        if ($service_Database->num_rows() > 0) {
-            $a_result = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_result = $database->fetch_assoc();
         }
         
         return $a_result;
     }
 
     /**
-     * Saves the new group
+     * Adds the group to the database
+     * 
+     * @see \youconix\core\models\Equivalent::add()
      */
-    public function save()
+    protected function add()
     {
-        if (! is_null($this->i_id)) {
+        parent::add();
+        
+        if ($this->automatic != 1) {
             return;
         }
-        $this->performValidation();
         
-        $this->builder->insert('groups', array(
-            'name',
-            'description',
-            'automatic'
-        ), array(
-            's',
-            's',
-            's'
-        ), array(
-            $this->s_name,
-            $this->s_description,
-            $this->i_default
-        ));
-        $i_groupID = $this->builder->getResult()->getID();
-        $this->i_id = $i_groupID;
+        /* Add users to group */
+        $i_groupID = $this->id;
+        $this->builder->select('users', 'id,staff');
+        $a_users = $this->builder->getResult()->fetch_assoc();
         
-        if ($this->i_default == 1) {
-            /* Add users to group */
-            $this->builder->select('users', 'id,staff');
-            $a_users = $this->builder->getResult()->fetch_assoc();
+        foreach ($a_users as $a_user) {
+            $i_level = 0;
+            if ($a_user['staff'] == \Session::ADMIN)
+                $i_level = 2;
             
-            foreach ($a_users as $a_user) {
-                $i_level = 0;
-                if ($a_user['staff'] == \Session::ADMIN)
-                    $i_level = 2;
-                
-                $this->builder->insert('group_users', array(
-                    'groupID',
-                    'userid',
-                    'level'
-                ), array(
-                    'i',
-                    'i',
-                    's'
-                ), array(
-                    $i_groupID,
-                    $a_user['id'],
-                    $i_level
-                ));
-                $this->builder->getResult();
-            }
+            $this->builder->insert('group_users');
+            $this->builder->bindInt('groupID', $i_groupID)
+                ->bindInt('userid', $a_user['id'])
+                ->bindString('level', $i_level);
+            $this->builder->getResult();
         }
-    }
-
-    /**
-     * Saves the changed group
-     */
-    public function persist()
-    {
-        if (is_null($this->i_id)) {
-            return;
-        }
-        $this->performValidation();
-        
-        $this->builder->update('groups', array(
-            'name',
-            'description',
-            'automatic'
-        ), array(
-            's',
-            's',
-            's',
-            'i'
-        ), array(
-            $this->s_name,
-            $this->s_description,
-            $this->i_default,
-            $this->i_id
-        ))->getResult();
     }
 
     /**
      * Deletes the group
+     * 
+     * @see \youconix\core\models\Equivalent::delete()
      */
-    public function deleteGroup()
+    public function delete()
     {
         /* Check if group is in use */
         if ($this->inUse()) {
@@ -301,12 +231,10 @@ class Group extends \youconix\core\models\Model
         
         $this->builder->delete("group_users")
             ->getWhere()
-            ->addAnd('groupID', 'i', $this->i_id);
+            ->bindInt('groupID', $this->id);
         $this->builder->getResult();
-        $this->builder->delete("groups")
-            ->getWhere()
-            ->addAnd('id', 'i', $this->i_id);
-        $this->builder->getResult();
+        
+        parent::delete();
     }
 
     /**
@@ -326,19 +254,11 @@ class Group extends \youconix\core\models\Model
             $i_level = 0;
         
         if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
-            $this->builder->insert("group_users", array(
-                'groupID',
-                'userid',
-                'level'
-            ), array(
-                'i',
-                'i',
-                's'
-            ), array(
-                $this->i_id,
-                $i_userid,
-                $i_level
-            ))->getResult();
+            $this->builder->insert("group_users")
+                ->bindInt('groupID', $this->i_id)
+                ->bindInt('userid', $i_userid)
+                ->bindString('level', $i_level)
+                ->getResult();
         }
     }
 
@@ -366,27 +286,20 @@ class Group extends \youconix\core\models\Model
         if ($i_level == - 1) {
             $this->builder->delete("group_users")
                 ->getWhere()
-                ->addAnd('userid', 'i', $i_userid);
+                ->bindInt('userid', $i_userid);
             $this->builder->getResult();
         } else 
             if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
-                $this->builder->insert("group_users", array(
-                    'groupID',
-                    'userid',
-                    'level'
-                ), array(
-                    'i',
-                    'i',
-                    's'
-                ), array(
-                    $this->i_id,
-                    $i_userid,
-                    $i_level
-                ))->getResult();
+                $this->builder->insert("group_users")
+                    ->bindInt('groupID', $this->i_id)
+                    ->bindInt('userid', $i_userid)
+                    ->bindString('level', $i_level)
+                    ->getResult();
             } else {
-                $this->builder->update("group_users", 'level', 's', $i_level)
+                $this->builder->update("group_users")
+                    ->bindString('level', $i_level)
                     ->getWhere()
-                    ->addAnd('userid', 'i', $i_userid);
+                    ->bindInt('userid', $i_userid);
                 $this->builder->getResult();
             }
     }
@@ -399,14 +312,16 @@ class Group extends \youconix\core\models\Model
         if ($this->i_default == 0)
             return;
         
-        $a_users = Memory::models('Users')->getUserIDs();
+        $this->builder->select('users', 'userid')->bindString('active','1')->bindString('blocked','0');
+        $database = $this->builder->getResult();
+        $a_users = $database->fetch_assoc();
         $a_currentUsers = array();
         $this->builder->select("group_users", "userid")
             ->getWhere()
-            ->addAnd("groupID", 'i', $this->i_id);
-        $service_Database = $this->builder->getResult();
-        if ($service_Database->num_rows() > 0) {
-            $a_currentUsers = $service_Database->fetch_assoc_key('userid');
+            ->bindInt('groupID', $this->id);
+        $database = $this->builder->getResult();
+        if ($database->num_rows() > 0) {
+            $a_currentUsers = $database->fetch_assoc_key('userid');
         }
         $i_level = \Session::USER;
         
@@ -414,19 +329,11 @@ class Group extends \youconix\core\models\Model
             if (array_key_exists($i_user, $a_currentUsers))
                 continue;
             
-            $this->builder->insert("group_users", array(
-                'groupID',
-                'userid',
-                'level'
-            ), array(
-                'i',
-                'i',
-                'i'
-            ), array(
-                $this->i_id,
-                $i_user,
-                $i_level
-            ))->getResult();
+            $this->builder->insert("group_users")
+                ->bindInt('groupID', $this->id)
+                ->bindInt('userid', $i_user)
+                ->bindString('level', $i_level)
+                ->getResult();
         }
     }
 
@@ -443,16 +350,8 @@ class Group extends \youconix\core\models\Model
         if ($this->getLevelByGroupID($i_userid) != \Session::ANONYMOUS) {
             $this->builder->delete('group_users')
                 ->getWhere()
-                ->addAnd(array(
-                'groupID',
-                'userid'
-            ), array(
-                'i',
-                'i'
-            ), array(
-                $this->i_id,
-                $i_userid
-            ));
+                ->bindInt('groupID', $this->id)
+                ->bindInt('userid', $i_userid);
             $this->builder->getResult();
         }
     }
@@ -464,14 +363,14 @@ class Group extends \youconix\core\models\Model
      */
     public function inUse()
     {
-        if (is_null($this->i_id))
+        if (is_null($this->id))
             return false;
         
         $this->builder->select('group_users', 'id')
             ->getWhere()
-            ->addAnd('groupID', 'i', $this->i_id);
-        $service_Database = $this->builder->getResult();
-        if ($service_Database->num_rows() == 0)
+            ->bindInt('groupID', $this->id);
+        $database = $this->builder->getResult();
+        if ($database->num_rows() == 0)
             return false;
         
         return true;

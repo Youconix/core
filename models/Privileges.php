@@ -17,31 +17,31 @@ class Privileges
      *
      * @var \Headers
      */
-    private $headers;
+    protected $headers;
 
     /**
      *
      * @var \Config
      */
-    private $config;
+    protected $config;
 
     /**
      *
      * @var \Builder
      */
-    private $builder;
+    protected $builder;
 
     /**
      *
      * @var \Session
      */
-    private $session;
+    protected $session;
 
     /**
      *
      * @var \youconix\core\models\Groups
      */
-    private $groups;
+    protected $groups;
 
     /**
      * PHP 5 constructor
@@ -95,8 +95,7 @@ class Privileges
         
         if ($i_group == - 1 || $i_level == - 1) {
             $this->builder->select('group_pages', 'groupID,minLevel')
-                ->getWhere()
-                ->addAnd('page', 's', $this->config->getPage());
+                ->getWhere()->bindString('page', $this->config->getPage());
             $service_Database = $this->builder->getResult();
             
             $i_group = 1;
@@ -222,17 +221,8 @@ class Privileges
     {
         if ($i_commandLevel != - 1) {
             $this->builder->select('group_pages_command', 'groupID,minLevel')
-                ->getWhere()
-                ->addAnd(array(
-                'page',
-                'command'
-            ), array(
-                's',
-                's'
-            ), array(
-                $this->config->getPage(),
-                $this->config->getCommand()
-            ));
+                ->getWhere()->bindString('page',$this->config->getPage())->bindString('command',$this->config->getCommand());
+            
             $service_Database = $this->builder->getResult();
             if ($service_Database->num_rows() > 0) {
                 $i_commandLevel = (int) $service_Database->result(0, 'minLevel');

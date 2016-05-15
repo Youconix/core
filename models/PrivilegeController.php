@@ -113,16 +113,9 @@ class PrivilegeController extends \youconix\core\models\Model
         $this->builder->select('group_pages', '*')
             ->order('groupID')
             ->getWhere()
-            ->addOr(array(
-            'page',
-            'page'
-        ), array(
-            's',
-            's'
-        ), array(
-            $s_page,
-            substr($s_page, 1)
-        ));
+            ->bindString('page', $s_page)
+            ->bindString('page', substr($s_page, 1));
+        
         $database = $this->builder->getResult();
         
         if ($database->num_rows() > 0) {
@@ -137,7 +130,8 @@ class PrivilegeController extends \youconix\core\models\Model
         $this->builder->select('group_pages_command', '*')
             ->order('groupID')
             ->getWhere()
-            ->addAnd('page', 's', $s_page);
+            ->bindString('page', $s_page);
+        
         $database = $this->builder->getResult();
         
         if ($database->num_rows() > 0) {
@@ -159,26 +153,13 @@ class PrivilegeController extends \youconix\core\models\Model
      */
     public function changePageRights($s_page, $i_rights, $i_group)
     {
-        $this->builder->update('group_pages', array(
-            'groupID',
-            'minLevel'
-        ), array(
-            'i',
-            'i'
-        ), array(
-            $i_group,
-            $i_rights
-        ));
-        $this->builder->getWhere()->addOr(array(
-            'page',
-            'page'
-        ), array(
-            's',
-            's'
-        ), array(
-            $s_page,
-            substr($s_page, 1)
-        ));
+        $this->builder->update('group_pages')
+            ->bindInt('groupID', $i_group)
+            ->bindInt('minLevel', $i_rights)
+            ->getWhere()
+            ->bindString('page', $s_page)
+            ->bindString('page', substr($s_page, 1));
+        
         $database = $this->builder->getResult();
         
         if ($database->affected_rows() == 0) {
@@ -198,19 +179,11 @@ class PrivilegeController extends \youconix\core\models\Model
      */
     public function addPageRights($s_page, $i_rights, $i_group)
     {
-        $this->builder->insert('group_pages', array(
-            'groupID',
-            'minLevel',
-            'page'
-        ), array(
-            'i',
-            'i',
-            's'
-        ), array(
-            $i_group,
-            $i_rights,
-            $s_page
-        ));
+        $this->builder->insert('group_pages')
+            ->bindInt('groupID', $i_group)
+            ->bindInt('minLevel', $i_rights)
+            ->bindString('page', $s_page);
+        
         $this->builder->getResult();
     }
 
@@ -228,31 +201,17 @@ class PrivilegeController extends \youconix\core\models\Model
         try {
             $this->builder->transaction();
             
-            $this->builder->delete('group_pages');
-            $this->builder->getWhere()->addOr(array(
-                'page',
-                'page'
-            ), array(
-                's',
-                's'
-            ), array(
-                $s_page,
-                substr($s_page, 1)
-            ));
-            $this->builder->getResult();
+            $this->builder->delete('group_pages')
+                ->getWhere()
+                ->bindString('page', $s_page)
+                ->bindString('page', substr($s_page, 1))
+                ->getResult();
             
-            $this->builder->delete('group_pages_command');
-            $this->builder->getWhere()->addOr(array(
-                'page',
-                'page'
-            ), array(
-                's',
-                's'
-            ), array(
-                $s_page,
-                substr($s_page, 1)
-            ));
-            $this->builder->getResult();
+            $this->builder->delete('group_pages_command')
+                ->getWhere()
+                ->bindString('page', $s_page)
+                ->bindString('page', substr($s_page, 1))
+                ->getResult();
             
             $this->builder->commit();
         } catch (\DBException $e) {
@@ -280,51 +239,25 @@ class PrivilegeController extends \youconix\core\models\Model
             
             $this->builder->select('group_pages_command', 'id')
                 ->getWhere()
-                ->addAnd(array(
-                'page',
-                'command',
-                'groupID'
-            ), array(
-                's',
-                's',
-                'i'
-            ), array(
-                $s_page,
-                $s_command,
-                $i_group
-            ));
+                ->bindstring('page', $s_page)
+                ->bindString('command', $s_command)
+                ->bindInt('groupID', $i_group);
+            
             $database = $this->builder->getResult();
             if ($database->num_rows() > 0) {
                 $i_id = $database->result(0, 'id');
-                $this->builder->update('group_pages_command', 'minLevel', 'i', $i_rights);
-                $this->builder->getWhere()->addAnd(array(
-                    'page',
-                    'command'
-                ), array(
-                    's',
-                    's'
-                ), array(
-                    $s_page,
-                    $s_command
-                ));
-                $this->builder->getResult();
+                $this->builder->update('group_pages_command')
+                    ->bindInt('minLevel', $i_rights)
+                    ->getWhere()
+                    ->bindString('page', $s_page)
+                    ->bindString('command', $s_command)
+                    ->getResult();
             } else {
-                $this->builder->insert('group_pages_command', array(
-                    'page',
-                    'command',
-                    'minLevel',
-                    'groupID'
-                ), array(
-                    's',
-                    's',
-                    'i',
-                    'i'
-                ), array(
-                    $s_page,
-                    $s_command,
-                    $i_rights,
-                    $i_group
-                ));
+                $this->builder->insert('group_pages_command')
+                    ->bindString('page', $s_page)
+                    ->bindString('command', $s_command)
+                    ->bindInt('minLevel', $i_rights)
+                    ->bindInt($i_group);
                 $database = $this->builder->getResult();
                 $i_id = $database->getId();
             }
@@ -348,7 +281,7 @@ class PrivilegeController extends \youconix\core\models\Model
     {
         $this->builder->delete('group_pages_command')
             ->getWhere()
-            ->addAnd('id', 'i', $i_id);
-        $this->builder->getResult();
+            ->bindInt('id', $i_id)
+            ->getResult();
     }
 }

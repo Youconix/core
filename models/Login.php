@@ -8,7 +8,7 @@ namespace youconix\core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-class Login extends LoginParent
+class Login extends \youconix\core\models\LoginParent
 {
 
     /**
@@ -77,59 +77,40 @@ class Login extends LoginParent
         
         /* Check the login combination */
         $this->builder->select('users', '*');
-        $this->builder->getWhere()->addAnd(array(
-            'nick',
-            'password',
-            'active',
-            'loginType'
-        ), array(
-            's',
-            's',
-            's',
-            's'
-        ), array(
-            $s_username,
-            $s_passwordHash,
-            '1',
-            'normal'
-        ));
-        $service_Database = $this->builder->getResult();
+        $this->builder->getWhere()
+            ->bindString('nick', $s_username)
+            ->bindString('password', $s_passwordHash)
+            ->bindString('active', '1')
+            ->bindString('loginType', 'normal');
         
-        if ($service_Database->num_rows() == 0) {
+        $database = $this->builder->getResult();
+        
+        if ($database->num_rows() == 0) {
             /* Check old way */
             $s_password = $this->hashPassword($s_password, $s_username);
             $this->builder->select('users', '*');
-            $this->builder->getWhere()->addAnd(array(
-                'nick',
-                'password',
-                'active',
-                'loginType'
-            ), array(
-                's',
-                's',
-                's',
-                's'
-            ), array(
-                $s_username,
-                $s_password,
-                '1',
-                'normal'
-            ));
-            $service_Database = $this->builder->getResult();
-            if ($service_Database->num_rows() == 0) {
+            $this->builder->getWhere()
+                ->bindString('nick', $s_username)
+                ->bindString('password', $s_password)
+                ->bindString('active', '1')
+                ->bindString('loginType', 'normal');
+            
+            $database = $this->builder->getResult();
+            if ($database->num_rows() == 0) {
                 return;
             }
             
             /* Update user record */
-            $i_id = $service_Database->result(0, 'id');
+            $i_id = $database->result(0, 'id');
             $builder = clone $this->builder;
-            $builder->update('users', 'password', 's', $s_passwordHash)
+            $builder->update('users')
+                ->bindString('password', $s_passwordHash)
                 ->getWhere()
-                ->addAnd('id', 'i', $i_id);
+                ->bindInt('id', $i_id);
             $builder->getResult();
         }
         
-        $a_data = $service_Database->fetch_assoc();
+        $a_data = $database->fetch_assoc();
         $user = $this->user->createUser();
         $user->setData($a_data[0]);
         if ($bo_autologin) {
@@ -149,28 +130,19 @@ class Login extends LoginParent
     {
         $this->builder->select('users', 'id,loginType,nick')
             ->getWhere()
-            ->addAnd(array(
-            'active',
-            'blocked',
-            'email'
-        ), array(
-            's',
-            's',
-            's'
-        ), array(
-            1,
-            0,
-            $s_email
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindString('active', 1)
+            ->bindString('blocked', 0)
+            ->bindString('email', $s_email);
         
-        if ($service_Database->num_rows() == 0) {
+        $database = $this->builder->getResult();
+        
+        if ($database->num_rows() == 0) {
             return 0;
         }
         
-        $s_username = $service_Database->result(0, 'nick');
-        $i_userid = $service_Database->result(0, 'id');
-        $s_loginType = $service_Database->result(0, 'loginType');
+        $s_username = $database->result(0, 'nick');
+        $i_userid = $database->result(0, 'id');
+        $s_loginType = $database->result(0, 'loginType');
         
         if ($s_loginType != 'normal') {
             return - 1;
@@ -180,22 +152,12 @@ class Login extends LoginParent
         $s_hash = sha1($s_username . $this->random->numberLetter(20, true) . $s_email);
         
         $s_passwordHash = $this->hashPassword($s_newPassword, $s_username);
-        $this->builder->insert('password_codes', array(
-            'userid',
-            'code',
-            'password',
-            'expire'
-        ), array(
-            'i',
-            's',
-            's',
-            'i'
-        ), array(
-            $i_userid,
-            $s_hash,
-            $s_passwordHash,
-            (time() + 86400)
-        ))->getResult();
+        $this->builder->insert('password_codes')
+            ->bindInt('userid', $i_userid)
+            ->bindString('code', $s_hash)
+            ->bindString('password', $s_passwordHash)
+            ->bindInt('expire', (time() + 86400))
+            ->getResult();
         
         $this->mailer->passwordResetMail($s_username, $s_email, $s_newPassword, $s_hash);
         
@@ -213,67 +175,37 @@ class Login extends LoginParent
     {
         $this->builder->select('password_codes', 'userid,password')
             ->getWhere()
-            ->addAnd(array(
-            'code',
-            'expire'
-        ), array(
-            's',
-            'i'
-        ), array(
-            $s_hash,
-            time()
-        ), array(
-            '=',
-            '>'
-        ));
+            ->bindString('code', $s_hash)
+            ->bindInt('expire', time(), 'AND', '>');
         
-        $service_Database = $this->builder->getResult();
-        if ($service_Database->num_rows() == 0) {
+        $database = $this->builder->getResult();
+        if ($database->num_rows() == 0) {
             return false;
         }
         
-        $i_userid = $service_Database->result(0, 'userid');
-        $s_password = $service_Database->result(0, 'password');
+        $i_userid = $database->result(0, 'userid');
+        $s_password = $database->result(0, 'password');
         try {
             $this->builder->transaction();
             
             $this->builder->delete('password_codes')
                 ->getWhere()
-                ->addOr(array(
-                'code',
-                'expire'
-            ), array(
-                's',
-                'i'
-            ), array(
-                $s_hash,
-                time()
-            ), array(
-                '=',
-                '<'
-            ));
+                ->bindString('code', $s_hash)
+                ->bindInt('expire', time(), 'AND', '<');
             $this->builder->getResult();
             
             $this->builder->delete('ipban')
                 ->getWhere()
-                ->addAnd('ip', 's', $_SERVER['REMOTE_ADDR']);
+                ->bindString('ip', $_SERVER['REMOTE_ADDR']);
             $this->builder->getResult();
             $this->clearLoginTries();
             
-            $this->builder->update('users', array(
-                'password',
-                'active',
-                'password_expired'
-            ), array(
-                's',
-                's',
-                's'
-            ), array(
-                $s_password,
-                '1',
-                '1'
-            ));
-            $this->builder->getWhere()->addAnd('id', 'i', $i_userid);
+            $this->builder->update('users')
+                ->bindString('password', $s_password)
+                ->bindString('active', '1')
+                ->bindString('password_expired', '1')
+                ->getWhere()
+                ->bindInt('id', $i_userid);
             $this->builder->getResult();
             
             $this->builder->commit();
@@ -297,19 +229,20 @@ class Login extends LoginParent
         try {
             $this->builder->select('users', 'email')
                 ->getWhere()
-                ->addAnd('nick', 's', $s_username);
+                ->bindString('nick', $s_username);
             
-            $service_Database = $this->builder->getResult();
-            if ($service_Database->num_rows() == 0)
+            $database = $this->builder->getResult();
+            if ($database->num_rows() == 0)
                 return;
             
-            $s_email = $service_Database->result(0, 'email');
+            $s_email = $database->result(0, 'email');
             
             $this->builder->transaction();
             
-            $this->builder->update('users', 'active', 's', '0')
+            $this->builder->update('users')
+                ->bindString('active', '0')
                 ->getWhere()
-                ->addAnd('nick', 's', $s_username);
+                ->bindString('nick', $s_username);
             $this->builder->getResult();
             
             /* Send mail to user */

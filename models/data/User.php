@@ -10,7 +10,7 @@ namespace youconix\core\models\data;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class User extends \youconix\core\models\Model
+class User extends \youconix\core\models\Equivalent
 {
 
     /**
@@ -23,7 +23,7 @@ class User extends \youconix\core\models\Model
      *
      * @var \Language
      */
-    protected $language;
+    protected $obj_language;
 
     /**
      *
@@ -31,109 +31,120 @@ class User extends \youconix\core\models\Model
      */
     protected $hashing;
 
-    protected $i_userid = null;
+    /**
+     *
+     * @var int
+     */
+    protected $userid = null;
 
-    protected $s_username = '';
+    protected $username = '';
 
-    protected $s_email = '';
+    protected $email = '';
 
-    protected $i_bot = 0;
+    /**
+     *
+     * @var int
+     */
+    protected $bot = 0;
 
-    protected $i_registrated = 0;
+    /**
+     *
+     * @var int
+     */
+    protected $registrated = 0;
 
-    protected $i_loggedIn = 0;
+    /**
+     *
+     * @var int
+     */
+    protected $loggedIn = 0;
 
-    protected $i_active = 0;
+    /**
+     *
+     * @var int
+     */
+    protected $active = 0;
 
-    protected $i_blocked = 0;
+    /**
+     *
+     * @var int
+     */
+    protected $blocked = 0;
 
-    protected $i_passwordExpired = 0;
+    /**
+     *
+     * @var int
+     */
+    protected $passwordExpired = 0;
 
-    protected $s_password;
+    /**
+     *
+     * @var string
+     */
+    protected $password;
 
-    protected $s_profile = '';
+    /**
+     *
+     * @var string
+     */
+    protected $profile = '';
 
-    protected $s_activation = '';
+    /**
+     *
+     * @var string
+     */
+    protected $activation = '';
 
     protected $a_levels = array();
 
-    protected $s_loginType;
+    /**
+     *
+     * @var string
+     */
+    protected $loginType;
 
-    protected $s_language = '';
+    /**
+     *
+     * @var string
+     */
+    protected $language = '';
 
-    protected $i_bindToIp = false;
+    /**
+     *
+     * @var int
+     */
+    protected $bindToIp = 0;
 
     /**
      * PHP5 constructor
      *
      * @param \Builder $builder            
      * @param \Validation $validation            
+     * @param \youconix\core\models\EquavalentHelper $helper
      * @param \youconix\core\services\Hashing $hashing            
      * @param \youconix\core\models\Groups $groups            
      * @param \Language $language            
      */
-    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\services\Hashing $hashing, \youconix\core\models\Groups $groups, \Language $language)
+    public function __construct(\Builder $builder, \Validation $validation,\youconix\core\models\EquavalentHelper $helper, \youconix\core\services\Hashing $hashing, \youconix\core\models\Groups $groups, \Language $language)
     {
-        parent::__construct($builder, $validation);
+        parent::__construct($builder, $validation,$helper);
         $this->groups = $groups;
-        $this->language = $language;
+        $this->obj_language = $language;
         $this->hashing = $hashing;
         
         $this->a_validation = array(
-            's_username' => array(
-                'type' => 'string',
-                'required' => 1
-            ),
-            's_email' => array(
-                'type' => 'string',
-                'required' => 1,
-                'pattern' => 'email'
-            ),
-            'i_bot' => array(
-                'type' => 'enum',
-                'set' => array(
-                    0,
-                    1
-                )
-            ),
-            'i_registrated' => array(
-                'type' => 'enum',
-                'set' => array(
-                    0,
-                    1
-                )
-            ),
-            'i_active' => array(
-                'type' => 'enum',
-                'set' => array(
-                    0,
-                    1
-                )
-            ),
-            'i_blocked' => array(
-                'type' => 'enum',
-                'set' => array(
-                    0,
-                    1
-                )
-            ),
-            's_password' => array(
-                'type' => 'string',
-                'required' => 1
-            ),
-            's_profile' => array(
-                'type' => 'string'
-            ),
-            's_activation' => array(
-                'type' => 'string'
-            ),
-            's_loginType' => array(
-                'type' => 'string',
-                'required' => 1
-            ),
-            's_language' => array(
-                'type' => 'string'
-            )
+            'username' => 'type:string|required',
+            'email' => 'type:string|required|pattern:email',
+            'bot' => 'type:enum|required|set:0,1',
+            'registrated' => 'type:enum|required|set:0,1',
+            'active' => 'type:enum|required|set:0,1',
+            'blocked' => 'type:enum|required|set:0,1',
+            'password' => 'type:string|required',
+            'profile' => 'type:string',
+            'activation' => 'type:string',
+            'loginType' => 'type:string|required',
+            'language' => 'type:string',
+            'bindToIp' => 'type:enum|required|set:0,1',
         );
     }
 
@@ -150,14 +161,14 @@ class User extends \youconix\core\models\Model
         
         $this->builder->select('users', '*')
             ->getWhere()
-            ->addAnd('id', 'i', $i_userid);
-        $service_Database = $this->builder->getResult();
+            ->bindInt('id', $i_userid);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() == 0) {
+        if ($database->num_rows() == 0) {
             throw new \DBException("Unknown user with userid " . $i_userid);
         }
         
-        $a_data = $service_Database->fetch_assoc();
+        $a_data = $database->fetch_assoc();
         
         $this->setData($a_data[0]);
     }
@@ -172,25 +183,27 @@ class User extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('array', $a_data);
         
-        $this->i_userid = (int) $a_data['id'];
-        $this->s_username = $a_data['nick'];
-        $this->s_email = $a_data['email'];
-        $this->s_profile = $a_data['profile'];
-        $this->i_bot = (int) $a_data['bot'];
-        $this->i_registrated = (int) $a_data['registrated'];
-        $this->i_loggedIn = (int) $a_data['lastLogin'];
-        $this->i_active = (int) $a_data['active'];
-        $this->i_blocked = (int) $a_data['blocked'];
-        $this->s_loginType = $a_data['loginType'];
-        $this->s_language = $a_data['language'];
-        $this->i_passwordExpired = $a_data['password_expired'];
+        $this->userid = (int) $a_data['id'];
+        $this->username = $a_data['nick'];
+        $this->email = $a_data['email'];
+        $this->profile = $a_data['profile'];
+        $this->bot = (int) $a_data['bot'];
+        $this->registrated = (int) $a_data['registrated'];
+        $this->loggedIn = (int) $a_data['lastLogin'];
+        $this->active = (int) $a_data['active'];
+        $this->blocked = (int) $a_data['blocked'];
+        $this->loginType = $a_data['loginType'];
+        $this->language = $a_data['language'];
+        $this->passwordExpired = $a_data['password_expired'];
+        $this->bindToIp = $a_data['bindToIp'];
         
-        $s_systemLanguage = $this->language->getLanguage();
-        if (defined('USERID') && USERID == $this->i_userid && $this->s_language != $s_systemLanguage) {
-            if ($this->getLanguage() != $this->s_language) {
-                $this->builder->update('users', 'language', 's', $s_systemLanguage)
+        $s_systemLanguage = $this->obj_language->getLanguage();
+        if (defined('USERID') && USERID == $this->userid && $this->obj_language != $s_systemLanguage) {
+            if ($this->getLanguage() != $this->language) {
+                $this->builder->update('users')
+                    ->bindString('language', $s_systemLanguage)
                     ->getWhere()
-                    ->addAnd('id', 'i', $this->i_userid);
+                    ->bindInt('id', $this->userid);
                 $this->builder->getResult();
             }
         }
@@ -199,55 +212,53 @@ class User extends \youconix\core\models\Model
     /**
      * Returns the userid
      *
-     * @return int The userid
+     * @return int
      */
     public function getID()
     {
-        return $this->i_userid;
+        return $this->userid;
     }
 
     /**
      * Returns the username
      *
-     * @return string The username
+     * @return string
      */
     public function getUsername()
     {
-        return $this->s_username;
+        return $this->username;
     }
 
     /**
      * Sets the username
      *
-     * @param string $s_username
-     *            The new username
+     * @param string $s_username            
      */
     public function setUsername($s_username)
     {
         \youconix\core\Memory::type('string', $s_username);
-        $this->s_username = $s_username;
+        $this->username = $s_username;
     }
 
     /**
      * Returns the email address
      *
-     * @return string The email address
+     * @return string
      */
     public function getEmail()
     {
-        return $this->s_email;
+        return $this->email;
     }
 
     /**
      * Sets the email address
      *
-     * @param string $s_email
-     *            email address
+     * @param string $s_email            
      */
     public function setEmail($s_email)
     {
         \youconix\core\Memory::type('string', $s_email);
-        $this->s_email = $s_email;
+        $this->email = $s_email;
     }
 
     /**
@@ -267,25 +278,14 @@ class User extends \youconix\core\models\Model
         
         $this->s_password = $this->hashing->hashUserPassword($s_password, $s_salt);
         
+        $this->builder->update('users')->bindString('password', $this->password);
+        
         if ($bo_expired) {
-            $this->builder->update('users', array(
-                'password',
-                'password_expired'
-            ), array(
-                's',
-                's'
-            ), array(
-                $this->s_password,
-                '1'
-            ));
-            $this->builder->getWhere()->addAnd('id', 'i', $this->i_userid);
-            $this->builder->getResult();
-        } else {
-            $this->builder->update('users', 'password', 's', $this->s_password)
-                ->getWhere()
-                ->addAnd('id', 'i', $this->i_userid);
-            $this->builder->getResult();
+            $this->builder->bindString('password_expired', '1');
         }
+        
+        $this->builder->getWhere()->bindInt('id', $this->userid);
+        $this->builder->getResult();
     }
 
     /**
@@ -299,7 +299,7 @@ class User extends \youconix\core\models\Model
      */
     public function changePassword($s_passwordOld, $s_password)
     {
-        $s_salt = $this->getSalt($this->getUsername(), $this->s_loginType);
+        $s_salt = $this->getSalt($this->getUsername(), $this->loginType);
         if (is_null($s_salt)) {
             return false;
         }
@@ -309,35 +309,21 @@ class User extends \youconix\core\models\Model
         
         $this->builder->select('users', 'id')
             ->getWhere()
-            ->addAnd(array(
-            'id',
-            'password'
-        ), array(
-            'i',
-            's'
-        ), array(
-            $this->getID(),
-            $s_passwordOld
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindInt('id', $this->getID())
+            ->bindString('password', $s_passwordOld);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() == 0) {
+        if ($database->num_rows() == 0) {
             return false;
         }
         
-        $i_userid = $service_Database->result(0, 'id');
+        $i_userid = $database->result(0, 'id');
         
-        $this->builder->update('users', array(
-            'password',
-            'password_expired'
-        ), array(
-            's',
-            's'
-        ), array(
-            $s_password,
-            '0'
-        ));
-        $this->builder->getWhere()->addAnd('id', 'i', $i_userid);
+        $this->builder->update('users')
+            ->bindString('password', $s_password)
+            ->bindString('password_expired', '0')
+            ->getWhere()
+            ->bindInt('id', $i_userid);
         $this->builder->getResult();
         
         return true;
@@ -356,31 +342,23 @@ class User extends \youconix\core\models\Model
     {
         $this->builder->select('users', 'salt,id')
             ->getWhere()
-            ->addAnd(array(
-            'nick',
-            'active',
-            'loginType'
-        ), array(
-            's',
-            's',
-            's',
-            's'
-        ), array(
-            $s_username,
-            '1',
-            $s_loginType
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindString('nick', $s_username)
+            ->bindString('active', '1')
+            ->bindString('loginType', $s_loginType);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() == 0) {
+        if ($database->num_rows() == 0) {
             return null;
         }
         
-        $a_data = $service_Database->fetch_assoc();
+        $a_data = $database->fetch_assoc();
         
         if (empty($a_data[0]['salt'])) {
             $s_salt = $this->hashing->createSalt();
-            $this->builder->update('users', 'salt', 's', $s_salt)->getWhere('id', 'i', $a_data[0]['id']);
+            $this->builder->update('users')
+                ->bindString('salt', $s_salt)
+                ->getWhere()
+                ->bindInt('id', $a_data[0]['id']);
             $this->builder->getResult();
             
             return $s_salt;
@@ -396,7 +374,7 @@ class User extends \youconix\core\models\Model
      */
     public function isBot()
     {
-        return ($this->i_bot == 1);
+        return ($this->bot == 1);
     }
 
     /**
@@ -410,9 +388,9 @@ class User extends \youconix\core\models\Model
         \youconix\core\Memory::type('boolean', $bo_bot);
         
         if ($bo_bot) {
-            $this->i_bot = 1;
+            $this->bot = 1;
         } else {
-            $this->i_bot = 0;
+            $this->bot = 0;
         }
     }
 
@@ -422,7 +400,7 @@ class User extends \youconix\core\models\Model
      */
     public function isPasswordExpired()
     {
-        return ($this->i_passwordExpired == 1);
+        return ($this->passwordExpired == 1);
     }
 
     /**
@@ -431,17 +409,17 @@ class User extends \youconix\core\models\Model
      */
     public function isEnabled()
     {
-        return ($this->i_active == 1);
+        return ($this->active == 1);
     }
 
     /**
      * *
-     * 
+     *
      * @return int registration date as a timestamp
      */
     public function getRegistrated()
     {
-        return $this->i_registrated;
+        return $this->registrated;
     }
 
     /**
@@ -450,7 +428,7 @@ class User extends \youconix\core\models\Model
      */
     public function lastLoggedIn()
     {
-        return $this->i_loggedIn;
+        return $this->loggedIn;
     }
 
     /**
@@ -459,11 +437,12 @@ class User extends \youconix\core\models\Model
     public function updateLastLoggedIn()
     {
         $i_time = time();
-        $this->i_loggedIn = $i_time;
+        $this->loggedIn = $i_time;
         
-        $this->builder->update('users', 'lastLogin', 'i', $i_time)
+        $this->builder->update('users')
+            ->bindInt('lastLogin', $i_time)
             ->getWhere()
-            ->addAnd('id', 'i', $this->getID());
+            ->bindInt('id', $this->getID());
         $this->builder->getResult();
     }
 
@@ -473,7 +452,7 @@ class User extends \youconix\core\models\Model
      */
     public function isBlocked()
     {
-        return ($this->i_blocked == 1);
+        return ($this->blocked == 1);
     }
 
     /**
@@ -487,9 +466,9 @@ class User extends \youconix\core\models\Model
         \youconix\core\Memory::type('boolean', $bo_blocked);
         
         if ($bo_blocked) {
-            $this->i_blocked = 1;
+            $this->blocked = 1;
         } else {
-            $this->i_blocked = 0;
+            $this->blocked = 0;
         }
     }
 
@@ -500,38 +479,37 @@ class User extends \youconix\core\models\Model
      */
     public function setActivation($s_activation)
     {
-        $this->s_activation = $s_activation;
+        $this->activation = $s_activation;
     }
 
     /**
      * Returns the activation code
      *
-     * @return string The code
+     * @return string
      */
     public function getActivation()
     {
-        return $this->s_activation;
+        return $this->activation;
     }
 
     /**
      * Returns the profile text
      *
-     * @return string text
+     * @return string
      */
     public function getProfile()
     {
-        return $this->s_profile;
+        return $this->profile;
     }
 
     /**
      * Sets the profile text
      *
-     * @param string $s_text
-     *            text
+     * @param string $s_text            
      */
     public function setProfile($s_profile)
     {
-        $this->s_profile = $s_profile;
+        $this->profile = $s_profile;
     }
 
     /**
@@ -545,7 +523,7 @@ class User extends \youconix\core\models\Model
         $a_groupsUser = array();
         
         foreach ($a_groups as $obj_group) {
-            $i_level = $obj_group->getLevelByGroupID($this->i_userid);
+            $i_level = $obj_group->getLevelByGroupID($this->userid);
             
             if ($i_level != \Session::ANONYMOUS) {
                 $a_groupsUser[$obj_group->getID()] = $i_level;
@@ -567,11 +545,11 @@ class User extends \youconix\core\models\Model
         if (array_key_exists($i_groupid, $this->a_levels)) {
             return $this->a_levels[$i_groupid];
         }
-        if (is_null($this->i_userid)) {
+        if (is_null($this->userid)) {
             return \Session::ANONYMOUS;
         }
         
-        $this->a_levels[$i_groupid] = $this->groups->getLevel($this->i_userid, $i_groupid);
+        $this->a_levels[$i_groupid] = $this->groups->getLevel($this->userid, $i_groupid);
         return $this->a_levels[$i_groupid];
     }
 
@@ -580,7 +558,7 @@ class User extends \youconix\core\models\Model
      */
     public function disableAccount()
     {
-        $this->i_active = 0;
+        $this->active = 0;
     }
 
     /**
@@ -588,7 +566,7 @@ class User extends \youconix\core\models\Model
      */
     public function enableAccount()
     {
-        $this->i_active = 1;
+        $this->active = 1;
     }
 
     /**
@@ -673,9 +651,10 @@ class User extends \youconix\core\models\Model
      */
     public function expirePassword()
     {
-        $this->builder->update('users', 'password_expires', 's', 'i')
+        $this->builder->update('users')
+            ->bindstring('password_expires', '1')
             ->getWhere()
-            ->addAnd('id', 'i', $this->i_userid);
+            ->bindInt('id', $this->userid);
         $this->builder->getResult();
     }
 
@@ -686,7 +665,7 @@ class User extends \youconix\core\models\Model
      */
     public function getLanguage()
     {
-        return $this->s_language;
+        return $this->language;
     }
 
     /**
@@ -696,7 +675,7 @@ class User extends \youconix\core\models\Model
      */
     public function getLoginType()
     {
-        return $this->s_loginType;
+        return $this->loginType;
     }
 
     /**
@@ -706,102 +685,83 @@ class User extends \youconix\core\models\Model
      */
     public function setLoginType($s_type)
     {
-        $this->s_loginType = $s_type;
+        $this->loginType = $s_type;
+    }
+    
+    public function setBindToIp($bo_bind){
+        $this->bindToIp = 0;
+        if( $bo_bind ){
+            $this->bindToIp = 1;
+        }
+    }
+    
+    public function isBindedToIp(){
+        return ($this->bindToIp == 1);
     }
 
     /**
-     * Saves the new user in the database
+     * Saves the user
      */
     public function save()
     {
-        if (! is_null($this->i_userid)) {
-            $this->persist();
-            return;
+        if (is_null($this->id)) {
+            $this->add();
+        } else {
+            $this->update();
         }
         
+        $this->password = '';
+    }
+
+    /**
+     * Adds the new user in the database
+     */
+    protected function add()
+    {
         $this->performValidation();
         
-        $this->i_registrated = time();
+        $this->registrated = time();
         
-        $this->builder->insert('users', array(
-            'nick',
-            'email',
-            'password',
-            'bot',
-            'registrated',
-            'lastLogin',
-            'active',
-            'activation',
-            'profile',
-            'loginType'
-        ), array(
-            's',
-            's',
-            's',
-            's',
-            'i',
-            'i',
-            's',
-            's',
-            's',
-            's'
-        ), array(
-            $this->s_username,
-            $this->s_email,
-            $this->s_password,
-            $this->i_bot,
-            $this->i_registrated,
-            $this->i_loggedIn,
-            $this->i_active,
-            $this->s_activation,
-            $this->s_profile,
-            $this->s_loginType
-        ));
+        $this->builder->insert('users')
+            ->bindString('nick', $this->username)
+            ->bindString('email', $this->email)
+            ->bindString('password', $this->password)
+            ->bindString('bot', $this->bot)
+            ->bindInt('registrated', $this->registrated)
+            ->bindInt('lastLogin', $this->loggedIn)
+            ->bindString('active', $this->active)
+            ->bindString('activation', $this->activation)
+            ->bindString('profile', $this->profile)
+            ->bindString('loginType', $this->loginType)
+            ->bindInt('bindToIp',$this->bindToIp);
         
-        $this->i_userid = (int) $this->builder->getResult()->getId();
+        $this->userid = (int) $this->builder->getResult()->getId();
         
-        if ($this->i_userid == - 1) {
+        if ($this->userid == - 1) {
             return;
         }
         
-        $this->groups->addUserDefaultGroups($this->i_userid);
+        $this->groups->addUserDefaultGroups($this->userid);
     }
 
     /**
      * Saves the changed user in the database
      */
-    public function persist()
+    protected function update()
     {
-        if (is_null($this->i_userid)) {
-            $this->save();
-            return;
-        }
-        
+        $this->password = 'adklshjakbsdas'; // for validation
         $this->performValidation();
         
-        $this->builder->update('users', array(
-            'nick',
-            'email',
-            'bot',
-            'active',
-            'blocked',
-            'profile'
-        ), array(
-            's',
-            's',
-            's',
-            's',
-            's',
-            's'
-        ), array(
-            $this->s_username,
-            $this->s_email,
-            $this->i_bot,
-            $this->i_active,
-            $this->i_blocked,
-            $this->s_profile
-        ));
-        $this->builder->getWhere()->addAnd('id', 'i', $this->i_userid);
+        $this->builder->update('users')
+            ->bindString('nick', $this->username)
+            ->bindString('email', $this->email)
+            ->bindString('bot', $this->bot)
+            ->bindString('active', $this->active)
+            ->bindString('blocked', $this->blocked)
+            ->bindString('profile', $this->profile)
+            ->bindInt('bindToIp',$this->bindToIp)
+            ->getWhere()
+            ->bindInt('id', $this->userid);
         $this->builder->getResult();
     }
 
@@ -810,17 +770,17 @@ class User extends \youconix\core\models\Model
      */
     public function delete()
     {
-        if (is_null($this->i_userid)) {
+        if (is_null($this->userid)) {
             return;
         }
         
         /* Delete user from groups */
-        $this->groups->deleteGroupsUser($this->i_userid);
+        $this->groups->deleteGroupsUser($this->userid);
         
         $this->builder->delete('users')
             ->getWhere()
-            ->addAnd('id', 'i', $this->i_userid);
+            ->bindInt('id', $this->userid);
         $this->builder->getResult();
-        $this->i_userid = null;
+        $this->userid = null;
     }
 }

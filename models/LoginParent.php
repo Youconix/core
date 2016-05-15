@@ -1,5 +1,5 @@
 <?php
-namespace core\models;
+namespace youconix\core\models;
 
 /**
  * Parent authorisation class
@@ -8,7 +8,7 @@ namespace core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-abstract class LoginParent extends Model
+abstract class LoginParent extends \youconix\core\models\Model
 {
     /**
      *
@@ -82,58 +82,39 @@ abstract class LoginParent extends Model
         
         $this->builder->select('login_tries', 'tries')
             ->getWhere()
-            ->addAnd('hash', 's', $s_fingerprint);
-        $service_Database = $this->builder->getResult();
+            ->bindString('hash', $s_fingerprint);
         
-        if ($service_Database->num_rows() == 0) {
+        $database = $this->builder->getResult();
+        if ($database->num_rows() == 0) {
             $i_tries = 1;
             $this->builder->select('login_tries', 'tries')
                 ->getWhere()
-                ->addAnd(array(
-                'ip',
-                'timestamp'
-            ), array(
-                's',
-                'i',
-                'i'
-            ), array(
-                $_SERVER['REMOTE_ADDR'],
-                time(),
-                (time() - 3)
-            ), array(
-                '=',
-                'BETWEEN'
-            ));
-            $service_Database = $this->builder->getResult();
-            if ($service_Database->num_rows() > 10) {
+                ->bindString('ip',$_SERVER['REMOTE_ADDR'])
+                ->bindInt('timestamp',array(time(),(time() - 3)),'AND','BETWEEN');
+            
+            $database = $this->builder->getResult();
+
+            if ($database->num_rows() > 10) {
                 $i_tries = 6; // reject login to be sure
             }
             
-            $this->builder->insert('login_tries', array(
-                'hash',
-                'ip',
-                'tries',
-                'timestamp'
-            ), array(
-                's',
-                's',
-                'i',
-                'i'
-            ), array(
-                $s_fingerprint,
-                $_SERVER['REMOTE_ADDR'],
-                1,
-                time()
-            ))->getResult();
+            $this->builder->insert('login_tries')
+                ->bindString('hash',$s_fingerprint)
+                ->bindString('ip',$_SERVER['REMOTE_ADDR'])
+                ->bindInt('tries',1)
+                ->bindInt('timestamp',time())
+                ->getResult();
             
             return $i_tries;
         }
         
-        $i_tries = ($service_Database->result(0, 'tries') + 1);
-        $this->builder->update('login_tries', 'tries', 'l', 'tries + 1')
+        $i_tries = ($database->result(0, 'tries') + 1);
+        $this->builder->update('login_tries')
+            ->bindLiteral('tries', 'tries + 1')
             ->getWhere()
-            ->addAnd('hash', 's', $s_fingerprint);
+            ->bindString('hash', $s_fingerprint);
         $this->builder->getResult();
+        
         return $i_tries;
     }
 
@@ -146,7 +127,7 @@ abstract class LoginParent extends Model
         
         $this->builder->delete('login_tries')
             ->getWhere()
-            ->addAnd('hash', 's', $s_fingerprint);
+            ->bindString('hash',$s_fingerprint);
         $this->builder->getResult();
     }
 
@@ -167,24 +148,17 @@ abstract class LoginParent extends Model
         if ($this->i_tries == 6) {
             $this->builder->select('users', 'email')
                 ->getWhere()
-                ->addAnd(array(
-                'username',
-                'active'
-            ), array(
-                's',
-                's'
-            ), array(
-                $s_username,
-                '1'
-            ));
-            $service_Database = $this->builder->getResult();
+                ->bindString('username',$s_username)
+                ->bindString('active','1');
+            $database = $this->builder->getResult();
             
-            if ($service_Database->num_rows() > 0) {
-                $s_email = $service_Database->result(0, 'email');
+            if ($database->num_rows() > 0) {
+                $s_email = $database->result(0, 'email');
                 
-                $this->builder->update('users', 'active', '0')
+                $this->builder->update('users')
+                    ->bindString('active', '0')
                     ->getWhere()
-                    ->addAnd('username', 's', $s_username);
+                    ->bindString('username', $s_username);
                 $this->builder->getResult();
                 
                 $this->mailer->accountDisableMail($s_username, $s_email);
@@ -193,7 +167,9 @@ abstract class LoginParent extends Model
             $this->logs->accountBlockLog($s_username, 3);
         } else 
             if ($this->i_tries == 10) {
-                $this->builder->insert('ipban', 'ip', 's', $_SERVER['REMOTE_ADDR'])->getResult();
+                $this->builder->insert('ipban')
+                ->bindString('ip', $_SERVER['REMOTE_ADDR'])
+                ->getResult();
                 $this->ipBlockLog(6);
             } else {
             	$this->loginLog($s_username, 'failed', $this->i_tries);
@@ -247,7 +223,7 @@ abstract class LoginParent extends Model
         $i_lastLogin = $user->lastLoggedIn();
         $user->updateLastLoggedIn();
     
-        $this->session->setLogin($user->getID(), $user->getUsername(), $i_lastLogin);
+        $this->session->setLogin($user->getID(), $user->getUsername(), $i_lastLogin,$user->isBindedToIp());
     
         $this->headers->redirect($s_redirection);
     }
@@ -293,30 +269,22 @@ abstract class LoginParent extends Model
         $this->builder->select('users u', 'u.*');
         $this->builder->innerJoin('autologin al', 'u.id', 'al.userID')
         ->getWhere()
-        ->addAnd(array(
-            'al.id',
-            'al.IP'
-        ), array(
-            'i',
-            's'
-        ), array(
-            $i_id,
-            $_SERVER['REMOTE_ADDR']
-        ));
+        ->bindInt('al.id',$i_id)
+        ->bindString('al.IP',$_SERVER['REMOTE_ADDR']);
     
-        $service_Database = $this->builder->getResult();
-        if ($service_Database->num_rows() == 0) {
+        $database = $this->builder->getResult();
+        if ($database->num_rows() == 0) {
             return null;
         }
     
-        $a_data = $service_Database->fetch_assoc();
+        $a_data = $database->fetch_assoc();
         $user = $this->user->createUser();
         $user->setData($a_data);
     
         if ( $user->isBot() || !$user->isEnabled() || $user->isBlocked() ) {
             $this->builder->delete('autologin')
             ->getWhere()
-            ->addAnd('id', 'i', $i_id);
+            ->bindInt('id', $i_id);
             $this->builder->getResult();
             return null;
         }
@@ -335,7 +303,7 @@ abstract class LoginParent extends Model
             $this->cookie->delete('autologin', '/');
             $this->builder->delete('autologin')
             ->getWhere()
-            ->addAnd('userID', 'i', USERID);
+            ->bindInt('userID', USERID);
             $this->builder->getResult();
         }
     
@@ -364,14 +332,14 @@ abstract class LoginParent extends Model
         
         $this->builder->select('users', 'id, nick,lastLogin')
         ->getWhere()
-        ->addAnd('id', 'i', $i_userid);
-        $service_Database = $this->builder->getResult();
+        ->bindInt('id', $i_userid);
+        $database = $this->builder->getResult();
     
-        if ($service_Database->num_rows() == 0) {
+        if ($database->num_rows() == 0) {
             return;
         }
     
-        $a_data = $service_Database->fetch_assoc();
+        $a_data = $database->fetch_assoc();
     
         $this->session->setLoginTakeover($a_data[0]['id'], $a_data[0]['nick'], $a_data[0]['lastLogin']);
         $this->logs->info('login','Site admin '.$currentUser->getUsername().' has logged in as user '.$a_data[0]['nick'].' on '.date('Y-m-d H:i:s').'.');
@@ -442,28 +410,18 @@ abstract class LoginParent extends Model
             /* Set auto login for the next time */
             $this->builder->delete('autologin')
             ->getWhere()
-            ->addAnd('userID', 'i', $user->getID());
+            ->bindInt('userID', $user->getID());
             $this->builder->getResult();
         
-            $this->builder->insert('autologin', array(
-                'userID',
-                'username',
-                'type',
-                'IP'
-            ), array(
-                'i',
-                's',
-                's',
-                's'
-            ), array(
-                $user->getID(),
-                $user->getUsername(),
-                $user->getLoginType(),
-                $_SERVER['REMOTE_ADDR']
-            ));
-            $service_Database = $this->builder->getResult();
+            $this->builder->insert('autologin')
+                ->bindInt('userID',$user->getID())
+                ->bindString('username',$user->getUsername())
+                ->bindString('type',$user->getLoginType())
+                ->bindString('IP',$_SERVER['REMOTE_ADDR']);
+            
+            $database = $this->builder->getResult();
         
             $s_fingerprint = $this->session->getFingerprint();
-            $this->cookie->set('autologin', $s_fingerprint . ';' . $service_Database->getID(), '/');
+            $this->cookie->set('autologin', $s_fingerprint . ';' . $database->getID(), '/');
     }
 }

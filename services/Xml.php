@@ -141,7 +141,8 @@ class Xml extends Service
         if (is_null($this->obj_document)) {
             throw new \XMLException("No document loaded.");
         }
-        
+        print_r($this->obj_document->document);
+        echo $s_path;
         $a_return = $this->obj_document->query("//" . $s_path);
         
         if ($a_return->length < 1) {

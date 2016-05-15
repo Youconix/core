@@ -35,6 +35,8 @@ interface Builder
      *            name
      * @param string $s_fields
      *            names sepperated with a ,
+     *            
+     * @return \Builder
      */
     public function select($s_table, $s_fields);
 
@@ -42,37 +44,79 @@ interface Builder
      * Creates a insert statement
      *
      * @param string $s_table
-     *            name
-     * @param array $a_fields
-     *            names, also accepts a single value
-     * @param array $a_types
-     *            types : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param array $a_values
-     *            also accepts a single value
+     * @return \Builder
      */
-    public function insert($s_table, $a_fields, $a_types, $a_values);
+    public function insert($s_table);
 
     /**
      * Creates a update statement
      *
      * @param string $s_table
-     *            name
-     * @param array $a_fields
-     *            names, also accepts a single value
-     * @param array $a_types
-     *            types : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param array $a_values
-     *            also accepts a single value
+     * @return \Builder
      */
-    public function update($s_table, $a_fields, $a_types, $a_values);
+    public function update($s_table);
 
     /**
      * Creates a delete statement
      *
      * @param string $s_table
-     *            name
+     * @return \Builder
      */
     public function delete($s_table);
+    
+    /**
+     * Updates the given record with the unique field or inserts a new one if it does not exist
+     * 
+     * @param string $s_table
+     * @param string $s_unique
+     * @return \Builder
+     */
+    public function upsert($s_table,$s_unique);
+    
+    /**
+     * Binds a string value
+     * 
+     * @param string    $s_key  The field name
+     * @param string    $s_value    The value
+     * @return \Builder
+     */
+    public function bindString($s_key,$s_value);
+    
+    /**
+     * Binds an integer value
+     * 
+     * @param string    $s_key  The field name
+     * @param float $i_value    The value
+     * @return \Builder
+     */
+    public function bindInt($s_key,$i_value);
+    
+    /**
+     * Binds a float value
+     * 
+     * @param string    $s_key  The field name
+     * @param float     $fl_value   The value
+     * @return \Builder
+     */
+    public function bindFloat($s_key,$fl_value);
+    
+    /**
+     * Binds a binary value
+     * 
+     * @param string    $s_key  The field name
+     * @param binary $value The value
+     * @return \Builder
+     */
+    public function bindBlob($s_key,$value);
+    
+    /**
+     * Adds a literal statement
+     *  
+     * @param string    $s_key  The field name
+     * @param string $statement
+     * @return \Builder
+     */
+    public function bindLiteral($s_key,$statement);
 
     /**
      * Returns the create table generation class
@@ -280,6 +324,22 @@ interface Builder
      * @return string The database dump
      */
     public function dumpDatabase();
+    
+    /**
+     * Returns the table description
+     * 
+     * @param string $s_table
+     * @return array
+     */
+    public function describe($s_table);
+    
+    /**
+     * Returns the fields description
+     * 
+     * @param string $s_table
+     * @return array
+     */
+    public function decribeFields($s_table);
 }
 
 interface Where
@@ -289,36 +349,61 @@ interface Where
      * Resets the class Where
      */
     public function reset();
-
+    
     /**
-     * Adds fields with an and relation
+     * Binds a string value
      *
-     * @param array $a_fields
-     *            fields,also accepts a single value
-     * @param array $a_types
-     *            types : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param array $a_values
-     *            also accepts a single value
-     * @param array $a_keys
-     *            (=|<>|<|>|LIKE|IN|BETWEEN), also accepts a single value. leave empty for =
-     * @throws \DBException the key is invalid
+     * @param string    $s_field  The field name
+     * @param string    $s_value    The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Where
      */
-    public function addAnd($a_fields, $a_types, $a_values, $a_keys = array());
-
+    public function bindString($s_field,$s_value,$s_type = 'AND',$s_key = '=');
+    
     /**
-     * Adds fields with an or relation
+     * Binds an integer value
      *
-     * @param array $a_fields
-     *            fields,also accepts a single value
-     * @param array $a_types
-     *            types : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param array $a_values
-     *            also accepts a single value
-     * @param array $a_keys
-     *            (=|<>|<|>|LIKE|IN|BETWEEN), also accepts a single value. leave empty for =
-     * @throws \DBException the key is invalid
+     * @param string    $s_field  The field name
+     * @param float $i_value    The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Where
      */
-    public function addOr($a_fields, $a_types, $a_values, $a_keys = array());
+    public function bindInt($s_field,$i_value,$s_type = 'AND',$s_key = '=');
+    
+    /**
+     * Binds a float value
+     *
+     * @param string    $s_field  The field name
+     * @param float     $fl_value   The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Where
+     */
+    public function bindFloat($s_field,$fl_value,$s_type = 'AND',$s_key = '=');
+    
+    /**
+     * Binds a binary value
+     *
+     * @param string    $s_field  The field name
+     * @param binary $value The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Where
+     */
+    public function bindBlob($s_field,$value,$s_type = 'AND',$s_key = '=');
+    
+    /**
+     * Adds a literal statement
+     *
+     * @param string    $s_field  The field name
+     * @param string $statement
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Where
+     */
+    public function bindLiteral($s_field,$statement,$s_type = 'AND',$s_key = '=');
 
     /**
      * Starts a sub where part
@@ -351,6 +436,13 @@ interface Where
      * @return array where
      */
     public function render();
+    
+    /**
+     * Returns the query result (parent)
+     *
+     * @return DAL query result as a database object
+     */
+    public function getResult();
 }
 
 interface Having
@@ -362,34 +454,59 @@ interface Having
     public function reset();
 
     /**
-     * Adds fields with an and relation
+     * Binds a string value
      *
-     * @param array $a_fields
-     *            fields,also accepts a single value
-     * @param array $a_types
-     *            types : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param array $a_values
-     *            also accepts a single value
-     * @param array $a_keys
-     *            (=|<>|<|>|LIKE|IN|BETWEEN), also accepts a single value. leave empty for =
-     * @throws \DBException the key is invalid
+     * @param string    $s_field  The field name
+     * @param string    $s_value    The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Having
      */
-    public function addAnd($a_fields, $a_types, $a_values, $a_keys);
-
+    public function bindString($s_field,$s_value,$s_type = 'AND',$s_key = '=');
+    
     /**
-     * Adds fields with an or relation
+     * Binds an integer value
      *
-     * @param array $a_fields
-     *            fields,also accepts a single value
-     * @param array $a_types
-     *            types : l (SQL, no parse), i (int) ,d (double) ,s (string) or b (blob), also accepts a single value
-     * @param array $a_values
-     *            also accepts a single value
-     * @param array $a_keys
-     *            (=|<>|<|>|LIKE|IN|BETWEEN), also accepts a single value. leave empty for =
-     * @throws \DBException the key is invalid
+     * @param string    $s_field  The field name
+     * @param float $i_value    The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Having
      */
-    public function addOr($a_fields, $a_types, $a_values, $a_keys);
+    public function bindInt($s_field,$i_value,$s_type = 'AND',$s_key = '=');
+    
+    /**
+     * Binds a float value
+     *
+     * @param string    $s_field  The field name
+     * @param float     $fl_value   The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Having
+     */
+    public function bindFloat($s_field,$fl_value,$s_type = 'AND',$s_key = '=');
+    
+    /**
+     * Binds a binary value
+     *
+     * @param string    $s_field  The field name
+     * @param binary $value The value
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Having
+     */
+    public function bindBlob($s_field,$value,$s_type = 'AND',$s_key = '=');
+    
+    /**
+     * Adds a literal statement
+     *
+     * @param string    $s_field  The field name
+     * @param string $statement
+     * @param string    $s_type     The type (AND|OR), leave empty for AND
+     * @param string    $s_key      (=|<>|<|>|LIKE|IN|BETWEEN). leave empty for =
+     * @return \Having
+     */
+    public function bindLiteral($s_field,$statement,$s_type = 'AND',$s_key = '=');
 
     /**
      * Starts a sub having part
@@ -407,6 +524,13 @@ interface Having
      * @return array having
      */
     public function render();
+    
+    /**
+     * Returns the query result (parent)
+     *
+     * @return DAL query result as a database object
+     */
+    public function getResult();
 }
 
 interface Create
@@ -522,4 +646,11 @@ interface Create
      * @return string query
      */
     public function render();
+    
+    /**
+     * Returns the query result (parent)
+     *
+     * @return DAL query result as a database object
+     */
+    public function getResult();
 }

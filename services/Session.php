@@ -171,13 +171,15 @@ class Session extends \youconix\core\services\Service implements \Session
      *            of the user
      * @param int $i_lastLogin
      *            login as a timestamp
+     * @param bool  $bo_binded  Set true to bind the session to the ip
      */
-    public function setLogin($i_userid, $s_username, $i_lastLogin)
+    public function setLogin($i_userid, $s_username, $i_lastLogin,$bo_binded)
     {
         /* Get data */
-        $this->builder->update('users', 'lastLogin', 'i', time())
+        $this->builder->update('users')
+            ->bindInt('lastLogin', time())
             ->getWhere()
-            ->addAnd('id', 'i', $i_userid);
+            ->bindInt('id', $i_userid);
         $this->builder->getResult();
         
         session_regenerate_id(true);
@@ -188,6 +190,9 @@ class Session extends \youconix\core\services\Service implements \Session
         $this->set('username', $s_username);
         $this->set('fingerprint', $this->getFingerprint());
         $this->set('lastLogin', $i_lastLogin);
+        if( $bo_binded ){
+            $this->set('bind_ip','1');
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 namespace youconix\core\templating;
 
-abstract class BaseController implements \Routable
+abstract class BaseController
 {
 
     /**
@@ -48,21 +48,7 @@ abstract class BaseController implements \Routable
             \youconix\core\Memory::endProgram();
         }
     }
-
-    /**
-     * Routes the controller
-     *
-     * @see Routable::route()
-     */
-    public function route($s_command)
-    {
-        if (! method_exists($this, $s_command)) {
-            throw new \BadMethodCallException('Call to unkown method ' . $s_command . ' on class ' . get_class($this) . '.');
-        }
-        
-        $this->$s_command();
-    }
-
+    
     /**
      * Inits the class BaseClass
      */

@@ -14,7 +14,7 @@ namespace youconix\core\models;
  * @see core/services/Session.inc.php
  * @see core/models/data/Data_Group.inc.php
  */
-class Groups extends Model
+class Groups extends \youconix\core\models\Model
 {
 
     /**
@@ -110,9 +110,8 @@ class Groups extends Model
         
         if ($i_groupid == - 1) {
             $s_page = $this->config->getPage();
-            $this->builder->select('group_pages', 'groupID')
-                ->getWhere()
-                ->addAnd('page', 's', $s_page);
+            $this->builder->select('group_pages', 'groupID')->getWhere()->bindString('page',$s_page);
+                
             $service_Database = $this->builder->getResult();
             
             if ($service_Database->num_rows() == 0) {
@@ -140,17 +139,7 @@ class Groups extends Model
         \youconix\core\Memory::type('int', $i_userid);
         
         $this->builder->select('group_users', 'level')
-            ->getWhere()
-            ->addAnd(array(
-            'userid',
-            'groupID'
-        ), array(
-            'i',
-            'i'
-        ), array(
-            $i_userid,
-            $i_groupid
-        ));
+            ->getWhere()->bindInt('userid',$i_userid)->bindInt('groupID',$i_groupid);
         $service_Database = $this->builder->getResult();
         
         if ($service_Database->num_rows() > 0) {

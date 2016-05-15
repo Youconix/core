@@ -10,12 +10,6 @@ class IoC
      */
     protected $settings;
 
-    /**
-     *
-     * @var \Config
-     */
-    protected $config;
-
     public static $s_ruleSettings = '\youconix\core\services\Settings';
 
     public static $s_ruleFileHandler = '\youconix\core\services\FileHandler';
@@ -45,6 +39,7 @@ class IoC
         
         IoC::$a_rules['DAL'] = '\youconix\core\database\\' . $s_database;
         IoC::$a_rules['Builder'] = '\youconix\core\database\Builder_' . $s_database;
+        IoC::$a_rules['DatabaseParser'] =  '\youconix\core\database\Parser_'.$s_database;
     }
 
     protected function detectLogger()

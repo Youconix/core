@@ -46,48 +46,29 @@ class Stats extends \youconix\core\models\Model
         $i_datetime = mktime(date("H"), 0, 0, date("n"), date('j'), date("Y"));
         $this->builder->update('stats_hits', 'amount', 'l', 'amount + 1')
             ->getWhere()
-            ->addAnd('datetime', 'i', $i_datetime);
+            ->bindInt('datetime', $i_datetime);
         
         if ($this->builder->getResult()->affected_rows() == 0) {
-            $this->builder->insert('stats_hits', array(
-                'amount',
-                'datetime'
-            ), array(
-                'i',
-                'i'
-            ), array(
-                1,
-                $i_datetime
-            ))->getResult();
+            $this->builder->insert('stats_hits')
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $i_datetime)
+                ->getResult();
         }
         
-        $this->builder->update('stats_pages', 'amount', 'l', 'amount = amount + 1');
-        $this->builder->getWhere()->addAnd(array(
-            'datetime',
-            'name'
-        ), array(
-            'i',
-            's'
-        ), array(
-            $i_datetime,
-            $s_page
-        ));
-        $service_Database = $this->builder->getResult();
+        $this->builder->update('stats_pages')
+            ->bindLiteral('amount', 'amount = amount + 1')
+            ->getWhere()
+            ->bindInt('datetime', $i_datetime)
+            ->bindString('name', $s_page);
         
-        if ($service_Database->affected_rows() == 0) {
-            $this->builder->insert('stats_pages', array(
-                'amount',
-                'datetime',
-                'name'
-            ), array(
-                'i',
-                'i',
-                's'
-            ), array(
-                1,
-                $i_datetime,
-                $s_page
-            ))->getResult();
+        $database = $this->builder->getResult();
+        
+        if ($database->affected_rows() == 0) {
+            $this->builder->insert('stats_pages')
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $i_datetime)
+                ->bindString('name', $s_page)
+                ->getResult();
         }
         
         /* Check unique */
@@ -95,38 +76,22 @@ class Stats extends \youconix\core\models\Model
         $i_end = mktime(23, 59, 59, date("n"), date('j'), date("Y"));
         $this->builder->select('stats_unique', 'id')
             ->getWhere()
-            ->addAnd(array(
-            'ip',
-            'datetime'
-        ), array(
-            's',
-            'i',
-            'i'
-        ), array(
-            $s_ip,
+            ->bindString('ip', $s_ip)
+            ->bindString('datetime', [
             $i_begin,
             $i_end
-        ), array(
-            '=',
-            'BETWEEN'
-        ));
+        ], 'AND', 'BETWEEN');
         
-        $service_Database = $this->builder->getResult();
-        if ($service_Database->num_rows() != 0) {
+        $database = $this->builder->getResult();
+        if ($database->num_rows() != 0) {
             return false;
         }
         
         /* Unique visitor */
-        $this->builder->insert('stats_unique', array(
-            'ip',
-            'datetime'
-        ), array(
-            's',
-            'i'
-        ), array(
-            $s_ip,
-            time()
-        ))->getResult();
+        $this->builder->insert('stats_unique')
+            ->bindString('ip', $s_ip)
+            ->bindInt('datetime', time())
+            ->getResult();
         
         return true;
     }
@@ -144,40 +109,21 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('string', $s_os);
         \youconix\core\Memory::type('string', $s_osType);
         
-        $this->builder->update('stats_OS', 'amount', 'l', 'amount + 1')
+        $this->builder->update('stats_OS')
+            ->bindLiteral('amount', 'l', 'amount + 1')
             ->getWhere()
-            ->addAnd(array(
-            'datetime',
-            'name',
-            'type'
-        ), array(
-            'i',
-            's',
-            's'
-        ), array(
-            $this->i_date,
-            $s_os,
-            $s_osType
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindInt('datetime', $this->i_date)
+            ->bindString('name', $s_os)
+            ->bindString('type', $s_osType);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->affected_rows() == 0) {
-            $this->builder->insert('stats_OS', array(
-                'name',
-                'amount',
-                'datetime',
-                'type'
-            ), array(
-                's',
-                'i',
-                'i',
-                's'
-            ), array(
-                $s_os,
-                1,
-                $this->i_date,
-                $s_osType
-            ))->getResult();
+        if ($database->affected_rows() == 0) {
+            $this->builder->insert('stats_OS')
+                ->bindString('name', $s_os)
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $this->i_date)
+                ->bindString('type', $s_osType)
+                ->getResult();
         }
     }
 
@@ -194,40 +140,21 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('string', $s_browser);
         \youconix\core\Memory::type('string', $s_version);
         
-        $this->builder->update('stats_browser', 'amount', 'l', 'amount + 1')
+        $this->builder->update('stats_browser')
+            ->bindLiteral('amount', 'l', 'amount + 1')
             ->getWhere()
-            ->addAnd(array(
-            'datetime',
-            'name',
-            'version'
-        ), array(
-            'i',
-            's',
-            's'
-        ), array(
-            $this->i_date,
-            $s_browser,
-            $s_version
-        ));
+            ->bindInt('datetime', $this->i_date)
+            ->bindString('name', $s_browser)
+            ->bindString('version', $s_version);
         
-        $service_Database = $this->builder->getResult();
-        if ($service_Database->affected_rows() == 0) {
-            $this->builder->insert('stats_browser', array(
-                'name',
-                'amount',
-                'datetime',
-                'version'
-            ), array(
-                's',
-                'i',
-                'i',
-                's'
-            ), array(
-                $s_browser,
-                1,
-                $this->i_date,
-                $s_version
-            ))->getResult();
+        $database = $this->builder->getResult();
+        if ($database->affected_rows() == 0) {
+            $this->builder->insert('stats_browser')
+                ->bindString('name', $s_browser)
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $this->i_date)
+                ->bindString('version', $s_version)
+                ->getResult();
         }
     }
 
@@ -241,46 +168,31 @@ class Stats extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_reference);
         
-        $s_reference = str_replace(array(
+        $s_reference = str_replace([
             '\\',
             'http://',
             'https://'
-        ), array(
+        ], [
             '/',
             '',
             ''
-        ), $s_reference);
+        ], $s_reference);
         $a_reference = explode('/', $s_reference);
         $s_reference = $a_reference[0];
         
-        $this->builder->update('stats_reference', 'amount', 'l', 'amount + 1')
+        $this->builder->update('stats_reference')
+            ->bindLiteral('amount', 'l', 'amount + 1')
             ->getWhere()
-            ->addAnd(array(
-            'datetime',
-            'name'
-        ), array(
-            'i',
-            's'
-        ), array(
-            $this->i_date,
-            $s_reference
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindInt('datetime', $this->i_date)
+            ->bindString('name', $s_reference);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->affected_rows() == 0) {
-            $this->builder->insert('stats_reference', array(
-                'name',
-                'amount',
-                'datetime'
-            ), array(
-                's',
-                'i',
-                'i'
-            ), array(
-                $s_reference,
-                1,
-                $this->i_date
-            ))->getResult();
+        if ($database->affected_rows() == 0) {
+            $this->builder->insert('stats_reference')
+                ->bindString('name', $s_reference)
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $this->i_date)
+                ->getResult();
         }
     }
 
@@ -297,40 +209,21 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_width);
         \youconix\core\Memory::type('int', $i_height);
         
-        $this->builder->update('stats_screenSizes', 'amount', 'l', 'amount + 1')
+        $this->builder->update('stats_screenSizes')
+            ->bindLiteral('amount', 'l', 'amount + 1')
             ->getWhere()
-            ->addAnd(array(
-            'datetime',
-            'width',
-            'height'
-        ), array(
-            'i',
-            'i',
-            'i'
-        ), array(
-            $this->i_date,
-            $i_width,
-            $i_height
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindInt('datetime', $this->i_date)
+            ->bindInt('width', $i_width)
+            ->bindInt('height', $i_height);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->affected_rows() == 0) {
-            $this->builder->insert('stats_screenSizes', array(
-                'width',
-                'height',
-                'amount',
-                'datetime'
-            ), array(
-                'i',
-                'i',
-                'i',
-                'i'
-            ), array(
-                $i_width,
-                $i_height,
-                1,
-                $this->i_date
-            ))->getResult();
+        if ($database->affected_rows() == 0) {
+            $this->builder->insert('stats_screenSizes')
+                ->bindInt('width', $i_width)
+                ->bindInt('height', $i_height)
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $this->i_date)
+                ->getResult();
         }
     }
 
@@ -344,34 +237,19 @@ class Stats extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_screenColors);
         
-        $this->builder->update('stats_screenColors', 'amount', 'l', 'amount + 1')
+        $this->builder->update('stats_screenColors')
+            ->bindLiteral('amount', 'amount + 1')
             ->getWhere()
-            ->addAnd(array(
-            'datetime',
-            'name'
-        ), array(
-            'i',
-            's'
-        ), array(
-            $this->i_date,
-            $s_screenColors
-        ));
-        $service_Database = $this->builder->getResult();
+            ->bindInt('datetime', $this->i_date)
+            ->bindString('name', $s_screenColors);
+        $database = $this->builder->getResult();
         
-        if ($service_Database->affected_rows() == 0) {
-            $this->builder->insert('stats_screenColors', array(
-                'name',
-                'amount',
-                'datetime'
-            ), array(
-                's',
-                'i',
-                'i'
-            ), array(
-                $s_screenColors,
-                1,
-                $this->i_date
-            ))->getResult();
+        if ($database->affected_rows() == 0) {
+            $this->builder->insert('stats_screenColors')
+                ->bindString('name', $s_screenColors)
+                ->bindInt('amount', 1)
+                ->bindInt('datetime', $this->i_date)
+                ->getResult();
         }
     }
 
@@ -393,17 +271,14 @@ class Stats extends \youconix\core\models\Model
         $this->builder->select('stats_hits', 'amount,datetime')
             ->group('datetime')
             ->getWhere()
-            ->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_hitsPre = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_hitsPre = $database->fetch_assoc();
             
             foreach ($a_hitsPre as $a_hit) {
                 $item = new \youconix\core\models\data\HitItem($a_hit['amount'], $a_hit['datetime']);
@@ -433,17 +308,14 @@ class Stats extends \youconix\core\models\Model
         $this->builder->select('stats_unique', 'datetime')
             ->group('datetime')
             ->getWhere()
-            ->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->bindtInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_uniquePre = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_uniquePre = $database->fetch_assoc();
             
             foreach ($a_uniquePre as $a_hit) {
                 $item = new \youconix\core\models\data\HitItem(1, $a_hit['datetime']);
@@ -468,7 +340,7 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_startDate);
         \youconix\core\Memory::type('int', $i_endDate);
         
-        $a_hits = array();
+        $a_hits = [];
         for ($i = 0; $i <= 23; $i ++) {
             $a_hits[$i] = 0;
         }
@@ -476,17 +348,14 @@ class Stats extends \youconix\core\models\Model
         $this->builder->select('stats_hits', 'amount,datetime')
             ->group('datetime')
             ->getWhere()
-            ->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_hitsPre = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_hitsPre = $database->fetch_assoc();
             
             foreach ($a_hitsPre as $a_hit) {
                 $a_hits[date('H', $a_hit['datetime'])] += $a_hit['amount'];
@@ -510,20 +379,18 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_startDate);
         \youconix\core\Memory::type('int', $i_endDate);
         
-        $a_pages = array();
+        $a_pages = [];
         $this->builder->select('stats_pages', 'name,SUM(amount) AS amount')
             ->group('name')
-            ->order('amount', 'DESC');
-        $this->builder->getWhere()->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->order('amount', 'DESC')
+            ->getWhere()
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
+        if ($database->num_rows() > 0) {
             $a_pages = $this->service_Database->fetch_assoc();
         }
         
@@ -539,11 +406,11 @@ class Stats extends \youconix\core\models\Model
      */
     protected function sortDate($a_data)
     {
-        $a_items = array();
-        $a_data2 = array();
+        $a_items = [];
+        $a_data2 = [];
         foreach ($a_data as $a_item) {
             if (! array_key_exists($a_item['type'], $a_data2)) {
-                $a_data2[$a_item['type']] = array();
+                $a_data2[$a_item['type']] = [];
             }
             
             $a_data2[$a_item['type']][str_replace(' ', '', $a_item['name'])] = $a_item;
@@ -577,20 +444,17 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_startDate);
         \youconix\core\Memory::type('int', $i_endDate);
         
-        $a_OS = array();
+        $a_OS = [];
         $this->builder->select('stats_OS', 'id,name,amount,type')
             ->getWhere()
-            ->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_data = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_data = $database->fetch_assoc();
             
             $a_OS = $this->sortDate($a_data);
         }
@@ -613,21 +477,19 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_startDate);
         \youconix\core\Memory::type('int', $i_endDate);
         
-        $a_browsers = array();
+        $a_browsers = [];
         $this->builder->select('stats_browser', 'id,name AS type,amount,CONCAT(name," ",version) AS name')
             ->group('name')
-            ->order('amount', 'DESC');
-        $this->builder->getWhere()->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->order('amount', 'DESC')
+            ->getWhere()
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_data = $service_Database->fetch_assoc_key('name');
+        if ($database->num_rows() > 0) {
+            $a_data = $database->fetch_assoc_key('name');
             $a_browsers = $this->sortDate($a_data);
         }
         
@@ -651,17 +513,14 @@ class Stats extends \youconix\core\models\Model
         $a_screenColors = array();
         $this->builder->select('stats_screenColors', 'name,amount')
             ->getWhere()
-            ->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_screenColors = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_screenColors = $database->fetch_assoc();
         }
         
         return $a_screenColors;
@@ -682,18 +541,17 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_endDate);
         
         $a_screenSizes = array();
-        $this->builder->select('stats_screenSizes', 'width,height,amount')->order('width', 'DESC', 'height', 'DESC');
-        $this->builder->getWhere()->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+        $this->builder->select('stats_screenSizes', 'width,height,amount')
+            ->order('width', 'DESC', 'height', 'DESC')
+            ->getWhere()
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_screenSizes = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_screenSizes = $database->fetch_assoc();
         }
         
         return $a_screenSizes;
@@ -713,21 +571,19 @@ class Stats extends \youconix\core\models\Model
         \youconix\core\Memory::type('int', $i_startDate);
         \youconix\core\Memory::type('int', $i_endDate);
         
-        $a_references = array();
+        $a_references = [];
         $this->builder->select('stats_reference', 'SUM(amount) AS amount,name')
             ->order('amount', 'DESC')
-            ->group('name');
-        $this->builder->getWhere()->addAnd('datetime', array(
-            'i',
-            'i'
-        ), array(
+            ->group('name')
+            ->getWhere()
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
-        ), 'BETWEEN');
-        $service_Database = $this->builder->getResult();
+        ], 'AND', 'BETWEEN');
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $a_references = $service_Database->fetch_assoc();
+        if ($database->num_rows() > 0) {
+            $a_references = $database->fetch_assoc();
         }
         
         return $a_references;
@@ -742,10 +598,10 @@ class Stats extends \youconix\core\models\Model
     {
         $i_date = - 1;
         $this->builder->select('stats_hits', $this->builder->getMinimun('datetime', 'date'));
-        $service_Database = $this->builder->getResult();
+        $database = $this->builder->getResult();
         
-        if ($service_Database->num_rows() > 0) {
-            $i_date = (int) $service_Database->result(0, 'date');
+        if ($database->num_rows() > 0) {
+            $i_date = (int) $database->result(0, 'date');
         }
         
         return $i_date;
@@ -789,36 +645,36 @@ class Stats extends \youconix\core\models\Model
             
             $this->builder->delete('stats_hits')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_pages')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_unique')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_screenSizes')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_screenColors')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_browser')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_reference')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             $this->builder->delete('stats_OS')
                 ->getWhere()
-                ->addAnd('datetime', 'i', $i_maxDate, '<');
-            $this->builder->getResult();
+                ->bindInt('datetime', $i_maxDate, 'AND', '<')
+                ->getResult();
             
             $this->builder->commit();
         } catch (\DBException $e) {

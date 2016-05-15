@@ -19,6 +19,11 @@ interface DAL
      * @return boolean True if the object is a singleton
      */
     public static function isSingleton();
+    
+    /**
+     * Resets the internal query cache.
+     */
+    public function reset();
 
     /**
      * Checks if the given connection-data is correct
@@ -75,6 +80,7 @@ interface DAL
 
     /**
      * Excequetes the given query on the selected database
+     * @deprecated      Use prepare instead
      *
      * @param string $s_query
      *            The query to excequte
@@ -85,6 +91,7 @@ interface DAL
 
     /**
      * Excequetes the given query on the selected database with binded parameters
+     * @deprecated      Use prepare instead
      *
      * @param string $s_query
      *            to excequte
@@ -96,6 +103,58 @@ interface DAL
      * @throws \DBException when the query failes
      */
     public function queryBinded($s_query, $a_types, $a_values);
+    
+    /**
+     * Excequetes the given query on the selected database
+     *
+     * @param string $s_query
+     * @throws Exception if the arguments are illegal
+     * @return \DAL
+     */
+    public function prepare($s_query);
+    
+    /**
+	 * Binds a string value
+	 *
+	 * @param string    $s_field  The field name
+	 * @param string    $s_value    The value
+	 * @return \DAL
+	 */
+	public function bindString($s_field,$s_value);
+	
+	/**
+	 * Binds an integer value
+	 *
+	 * @param string    $s_field  The field name
+	 * @param float $i_value    The value
+	 * @return \DAL
+	 */
+	public function bindInt($s_field,$i_value);
+	
+	/**
+	 * Binds a float value
+	 *
+	 * @param string    $s_field  The field name
+	 * @param float     $fl_value   The value
+	 * @return \DAL
+	 */
+	public function bindFloat($s_field,$fl_value);
+	
+	/**
+	 * Binds a binary value
+	 *
+	 * @param string    $s_field  The field name
+	 * @param binary $value The value
+	 * @return \DAL
+	 */
+	public function bindBlob($s_field,$value);
+    
+    /**
+     * Runs the query
+     *
+     * @throws  \DBException    If the query fails
+     */
+    public function exequte();
 
     /**
      * Returns the number of results from the last excequeted query
