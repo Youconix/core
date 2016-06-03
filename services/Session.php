@@ -250,11 +250,10 @@ class Session extends \youconix\core\services\Service implements \Session
      */
     public function getFingerprint()
     {
-        $s_encoding = str_replace(', sdch', '', $_SERVER['HTTP_ACCEPT_ENCODING']);
         if ($this->exists('bind_ip')) {
-            return sha1($_SERVER['REMOTE_ADDR'] . '-' . $_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']) . '-' . $s_encoding);
+            return sha1($_SERVER['REMOTE_ADDR'] . '-' . $_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']));
         } else {
-            return sha1($_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']) . '-' . $s_encoding);
+            return sha1($_SERVER['HTTP_USER_AGENT'] . '-' . $_SERVER['HTTP_HOST'] . '-' . $_SERVER['SERVER_SIGNATURE'] . '-' . strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']));
         }
     }
 }
