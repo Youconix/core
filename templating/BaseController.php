@@ -58,4 +58,8 @@ abstract class BaseController
         $this->get = $this->request->initGet($this->init_get);
         $this->post = $this->request->initPost($this->init_post);
     }
+    
+    public function getGUI(){
+        return '\includes\BaseLogicClass';
+    }
 }

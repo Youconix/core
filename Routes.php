@@ -126,6 +126,7 @@ class Routes {
 
       $s_controller = $route->getController();
       $s_method = $route->getMethod();
+      
       $a_arguments = $route->getArguments();
       if( !Routes::checkController($s_controller, $s_method, $a_arguments) ){
 	continue;
@@ -147,26 +148,21 @@ class Routes {
 
   private static function checkController($s_controller,$s_method,$a_arguments = []){
       if (!file_exists(WEB_ROOT . $s_controller.'.php')) {
-	return false;
+   	return false;
       }
 
       $s_caller = str_replace('/', '\\', $s_controller);
 
       $_SERVER['SCRIPT_NAME'] = $s_controller.'/'.$s_method;
-      
       $reflector = new \ReflectionClass($s_caller);
       if( !$reflector->hasMethod($s_method) ){
-	return false;
+   	return false;
       }
       if( !$reflector->getMethod($s_method)->isPublic() ){
+          echo('access');
 	throw new \RuntimeException('Can not call method '.$s_method.' from class '.$s_caller.'. Method is not public.');
       }
-      
       $class = \Loader::inject($s_caller);
-      if (!method_exists($class, $s_method)) {
-	$class = null;
-	return false;
-      }
 
       if( count($a_arguments) === 0 ){
 	call_user_func([$class,$s_method]);

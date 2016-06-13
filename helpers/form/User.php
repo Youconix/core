@@ -4,11 +4,16 @@ namespace youconix\core\helpers\form;
 class User extends \youconix\core\helpers\form\FormGenerator {
     protected function init()
     {
+        $user = $this->createItem('username', 'username');
+        $user->label = $this->language->get('system/admin/users/username');
+        $user->error_text = $this->language->get('system/admin/users/js/usernameEmpty');
+        
+        /*
         $username = clone $this->item;
         $username->setName('username');
         $username->setRequired();
-        $username->setLabel($this->language->get('system/admin/users/username'));
-        $username->setErrorMessages($this->language->get('system/admin/users/js/usernameEmpty'));
+        $username->
+        $username->
         $this->a_items['username'] = $username;
         
         $email = clone $this->item;
@@ -79,5 +84,9 @@ class User extends \youconix\core\helpers\form\FormGenerator {
         $bindToIp->setDefault(0);
         $bindToIp->setLabel($this->language->get('system/admin/users/bindToIp'));
         $this->a_items['bindToIp'] = $bindToIp;
+         * 
+         */
+        
+        
     }
 }

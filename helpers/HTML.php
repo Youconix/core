@@ -291,9 +291,7 @@ class HTML extends \youconix\core\helpers\Helper
      * @return \youconix\core\helpers\html\JavascriptLink
      */
     public function javascriptLink($s_link)
-    {
-        $this->checkClass('JavascriptLink', 'Head');
-        
+    {        
         return new \youconix\core\helpers\html\JavascriptLink($s_link, $this->s_htmlType);
     }
 

@@ -119,9 +119,9 @@ class Config extends Model implements \Config, \SplSubject
         
         $this->setDefaultValues($settings);
         
+        $this->detectPage();
+        
         $this->detectTemplateDir();
-	
-	$this->detectPage();
     }
 
     /**
@@ -346,9 +346,11 @@ class Config extends Model implements \Config, \SplSubject
         if (preg_match('#^/?vendor/#', $s_uri)) {
             $this->loadTemplateDir();
             preg_match('#^/?vendor/([a-zA-Z0-9\-_]+/[a-zA-Z0-0\-_]+)/#', $s_uri, $a_matches);
-            $this->templateDir = 'vendor' . DS . $a_matches[1];
+            if(count($a_matches) > 0 ){
+                $this->templateDir = 'vendor' . DS . $a_matches[1];
             
-            $this->stylesDir = substr($this->templateDir, 0, strrpos($this->templateDir, '/'));
+                $this->stylesDir = substr($this->templateDir, 0, strrpos($this->templateDir, '/'));
+            }
         } else 
             if (preg_match('#^/?admin/#', $s_uri)) {
                 $this->loadAdminTemplateDir();

@@ -13,20 +13,12 @@ namespace youconix\core\helpers\form;
  */
 abstract class FormGenerator
 {
-
-    /**
-     *
-     * @var \youconix\core\helpers\form\FormItem
-     */
-    protected $item;
-
     protected $a_items = array();
 
     protected $obj_data;
 
-    public function __construct(\youconix\core\helpers\form\FormItem $item, \youconix\core\helpers\HTML $generator, \Language $language)
+    public function __construct(\youconix\core\helpers\HTML $generator, \Language $language)
     {
-        $this->item = $item;
         $this->generator = $generator;
         $this->language = $language;
         
@@ -241,11 +233,11 @@ abstract class FormGenerator
         $a_fields = $this->getAddFields();
         $s_html = '';
         foreach ($a_fields as $field) {
-            $s_name = $field->getName();
-            $s_value = $field->getDefault();
+            $s_name = $field->name;
+            $s_value = $field->default;
             
             $s_html .= '<fieldset>
-                <label class="label" for="' . $s_name . '">' . $field->getLabel() . '</label>
+                <label class="label" for="' . $s_name . '">' . $field->label . '</label>
                 ' . $this->createField($field, $s_value) . '
             </fieldset>
             ';
@@ -262,10 +254,10 @@ abstract class FormGenerator
      */
     protected function createField($field, $s_value)
     {
-        $s_name = $field->getName();
+        $s_name = $field->name;
         $factory = $this->generator->getInputFactory();
         
-        switch ($field->getType()) {
+        switch ($field->type) {
             case 'textarea':
                 $item = $factory->textarea($s_name, $s_value);
                 break;
@@ -310,7 +302,7 @@ abstract class FormGenerator
                     }
                 }
             default:
-                $item = $factory->input($s_name, $field->getType(), $s_value, 'html-5');
+                $item = $factory->input($s_name, 'string', $s_value, 'html-5');
                 break;
         }
         
@@ -367,5 +359,24 @@ abstract class FormGenerator
         }
         
         return $s_html;
+    }
+    
+    protected function createItem($s_name,$s_fieldName,$bo_required = true){
+        $object = new \stdClass();
+        $object->type = 'string';
+        $object->name = $s_fieldName;
+        $object->required = $bo_required;
+        $object->label = null;
+        $object->error_text = null;
+        $object->min = null;
+        $object->max = null;
+        $object->step = null;
+        $object->default = null;
+        $object->values = null;
+        $object->validation = null;
+        
+        $this->a_items[$s_name] = $object;
+        
+        return $object;
     }
 }

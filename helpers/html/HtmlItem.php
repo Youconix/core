@@ -1,5 +1,5 @@
 <?php
-namespace \youconix\core\helpers\html;
+namespace youconix\core\helpers\html;
 
 /**
  * HTML parent class

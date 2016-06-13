@@ -13,62 +13,47 @@ namespace youconix\core\templating\gui;
  * @since 1.0
  * @see core/BaseClass.php
  */
-abstract class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
+class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
 {
 
     /**
+     * Base graphic class constructor
      *
-     * @var \Logger
-     */
-    protected $logs;
-
-    /**
-     * Admin class constructor
-     *
-     * @param \Input $Input            
      * @param \Config $config            
      * @param \Language $language            
      * @param \Output $template            
-     * @param \Logger $logs            
+     * @param \Header $header            
+     * @param \Menu $menu            
+     * @param \Footer $footer  
      */
-    public function __construct(\Input $Input, \Config $config, \Language $language, \Output $template, \Logger $logs)
+    public function __construct(\Config $config, \Language $language, \Output $template, \youconix\core\classes\HeaderAdmin $header, \youconix\core\classes\MenuAdmin $menu, \Footer $footer)
     {
         $this->config = $config;
         $this->language = $language;
         $this->template = $template;
-        $this->logs = $logs;
-        
-        $this->prepareInput($Input);
+        $this->header = $header;
+        $this->menu = $menu;
+        $this->footer = $footer;
         
         $this->init();
+        $this->showLayout();
     }
 
     /**
-     * Routes the controller
-     *
-     * @see Routable::route()
+     * Shows the header, menu and footer
      */
-    public function route($s_command)
-    {
-        if (! method_exists($this, $s_command)) {
-            throw new \BadMethodCallException('Call to unkown method ' . $s_command . ' on class ' . get_class($this) . '.');
-        }
-        
-        $this->$s_command();
-    }
-
-    /**
-     * Inits the class AdminLogicClass
-     *
-     * @see BaseLogicClass::init()
-     */
-    protected function init()
+    protected function showLayout()
     {
         if (! $this->config->isAjax()) {
-            exit();
+            // Write header
+            $this->header->createHeader();
+            
+            // Write Menu
+            $this->menu->generateMenu();
+            
+            // Call footer
+            $this->footer->createFooter();
         }
-        
-        parent::init();
     }
 }
 

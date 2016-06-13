@@ -434,8 +434,12 @@ class Mysqli extends \youconix\core\database\GeneralDAL
         $this->resetPointer();
         
         $a_temp = [];
-        while ($obj_res = $this->obj_query->fetch_object()) {
-            $a_temp[] = $a_obj;
+        while ($this->obj_query->fetch()) {
+            $object = new \stdClass();
+            foreach ($this->a_result as $s_key => $value) {
+                $object->$s_key = $value;
+            }
+            $a_temp[] = $object;
         }
         
         return $a_temp;

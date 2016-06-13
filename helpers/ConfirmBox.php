@@ -19,6 +19,10 @@ class ConfirmBox extends \youconix\core\helpers\Helper
      */
     protected $template;
 
+    /**
+     *
+     * @var \youconix\core\helpers\HTML
+     */
     protected $html;
 
     /**
@@ -39,8 +43,8 @@ class ConfirmBox extends \youconix\core\helpers\Helper
     public function create()
     {
         $css = $this->html->stylesheetLink('{NIV}{shared_style_dir}css/widgets/confirmbox.css', 'screen');
-        $this->template->setCssLink($css->createItem());
+        $this->template->setCssLink($css->generateItem());
         $javascript = $this->html->javascriptLink('{NIV}js/widgets/confirmbox.js');
-        $this->template->setJavascriptLink($javascript->createItem());
+        $this->template->setJavascriptLink($javascript->generateItem());
     }
 }

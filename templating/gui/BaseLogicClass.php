@@ -11,7 +11,6 @@ namespace youconix\core\templating\gui;
  * @author Rachelle Scheijen
  * @version 1.0
  * @since 1.0
- * @see core/BaseClass.php
  */
 class BaseLogicClass
 {
@@ -51,6 +50,12 @@ class BaseLogicClass
      * @var \Config
      */
     protected $config;
+    
+    /**
+     *
+     * @var \youconix\core\models\Meta
+     */
+    protected $meta;
 
     /**
      * Base graphic class constructor
@@ -60,9 +65,10 @@ class BaseLogicClass
      * @param \Output $template            
      * @param \Header $header            
      * @param \Menu $menu            
-     * @param \Footer $footer            
+     * @param \Footer $footer       
+     * @param \youconix\core\models\Meta $meta     
      */
-    public function __construct(\Config $config, \Language $language, \Output $template, \Header $header, \Menu $menu, \Footer $footer)
+    public function __construct(\Config $config, \Language $language, \Output $template, \Header $header, \Menu $menu, \Footer $footer,\youconix\core\models\Meta $meta)
     {
         $this->config = $config;
         $this->language = $language;
@@ -70,6 +76,7 @@ class BaseLogicClass
         $this->header = $header;
         $this->menu = $menu;
         $this->footer = $footer;
+        $this->meta = $meta;
         
         $this->init();
         $this->showLayout();
@@ -81,13 +88,16 @@ class BaseLogicClass
     protected function showLayout()
     {
         if (! $this->config->isAjax()) {
-            /* Call header */
+            // Write meta tags
+            $this->meta->write();
+            
+            // Write header
             $this->header->createHeader();
             
-            /* Call Menu */
+            // Write Menu
             $this->menu->generateMenu();
             
-            /* Call footer */
+            // Call footer
             $this->footer->createFooter();
         }
     }
