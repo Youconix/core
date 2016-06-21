@@ -60,6 +60,7 @@ class LanguageXML extends \youconix\core\services\Language
         
         /* Get encoding */
         $this->s_encoding = $this->get('language/encoding');
+        ini_set('default_encoding',$this->s_encoding);
     }
 
     /**
