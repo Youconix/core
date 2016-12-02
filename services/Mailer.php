@@ -79,26 +79,26 @@ class Mailer extends Service
      *            username
      * @param string $s_email
      *            email address
-     * @param string $s_registrationKey
-     *            activation code
+     * @param string $s_url
+     *            activation url
      * @return boolean if the email is send
      */
-    public function registrationMail($s_username, $s_email, $s_registrationKey)
+    public function registrationMail($s_username, $s_email, $s_url)
     {
         $a_mail = $this->getMail('registration');
         $s_body = $this->language->insert($a_mail['body'], array(
             'username',
-            'code'
+            'url'
         ), array(
             $s_username,
-            $s_registrationKey
+            $s_url
         ));
         $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username',
-            'code'
+            'url'
         ), array(
             $s_username,
-            $s_registrationKey
+            $s_url
         ));
         
         $obj_mailer = $this->getMailer();
@@ -159,28 +159,33 @@ class Mailer extends Service
      *            new plain text password
      * @param string $s_hash
      *            reset confirm code
+     * @param string $s_expire
      * @return boolean if the email is send
      */
-    public function passwordResetMail($s_username, $s_email, $s_newPassword, $s_hash)
+    public function passwordResetMail($s_username, $s_email, $s_newPassword, $s_url,$s_expire)
     {
         $a_mail = $this->getMail('passwordReset');
         $s_body = $this->language->insert($a_mail['body'], array(
             'username',
             'password',
-            'code'
+            'url',
+	    'expire'
         ), array(
             $s_username,
             $s_newPassword,
-            $s_hash
+            $s_url,
+	    $s_expire
         ));
         $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
             'username',
             'password',
-            'code'
+            'url',
+	    'expire'
         ), array(
             $s_username,
             $s_newPassword,
-            $s_hash
+            $s_url,
+	    $s_expire
         ));
         
         $obj_mailer = $this->getMailer();

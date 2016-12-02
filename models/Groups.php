@@ -52,15 +52,15 @@ class Groups extends \youconix\core\models\Model
         $this->builder->select('groups', '*')->order('id');
         $service_Database = $this->builder->getResult();
         
-        $a_groups = $service_Database->fetch_assoc();
-        foreach ($a_groups as $a_group) {
+        $a_groups = $service_Database->fetch_object();
+        foreach ($a_groups as $group) {
             $model = $this->group->cloneModel();
-            $model->setData($a_group);
-            $this->a_groups[$a_group['id']] = $model;
+            $model->setData($group);
+            $this->a_groups[$group->id] = $model;
             
-            $s_name = strtoupper($a_group['name']);
+            $s_name = strtoupper($group->name);
             if (! defined('GROUP_' . $s_name)) {
-                define('GROUP_' . $s_name, (int) $a_group['id']);
+                define('GROUP_' . $s_name, (int) $group->id);
             }
         }
     }

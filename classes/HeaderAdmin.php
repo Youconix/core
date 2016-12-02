@@ -13,19 +13,14 @@ namespace youconix\core\classes;
 class HeaderAdmin extends \youconix\core\classes\Header
 {
     /**
-     * Starts the class header
-     */
-    public function __construct(\Output $template, \Language $language, \youconix\core\models\User $model_User, \Config $model_Config)
-    {
-        parent::__construct($template, $language, $model_User, $model_Config);
-    }
-
-    /**
      * Generates the header
+     * 
+     * @param \Output $template
      */
-    public function createHeader()
+    public function createHeader(\Output $template)
     {
-        $obj_User = $this->user->get();
+      $this->template = $template;
+        $obj_User = $this->auth->getUser();
         
         $this->template->set('logout', $this->language->get('system/admin/menu/logout'));
         $this->template->set('close', $this->language->get('system/admin/menu/close'));

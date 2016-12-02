@@ -1,4 +1,5 @@
 <?php
+
 namespace youconix\core\classes;
 
 /**
@@ -12,197 +13,146 @@ namespace youconix\core\classes;
  */
 class MenuAdmin implements \Menu
 {
+  /**
+   *
+   * @var \Language
+   */
+  private $language;
 
-	/**
-	 * 
-	 * @var \Language
-	 */
-    private $language;
+  /**
+   * 
+   * @var \youconix\core\models\ControlPanelModules
+   */
+  private $controlPanelModules;
 
-    /**
-     * 
-     * @var \youconix\core\models\ControlPanelModules
-     */
-    private $controlPanelModules;
+  /**
+   *
+   * @var \youconix\core\services\Xml
+   */
+  private $xml;
 
-    /**
-     * 
-     * @var \youconix\core\services\Xml
-     */
-    private $xml;
+  /**
+   * 
+   * @var \Output
+   */
+  private $template;
+  private $a_menuTabHeader = [];
+  private $a_menu_tab_content = [];
 
-    /**
-     * 
-     * @var \Output
-     */
-    private $template;
-    
-    private $a_jsItems = array();
-    private $a_cssItems = array();
+  /**
+   * Starts the class menuAdmin
+   */
+  public function __construct(\Language $language,
+                              \youconix\core\services\Xml $xml,
+                              \youconix\core\models\ControlPanelModules $controlPanelModules)
+  {
+    $this->language = $language;
+    $this->xml = $xml;
+    $this->controlPanelModules = $controlPanelModules;
+  }
 
-    /**
-     * Starts the class menuAdmin
-     */
-    public function __construct(\Language $language, \youconix\core\services\Xml $xml, \Output $template, \youconix\core\models\ControlPanelModules $controlPanelModules)
-    {
-        $this->language = $language;
-        $this->xml = $xml;
-        $this->controlPanelModules = $controlPanelModules;
-        $this->template = $template;
-    }
-    
-    public function generateMenu(){
-        $this->modules();
-    }
+  /**
+   * Generates the menu
+   *
+   * @param \Output $template
+   */
+  public function generateMenu(\Output $template)
+  {
+    $this->template = $template;
+    $this->modules();
 
-    /**
-     * Displays the modules
-     */
-    private function modules()
-    {
-        $s_dir = NIV . $this->controlPanelModules->getDirectory();
-        $s_coreDir = NIV.$this->controlPanelModules->getCoreDirectory();
-        $a_modules = $this->controlPanelModules->getInstalledModulesList();
-        
-        $i = 1;
-        $i_blockNr = 1;
-        $a_js = array();
-        foreach ($a_modules as $s_module) {
-            $obj_settings = $this->xml->cloneService();
-            if( in_array($s_module,$this->controlPanelModules->getCoreModules()) ){
-                $obj_settings->load($s_coreDir.DS . $s_module . '/settings.xml');
-            }
-            else {
-                $obj_settings->load($s_dir . DS . $s_module . '/settings.xml');
-            }
-            
-            $s_title = $obj_settings->get('module/title');
-            $s_jsLink = $obj_settings->get('module/js');
-            $s_css = $obj_settings->get('module/css');
-            
-            $this->setJS($s_module, $s_jsLink);
-            $this->setCSS($s_module, $s_css);
-            
-            ($i == 1) ? $s_class = 'tab_header_active' : $s_class = '';
-            $this->template->setBlock('menu_tab_header', array(
-                'class' => $s_class,
-                'id' => $i,
-                'title' => $this->language->get($s_title)
-            ));
-            
-            $this->template->setBlock('menu_tab_content', array(
-                'id' => $i
-            ));
-            
-            $a_items = $obj_settings->getBlock('module/block');
-            foreach ($a_items as $block) {
-                $a_data = array(
-                    'id' => $i
-                );
-                $a_links = array();
-                
-                foreach ($block->childNodes as $item) {
-                    if ($item->tagName == 'link') {
-                        $a_links[] = $item;
-                    } else 
-                        if ($item->tagName == 'title') {
-                            ($this->language->exists($item->nodeValue)) ? $a_data['title'] = $this->language->get($item->nodeValue) : $a_data['title'] = $item->nodeValue;
-                        } else {
-                            $a_data[$item->tagName] = $item->nodeValue;
-                        }
-                }
-                if (array_key_exists('id', $a_data)) {
-                    $a_data['item_id'] = $a_data['id'];
-                }
-                $a_data['name'] = $i_blockNr;
-                
-                $this->template->setBlock('tab_' . $i, $a_data);
-                
-                $this->setLinks($a_links, $i_blockNr);
-                
-                $i_blockNr ++;
-            }
-            
-            $i ++;
+    $this->template->set('menu_tab_header', $this->a_menuTabHeader);
+    $this->template->set('menu_tab_content', $this->a_menu_tab_content);
+  }
+
+  /**
+   * Displays the modules
+   */
+  private function modules()
+  {
+    $s_dir = $this->controlPanelModules->getDirectory();
+    $a_modules = $this->controlPanelModules->getInstalledModulesList();
+
+    $i = 1;
+    foreach ($a_modules as $s_module) {
+      $obj_settings = $this->xml->cloneService();
+      $obj_settings->load($s_dir.DS.$s_module.'/settings.xml');
+
+      $s_title = $obj_settings->get('module/title');
+
+      ($i == 1) ? $s_class = 'tab_header_active' : $s_class = '';
+
+      $menu_tab_header = new \stdClass();
+      $menu_tab_header->class = $s_class;
+      $menu_tab_header->id = $i;
+      $menu_tab_header->title = $this->language->get($s_title);
+      $this->a_menuTabHeader[] = $menu_tab_header;
+
+      $menu_tab_content = new \stdClass();
+      $menu_tab_content->id = $i;
+      $menu_tab_content->items = [];
+
+      $a_items = $obj_settings->getBlock('module/block');
+
+      foreach ($a_items as $block) {
+        $a_links = [];
+
+        $tabItem = new \stdClass();
+        $tabItem->item_id = 'admin_'.$i;
+        $tabItem->links = [];
+
+        foreach ($block->childNodes as $item) {
+          if ($item->tagName == 'link') {
+
+            $a_links[] = $item;
+          } else
+          if ($item->tagName == 'title') {
+            ($this->language->exists($item->nodeValue)) ? $tabItem->title = $this->language->get($item->nodeValue)
+                      : $tabItem->title = $item->nodeValue;
+          } else {
+            $s_name = $item->tagName;
+            $tabItem->$s_name = (string) $item->nodeValue;
+          }
         }
-        
-        $s_link = '{NIV}combiner/javascript/';
-        $this->template->setJavascriptLink('<script src="'.$s_link.implode(',',$this->a_jsItems).'"></script>');
-        $this->template->setCssLink('<link rel="stylesheet" href="{NIV}combiner/css/'.implode(',',$this->a_cssItems).'">');
+
+        $tabItem->item_id = 'admin_'.$s_module.'_'.strtolower(str_replace(' ','_',$tabItem->title));
+
+        $tabItem->links = $this->setLinks($a_links);
+        $menu_tab_content->items[] = $tabItem;
+      }
+      $this->a_menu_tab_content[] = $menu_tab_content;
+
+      $i ++;
     }
 
-    /**
-     * Sets the javascript links
-     *
-     * @param string $s_module
-     *            The module name
-     * @param string $s_jsLink
-     *            The JS links, seperated with a comma
-     */
-    private function setJS($s_module, $s_jsLink)
-    {
-        if (empty($s_jsLink)) {
-            return;
+    $this->template->append('head',
+        '<script src="/admin/modulesjs.php" type="text/javascript"></script>');
+    $this->template->append('head',
+        '<link rel="stylesheet" href="/admin/modulescss.php">');
+  }
+
+  private function setLinks($a_links)
+  {
+    $a_result = [];
+    foreach ($a_links as $obj_link) {
+      $data = new \stdClass();
+
+      foreach ($obj_link->childNodes as $item) {
+        if ($item->tagName == 'title') {
+          ($this->language->exists($item->nodeValue)) ? $data->title = $this->language->get($item->nodeValue)
+                    : $data->title = $item->nodeValue;
+        } else {
+          $s_name = $item->tagName;
+          $data->$s_name = $item->nodeValue;
         }
-        
-        $a_js = explode(',', $s_jsLink);
-        if( in_array($s_module,$this->controlPanelModules->getCoreModules()) ){
-            $a_items = array('{NIV}vendor/youconix/admin/modules/'.$s_module);
-        }
-        else {
-            $a_items = array('{NIV}admin/modules/'.$s_module);
-        }
-        foreach ($a_js as $s_jsLink) {
-        	$a_items[] = trim($s_jsLink);
-        }        
-        $this->a_jsItems[] = implode(';',$a_items);
-        
+      }
+
+      $data->link_title = $data->title;
+      $data->link_id = $data->id;
+
+      $a_result[] = $data;
     }
 
-    /**
-     * Sets the css links
-     *
-     * @param string $s_module
-     *            The module name
-     * @param string $s_css
-     *            The CSS links, seperated with a comma
-     */
-    private function setCSS($s_module, $s_css)
-    {
-        if (empty($s_css)) {
-            return;
-        }
-        
-        $a_css = explode(',', $s_css);
-        if( in_array($s_module,$this->controlPanelModules->getCoreModules()) ){
-            $a_items = array('{NIV}'.'vendor/youconix/admin/modules/'.$s_module);
-        }
-        else {
-            $a_items = array('{NIV}admin/modules/'.$s_module);
-        }
-        foreach ($a_css as $s_css) {
-        	$a_items[] = trim($s_css);            
-        }
-        $this->a_cssItems[] = implode(';',$a_items);
-    }
-
-    private function setLinks($a_links, $s_module)
-    {
-        foreach ($a_links as $obj_link) {
-            $a_data = array();
-            
-            foreach ($obj_link->childNodes as $item) {
-                if ($item->tagName == 'title') {
-                    ($this->language->exists($item->nodeValue)) ? $a_data['title'] = $this->language->get($item->nodeValue) : $a_data['title'] = $item->nodeValue;
-                } else {
-                    $a_data[$item->tagName] = $item->nodeValue;
-                }
-            }
-            
-            $a_data['link_title'] = $a_data['title'];
-            $a_data['link_id'] = $a_data['id'];
-            
-            $this->template->setBlock('link_' . $s_module, $a_data);
-        }
-    }
+    return $a_result;
+  }
 }

@@ -27,35 +27,41 @@ class Menu implements \Menu
 
     /**
      *
-     * @var \youconix\core\models\data\User
+     * @var \youconix\core\auth\Auth
      */
-    protected $user;
+    protected $auth;
 
     /**
      * Starts the class menu
-     *
-     * @param \Output $template            
+     *        
      * @param \Language $language            
-     * @param \youconix\core\models\User $user          
+     * @param \youconix\core\auth\Auth $auth
      */
-    public function __construct(\Output $template, \Language $language, \youconix\core\models\User $user)
+    public function __construct(\Language $language, \youconix\core\auth\Auth $auth)
     {
-        $this->template = $template;
         $this->language = $language;
-        $this->user = $user->get();
+        $this->auth = $auth;
     }
 
     /**
      * Generates the menu
+     * 
+     * @param \Output $template
      */
-    public function generateMenu()
+    public function generateMenu(\Output $template)
     {
+	$this->template = $template;
         $this->template->set('home', $this->language->get('menu/home'));
+	
+	$this->template->set('menuAdmin',false);
+	$this->template->set('menuLoggedIn',false);
+	
+	$user = $this->auth->getUser();
         
-        if (defined('USERID')) {
-            $this->template->displayPart('menuLoggedIn');
+        if ( !is_null($user)) {
+            $this->template->set('menuLoggedIn',true,true);
             
-            $this->loggedIn();
+            $this->loggedIn($user);
         } else {
             $this->loggedout();
         }
@@ -73,12 +79,12 @@ class Menu implements \Menu
     /**
      * Displays the logged in items
      */
-    protected function loggedIn()
+    protected function loggedIn($user)
     {
         $this->template->set('logout', $this->language->get('menu/logout'));
         
-        if ($this->user->isAdmin(GROUP_ADMIN)) {
-            $this->template->displayPart('menuAdmin');
+        if ($user->isAdmin(GROUP_ADMIN)) {
+            $this->template->set('menuAdmin',true,true);
             
             $this->template->set('adminPanel', $this->language->get('system/menu/adminPanel'));
         }

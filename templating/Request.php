@@ -66,7 +66,7 @@ class Request implements \Request
      * @param \Logger $logs            
      * @param \youconix\core\services\Session $session            
      */
-    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \youconix\core\services\Session $session)
+    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \Session $session)
     {
         $this->headers = $headers;
         $this->config = $config;
@@ -267,5 +267,45 @@ class Request implements \Request
     public function getValidation()
     {
         return $this->request->getValidation();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGet(){
+      if( ($_SERVER['REQUEST_METHOD'] == 'GET') || ($_SERVER['REQUEST_METHOD'] == 'HEAD') ){
+        return true;
+      }
+      return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPost(){
+      if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
+        return true;
+      }
+      return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPut(){
+      if( $_SERVER['REQUEST_METHOD'] == 'PUT' ){
+        return true;
+      }
+      return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDelete(){
+      if( $_SERVER['REQUEST_METHOD'] == 'DELETE' ){
+        return true;
+      }
+      return false;
     }
 }

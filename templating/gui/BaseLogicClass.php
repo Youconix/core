@@ -12,7 +12,7 @@ namespace youconix\core\templating\gui;
  * @version 1.0
  * @since 1.0
  */
-class BaseLogicClass
+class BaseLogicClass implements \Layout
 {
 
     /**
@@ -61,8 +61,7 @@ class BaseLogicClass
      * Base graphic class constructor
      *
      * @param \Config $config            
-     * @param \Language $language            
-     * @param \Output $template            
+     * @param \Language $language           
      * @param \Header $header            
      * @param \Menu $menu            
      * @param \Footer $footer       
@@ -71,8 +70,6 @@ class BaseLogicClass
     public function __construct(\Config $config, \Language $language, \Output $template, \Header $header, \Menu $menu, \Footer $footer,\youconix\core\models\Meta $meta)
     {
         $this->config = $config;
-        $this->language = $language;
-        $this->template = $template;
         $this->header = $header;
         $this->menu = $menu;
         $this->footer = $footer;

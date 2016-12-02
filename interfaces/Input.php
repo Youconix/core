@@ -12,6 +12,16 @@ interface Input
      *            The input type rules
      */
     public function parse($s_type, $a_fields);
+    
+    /**
+     * Passes all the given type fields to the request
+     * WARNING : DISABLES SECURITY
+     * 
+     * @param string $s_type
+     *            The global variable type (POST | GET | REQUEST | SESSION | SERVER )
+     * @return \Input
+     */
+    public function getAll($s_type);
 
     /**
      * Checks if the input has the given field

@@ -97,7 +97,7 @@ class IoC
             'Menu'
         );
         foreach ($a_items as $s_item) {
-            if (file_exists(NIV . 'includes/' . $s_item . '.php')) {
+            if (file_exists(NIV . 'includes/classes/' . $s_item . '.php')) {
                 IoC::$a_rules[$s_item] = '\includes\classes\\' . $s_item;
             } else {
                 IoC::$a_rules[$s_item] = '\youconix\core\classes\\' . $s_item;

@@ -151,7 +151,7 @@ class Group extends \youconix\core\models\Equivalent
         /* Get groupname */
         $this->builder->select('group_users', 'level')
             ->getWhere()
-            ->bindInt('groupID', $this->i_id)
+            ->bindInt('groupID', $this->id)
             ->bindInt('userid', $i_userid);
         $database = $this->builder->getResult();
         
@@ -175,7 +175,7 @@ class Group extends \youconix\core\models\Equivalent
         $this->builder->select('group_users g', 'g.level,u.nick AS username,u.id')
             ->innerJoin('users u', 'g.userid', 'u.id')
             ->order('u.nick', 'ASC');
-        $this->builder->getWhere()->bindInt('g.groupID', $this->i_id);
+        $this->builder->getWhere()->bindInt('g.groupID', $this->id);
         $database = $this->builder->getResult();
         
         $a_result = array();
@@ -193,7 +193,12 @@ class Group extends \youconix\core\models\Equivalent
      */
     protected function add()
     {
-        parent::add();
+        $database = $this->builder->select($this->s_table, $this->builder->getMaximun('id','id'))->getResult();
+        $this->id = ($database->result(0, 'id') + 1);
+
+        $this->builder->insert($this->s_table);
+        $this->buildSave();
+        $this->builder->getResult();
         
         if ($this->automatic != 1) {
             return;
@@ -219,6 +224,7 @@ class Group extends \youconix\core\models\Equivalent
 
     /**
      * Deletes the group
+     * Can not remove a group with members
      * 
      * @see \youconix\core\models\Equivalent::delete()
      */
@@ -228,11 +234,6 @@ class Group extends \youconix\core\models\Equivalent
         if ($this->inUse()) {
             return;
         }
-        
-        $this->builder->delete("group_users")
-            ->getWhere()
-            ->bindInt('groupID', $this->id);
-        $this->builder->getResult();
         
         parent::delete();
     }
@@ -255,7 +256,7 @@ class Group extends \youconix\core\models\Equivalent
         
         if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
             $this->builder->insert("group_users")
-                ->bindInt('groupID', $this->i_id)
+                ->bindInt('groupID', $this->id)
                 ->bindInt('userid', $i_userid)
                 ->bindString('level', $i_level)
                 ->getResult();
@@ -291,7 +292,7 @@ class Group extends \youconix\core\models\Equivalent
         } else 
             if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
                 $this->builder->insert("group_users")
-                    ->bindInt('groupID', $this->i_id)
+                    ->bindInt('groupID', $this->id)
                     ->bindInt('userid', $i_userid)
                     ->bindString('level', $i_level)
                     ->getResult();

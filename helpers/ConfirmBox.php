@@ -12,13 +12,6 @@ namespace youconix\core\helpers;
  */
 class ConfirmBox extends \youconix\core\helpers\Helper
 {
-
-    /**
-     *
-     * @var \Output
-     */
-    protected $template;
-
     /**
      *
      * @var \youconix\core\helpers\HTML
@@ -27,24 +20,24 @@ class ConfirmBox extends \youconix\core\helpers\Helper
 
     /**
      * Constructor
-     *
-     * @param \Output $template            
+     *     
      * @param \youconix\core\helpers\HTML $html            
      */
-    public function __construct(\Output $template, \youconix\core\helpers\HTML $html)
+    public function __construct(\youconix\core\helpers\HTML $html)
     {
-        $this->template = $template;
         $this->html = $html;
     }
 
     /**
      * Creates the confirmbox
+     * 
+     * @param \Output $template
      */
-    public function create()
+    public function create(\Output $template)
     {
-        $css = $this->html->stylesheetLink('{NIV}{shared_style_dir}css/widgets/confirmbox.css', 'screen');
-        $this->template->setCssLink($css->generateItem());
-        $javascript = $this->html->javascriptLink('{NIV}js/widgets/confirmbox.js');
-        $this->template->setJavascriptLink($javascript->generateItem());
+        $css = $this->html->stylesheetLink('/{{ $shared_style_dir }}css/widgets/confirmbox.css', 'screen');
+        $template->append('head',$css->generateItem());
+        $javascript = $this->html->javascriptLink('/js/widgets/confirmbox.js');
+        $template->append('head',$javascript->generateItem());
     }
 }

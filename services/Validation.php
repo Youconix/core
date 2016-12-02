@@ -149,7 +149,7 @@ class Validation extends \youconix\core\services\Service  implements \Validation
      */
     public function validateField($s_key, $field, $s_rules)
     {
-        $a_errors = array();
+        $this->a_errors = array();
         
         /* Parse rules */
         $a_validation = array();
@@ -163,13 +163,13 @@ class Validation extends \youconix\core\services\Service  implements \Validation
             }
             if (strpos($s_rule, 'type:') !== false) {
                 $s_type = trim(str_replace('type:', '', $s_rule));
-                if (! $this->checkType($s_key,$s_field, $s_type)) {
+                if (! $this->checkType($s_key,$field, $s_type)) {
                     return;
                 }
             }
             if (strpos($s_rule, 'pattern:') !== false) {
                 $s_pattern = trim(str_replace('pattern:', '', $s_rule));
-                $this->checkPattern($s_key,$s_field, $s_pattern);
+                $this->checkPattern($s_key,$field, $s_pattern);
             }
             if (strpos($s_rule, 'min:') !== false) {
                 $fl_minValue = trim(str_replace('min:', '', $s_rule));
@@ -206,7 +206,7 @@ class Validation extends \youconix\core\services\Service  implements \Validation
         }
     }
 
-    protected function checkPattern($s_field, $s_pattern)
+    protected function checkPattern($s_key,$s_field, $s_pattern)
     {
         if (is_null($s_field) || trim($s_field) == '') {
             return;
@@ -274,6 +274,13 @@ class Validation extends \youconix\core\services\Service  implements \Validation
                     $a_errors[] = 'Field ' . $s_key . ' is not a valid IP-address';
                     return false;
                 }
+		
+	    case 'bool':
+	    case 'boolean' :
+		if( !in_array($a_collection[$s_key],[0,1,true,false,'true','false']) ) {
+		  $a_errors[] = 'Field ' . $s_key . ' is not a boolean';
+                  return false;
+		}
         }
         
         return true;

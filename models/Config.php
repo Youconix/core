@@ -10,7 +10,7 @@ namespace youconix\core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-class Config extends Model implements \Config, \SplSubject
+class Config extends Model implements \Config
 {
 
     /**
@@ -65,31 +65,7 @@ class Config extends Model implements \Config, \SplSubject
      *
      * @var string
      */
-    protected $page;
-
-    /**
-     *
-     * @var string
-     */
     protected $protocol;
-
-    /**
-     *
-     * @var string
-     */
-    protected $command = 'view';
-
-    /**
-     *
-     * @var string
-     */
-    protected $layout = 'default';
-
-    /**
-     * 
-     * @var \SplObjectStorage
-     */
-    protected $a_observers;
 
     const LOG_MAX_SIZE = 10000000;
 
@@ -98,6 +74,24 @@ class Config extends Model implements \Config, \SplSubject
      * @var string
      */
     protected $language;
+    
+    /**
+     *
+     * @var string
+     */
+    protected $s_page;
+    
+    /**
+     *
+     * @var string
+     */
+    protected $s_command;
+    
+    /**
+     *
+     * @var string
+     */
+    protected $s_templateDir;
 
     /**
      * PHP 5 constructor
@@ -113,15 +107,61 @@ class Config extends Model implements \Config, \SplSubject
         $this->cookie = $cookie;
         $this->builder = $builder;
         
-        $this->a_observers = new \SplObjectStorage();
-        
         $this->loadLanguage();
         
         $this->setDefaultValues($settings);
-        
-        $this->detectPage();
-        
-        $this->detectTemplateDir();
+    }
+    
+    /**
+     * Sets the current page and command.
+     * Called from the Router
+     * 
+     * @param string $s_page
+     * @param string $s_command
+     */
+    public function setCall($s_page,$s_command){
+      if(substr($s_page, 0,1) == '/' ){
+	$s_page = substr($s_page, 1);
+      }
+      if(substr($s_page, -4) != '.php' ){
+	$s_page .= '.php';
+      }
+      if(substr($s_command, 0,1) == '/' ){
+	$s_command = substr($s_command, 1);
+      }
+      
+      $this->s_page = $s_page;
+      $this->s_command = $s_command;
+      
+      $this->detectTemplateDir();
+    }
+    
+    /**
+     * Returns the current page
+     * 
+     * @return string
+     */
+    public function getPage(){
+      return $this->s_page;
+    }
+    
+    
+    /**
+     * Returns the current command
+     * 
+     * @return string
+     */
+    public function getCommand(){
+      return $this->s_command;
+    }
+    
+    /**
+     * Returns the default template directory
+     * 
+     * @return string
+     */
+    public function getTemplateDir(){
+      return $this->s_templateDir;
     }
 
     /**
@@ -299,21 +339,20 @@ class Config extends Model implements \Config, \SplSubject
         }
     }
     
-    protected function detectPage(){
-      /* Get page */
-        $s_page = $_SERVER['SCRIPT_NAME'];
-	
-	$pos = strrpos($s_page,'/');
-	$this->page = substr($s_page,0,$pos);
-	$this->command = substr($s_page, ($pos+1));
-	
-	if (isset($_GET['command'])) {
-	  $this->command = $_GET['command'];
-	  } else 
-	      if (isset($_POST['command'])) {
-		  $this->command = $_POST['command'];
-	      }
+    /**
+     * Detects the template directory
+     */
+    protected function detectTemplateDir(){
+      if( substr($this->getPage(),0,4) == 'admin' ){
+	$this->s_templateDir = $this->settings->get('templates/admin_dir');
       }
+      else if( $this->isMobile () ){
+	$this->s_templateDir = $this->settings->get('templates/mobile_dir');
+      }
+      else {
+	$this->s_templateDir = $this->settings->get('templates/default_dir');
+      }
+    }
 
     /**
      * Detects an AJAX call
@@ -461,16 +500,6 @@ class Config extends Model implements \Config, \SplSubject
     }
 
     /**
-     * Returns the main template layout
-     *
-     * @return string
-     */
-    public function getLayout()
-    {
-        return $this->layout;
-    }
-
-    /**
      * Returns the current language from the user
      *
      * @return string The language code
@@ -501,44 +530,6 @@ class Config extends Model implements \Config, \SplSubject
     }
 
     /**
-     * Returns the current page
-     *
-     * @return string
-     */
-    public function getPage()
-    {
-        return $this->page;
-    }
-
-    /**
-     * Sets the current page
-     *
-     * @param string $s_page
-     * @param string $s_command
-     * @param string $s_layout
-     */
-    public function setPage($s_page, $s_command, $s_layout = 'default')
-    {
-        $this->page = $s_page;
-        $this->command = $s_command;
-        $this->layout = $s_layout;
-        
-        $this->detectTemplateDir();
-    }
-
-    /**
-     * Sets the layout
-     *
-     * @param string $s_layout
-     */
-    public function setLayout($s_layout)
-    {
-        $this->layout = $s_layout;
-        
-        $this->notify();
-    }
-
-    /**
      * Checks if ajax-mode is active
      *
      * @return boolean True if ajax-mode is active
@@ -554,16 +545,6 @@ class Config extends Model implements \Config, \SplSubject
     public function setAjax()
     {
         $this->ajax = true;
-    }
-
-    /**
-     * Returns the request command
-     *
-     * @return string
-     */
-    public function getCommand()
-    {
-        return $this->command;
     }
 
     /**
@@ -634,69 +615,32 @@ class Config extends Model implements \Config, \SplSubject
         
         return $s_page;
     }
-
+    
     /**
-     * Returns if the normal login is activated
+     * Returns the authorisation guards
      *
-     * @return boolean True if the normal login is activated
+     * @return array
      */
-    public function isNormalLogin()
-    {
-        if (! $this->settings->exists('login/normalLogin') || $this->settings->get('login/normalLogin') != 1) {
-            return false;
-        }
-        return true;
+    public function getGuards(){
+      $guardsBlock = $this->settings->getBlock('auth/guards');
+      $guards = [];
+      
+      foreach($guardsBlock AS $guardsRaw){
+	foreach($guardsRaw->childNodes AS $guard){
+	  $guards[] = $guard->nodeValue;
+	}
+      }
+      
+      return $guards;
     }
-
-    public function isLDAPLogin()
-    {
-        if (! $this->settings->exists('login/LDAP') || $this->settings->get('login/LDAP/status') != 1) {
-            return false;
-        }
-        return true;
-    }
-
-    public function getLoginTypes()
-    {
-        $a_login = array();
-        if ($this->isNormalLogin()) {
-            $a_login[] = 'normal';
-        }
-        if ($this->isLDAPLogin()) {
-            $a_login[] = 'ldap';
-        }
-        $a_login = array_merge($a_login, $this->getOpenAuth());
-        return $a_login;
-    }
-
-    public function getOpenAuth()
-    {
-        if (! $this->settings->exists('login/openAuth')) {
-            return array();
-        }
-        
-        $a_types = $this->settings->getBlock('login/openAuth/type');
-        $a_openAuth = array();
-        foreach ($a_types as $type) {
-            if ($type->tagName != 'type') {
-                continue;
-            }
-            
-            if ($this->settings->get('login/openAuth/' . $type->nodeValue . '/status') == 1) {
-                $a_openAuth[] = $type->nodeValue;
-            }
-        }
-        
-        return $a_openAuth;
-    }
-
-    public function isOpenAuthEnabled($s_name)
-    {
-        if (! $this->settings->exists('login/openAuth') || ! $this->settings->exists('login/openAuth/' . $s_name)) {
-            return false;
-        }
-        
-        return ($this->settings->exists('login/openAuth/' . $s_name . '/status') == 1);
+    
+    /**
+     * Returns the default authorisation guard
+     * 
+     * @return string
+     */
+    public function getDefaultGuard(){
+      return $this->settings->get('auth/defaultGuard');
     }
 
     /**

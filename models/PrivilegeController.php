@@ -45,7 +45,7 @@ class PrivilegeController extends \youconix\core\models\Model
         
         $s_root = $_SERVER['DOCUMENT_ROOT'] . $config->getBase();
         
-        $a_skipDirs = array(
+        $a_skipDirs = [
             '.git',
             'core',
             'emailImages',
@@ -61,11 +61,11 @@ class PrivilegeController extends \youconix\core\models\Model
             'openID',
             'stats',
             'tests',
-            'admin' . DIRECTORY_SEPARATOR . 'data',
+            'admin' . DS . 'data',
             'styles',
             'router.php',
             'routes.php'
-        );
+        ];
         foreach ($a_skipDirs as $item) {
             $this->a_skipDirs[] = $s_root . $item;
         }
@@ -84,10 +84,10 @@ class PrivilegeController extends \youconix\core\models\Model
         
         $a_pages = $this->file->readFilteredDirectory($s_root, $this->a_skipDirs, '\.php');
         
-        return array(
+        return [
             $s_root,
             $a_pages
-        );
+        ];
     }
 
     /**
@@ -99,23 +99,23 @@ class PrivilegeController extends \youconix\core\models\Model
      */
     public function getRightsForPage($s_page)
     {
-        $a_rights = array(
+        $a_rights = [
             'page' => $s_page,
-            'general' => array(
+            'general' => [
                 'id' => - 1,
                 'groupID' => - 1,
                 'minLevel' => - 2
-            ),
-            'commands' => array()
-        );
+            ],
+            'commands' => []
+        ];
         
         /* Check general rights */
         $this->builder->select('group_pages', '*')
             ->order('groupID')
             ->getWhere()
             ->bindString('page', $s_page)
-            ->bindString('page', substr($s_page, 1));
-        
+            ->bindString('page', substr($s_page, 1),'OR');
+
         $database = $this->builder->getResult();
         
         if ($database->num_rows() > 0) {

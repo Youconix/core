@@ -22,7 +22,13 @@ class EquavalentHelper {
     {
         return true;
     }   
-    
+
+    /**
+     * Returns the table layout
+     *
+     * @param string $s_table
+     * @return array
+     */
     public function get($s_table){
         if( !array_key_exists($s_table, $this->a_descriptions) ){
             $this->a_descriptions[$s_table] = $this->builder->decribeFields($s_table);

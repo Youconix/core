@@ -355,3 +355,4 @@ function loaderWrapper($s_className)
 }
 
 spl_autoload_register('loaderWrapper');
+require_once NIV.'vendor/autoload.php';

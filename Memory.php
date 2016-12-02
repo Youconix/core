@@ -866,6 +866,7 @@ class Memory
      * @param String $s_name
      *            The name of the data
      * @throws RuntimeException If the value is not in the global memory
+     * @deprecated since version 2
      */
     public static function delete($s_type, $s_name)
     {
@@ -891,18 +892,6 @@ class Memory
     public static function endProgram()
     {
         \Profiler::dump();
-        
-        $service_Template = null;
-        if (array_key_exists('\youconix\core\templating\Template', Memory::$a_cache)) {
-            $service_Template = Memory::$a_cache['\youconix\core\templating\Template'];
-        } else 
-            if (array_key_exists('\includes\templating\Template', Memory::$a_cache)) {
-                $service_Template = Memory::$a_cache['\includes\templating\Template'];
-            }
-        
-        if (! is_null($service_Template)) {
-            $service_Template->printToScreen();
-        }
         
         die();
     }

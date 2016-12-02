@@ -9,9 +9,9 @@ interface Request
      * @param \youconix\core\services\Headers $headers            
      * @param \Config $config            
      * @param \Logger $logs            
-     * @param \youconix\core\services\Session $session            
+     * @param \Session $session            
      */
-    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \youconix\core\services\Session $session);
+    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \Session $session);
 
     /**
      * Inits the GET values
@@ -95,7 +95,7 @@ interface Request
 
     /**
      *
-     * @return \youconix\core\services\Headers
+     * @return \Headers
      */
     public function getHeaders();
 
@@ -113,14 +113,34 @@ interface Request
 
     /**
      *
-     * @return \youconix\core\services\Session
+     * @return \Session
      */
     public function getSession();
 
     /**
      *
-     * @return \youconix\core\services\Validation;
+     * @return \Validation;
      */
     public function getValidation();
+
+    /**
+     * @return bool
+     */
+    public function isGet();
+
+    /**
+     * @return bool
+     */
+    public function isPost();
+
+    /**
+     * @return bool
+     */
+    public function isPut();
+
+    /**
+     * @return bool
+     */
+    public function isDelete();
 }
 ?>

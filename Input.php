@@ -42,6 +42,38 @@ class Input implements \Input, \ArrayAccess
         
         $this->a_container = $this->security->secureInput($s_type, $a_fields);
     }
+    
+    /**
+     * Passes all the given type fields to the request
+     * WARNING : DISABLES SECURITY
+     * 
+     * @param string $s_type
+     *            The global variable type (POST | GET | REQUEST | SESSION | SERVER )
+     * @return \Input
+     */
+    public function getAll($s_type){
+      $this->s_type = $s_type;
+      
+      switch($s_type){
+	case 'GET' :
+	  $this->a_container = $_GET;
+	  break;
+	case 'POST' :
+	  $this->a_container = $_POST;
+	  break;
+	case 'REQUEST' :
+	  $this->a_container = $_REQUEST;
+	  break;
+	case 'SESSION' :
+	  $this->a_container = $_SESSION;
+	  break;
+	case 'SERVER' :
+	  $this->a_container = $_SERVER;
+	  break;
+      }
+      
+      return $this;
+    }
 
     /**
      * Checks if the input has the given field

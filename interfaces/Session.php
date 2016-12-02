@@ -108,7 +108,7 @@ interface Session
     /**
      * Returns the visitors browser fingerprint
      *
-     * @return String fingerprint
+     * @return string fingerprint
      */
     public function getFingerprint();
 }

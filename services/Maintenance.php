@@ -44,22 +44,12 @@ class Maintenance extends Service {
 		$i_pm = time () - 2592000; // 30 days ago
 		
 		try {
-			$this->builder->delete ( 'users' )->getWhere ()->addAnd ( array (
-					'registrated',
-					'active' 
-			), array (
-					'i',
-					's' 
-			), array (
-					$i_registrated,
-					'0' 
-			), array (
-					'<',
-					'=' 
-			) );
+			$this->builder->delete ( 'users' )->getWhere ()
+                            ->bindInt('registrated',$i_registrated,'AND','<')
+                            ->bindString('active','0');
 			$this->builder->getResult ();
 			
-			$this->builder->delete ( 'pm' )->getWhere ()->addAnd ( 'send', 'i', $i_pm, '<' );
+			$this->builder->delete ( 'pm' )->getWhere ()->bindInt( 'send', $i_pm,'AND', '<' );
 			$this->builder->getResult ();
 			
 			$service_Database = $this->builder->getDatabase ();

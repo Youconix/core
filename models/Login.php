@@ -8,7 +8,7 @@ namespace youconix\core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-class Login extends \youconix\core\models\LoginParent
+class Login_Normal extends \youconix\core\models\LoginParent
 {
 
     /**

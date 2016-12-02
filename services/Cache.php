@@ -22,7 +22,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
 
     /**
      *
-     * @var \youconix\core\services\File
+     * @var \youconix\core\services\FileHandler
      */
     protected $file;
 
@@ -48,7 +48,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
 
     protected $bo_cache;
 
-    public function __construct(\youconix\core\services\File $file, \Config $config, \Headers $headers, \Builder $builder)
+    public function __construct(\youconix\core\services\FileHandler $file, \Config $config, \Headers $headers, \Builder $builder)
     {
         $this->config = $config;
         $this->file = $file;
@@ -111,16 +111,8 @@ class Cache extends \youconix\core\services\Service implements \Cache
             
             $this->builder->select('no_cache', 'id')
                 ->getWhere()
-                ->addOr(array(
-                'page',
-                'page'
-            ), array(
-                's',
-                's'
-            ), array(
-                $s_page,
-                $a_pages[0]
-            ));
+                ->bindString('page',$s_page)
+                ->bindString('page',$a_pages[0]);
             $service_database = $this->builder->getResult();
             if ($service_database->num_rows() > 0) {
                 $this->bo_cache = false;
@@ -262,19 +254,17 @@ class Cache extends \youconix\core\services\Service implements \Cache
     public function clearSiteCache()
     {
         $s_dir = $this->getDirectory() . 'site';
-        
-        $a_files = $this->file->readDirectory($s_dir);
-        foreach ($a_files as $s_file) {
-            if ($s_file == '.' || $s_file == '.') {
-                continue;
-            }
-            
-            if (is_dir($s_dir . DIRECTORY_SEPARATOR . $s_file)) {
-                $this->file->deleteDirectory($s_dir . DIRECTORY_SEPARATOR . $s_file);
-            } else {
-                $this->file->deleteFile($s_dir . DIRECTORY_SEPARATOR . $s_file);
-            }
-        }
+
+        $this->file->deleteDirectoryContent($s_dir);
+    }
+
+    /**
+     * Clears the template parser cache files
+     */
+    public function clearTemplateCache(){
+        $s_dir = $this->getDirectory() . 'views';
+
+        $this->file->deleteDirectoryContent($s_dir);
     }
 
     /**
@@ -315,13 +305,13 @@ class Cache extends \youconix\core\services\Service implements \Cache
         
         $this->builder->select('no_cache', 'id')
             ->getWhere()
-            ->addAnd('page', 's', $s_page);
+            ->bindString('page', $s_page);
         $service_database = $this->builder->getResult();
         if ($service_database->num_rows() != 0) {
             return;
         }
         
-        $this->builder->insert('no_cache', 'page', 's', $s_page);
+        $this->builder->insert('no_cache')->bindString('page', $s_page);
         $database = $this->builder->getResult();
         
         return $database->getId();
@@ -339,7 +329,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
         
         $this->builder->delete('no_cache')
             ->getWhere()
-            ->addAnd('id', 'i', $i_id);
+            ->bindInt('id', $i_id);
         $this->builder->getResult();
     }
 }

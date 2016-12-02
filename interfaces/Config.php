@@ -2,6 +2,37 @@
 
 interface Config
 {
+  
+    /**
+     * Sets the current page and command.
+     * Called from the Router
+     * 
+     * @param string $s_page
+     * @param string $s_command
+     */
+    public function setCall($s_page,$s_command);
+    
+    /**
+     * Returns the current page
+     * 
+     * @return string
+     */
+    public function getPage();
+    
+    
+    /**
+     * Returns the current command
+     * 
+     * @return string
+     */
+    public function getCommand();
+    
+    /**
+     * Returns the default template directory
+     * 
+     * @return string
+     */
+    public function getTemplateDir();
 
     /**
      * Returns the settings service
@@ -18,32 +49,11 @@ interface Config
     public function getLanguages();
 
     /**
-     * Detects the template directory and layout
-     */
-    public function detectTemplateDir();
-
-    /**
-     * Returns the template directory
-     *
-     * @return string The template directory
-     */
-    public function getTemplateDir();
-
-    /**
-     * Returns the loaded template directory
+     * Returns the shared template directory
      *
      * @return string template directory
      */
-    public function getStylesDir();
-
     public function getSharedStylesDir();
-
-    /**
-     * Returns the main template layout
-     *
-     * @return string The layout
-     */
-    public function getLayout();
 
     /**
      * Returns the current language from the user
@@ -67,32 +77,6 @@ interface Config
     public function isSLL();
 
     /**
-     * Returns the current page
-     *
-     * @return string page
-     */
-    public function getPage();
-
-    /**
-     * Sets the current page
-     *
-     * @param string $s_page
-     *            The new page
-     * @param string $s_command
-     *            The new command
-     *            @parma String $s_layout The new layout
-     */
-    public function setPage($s_page, $s_command, $s_layout = 'default');
-
-    /**
-     * Sets the layout
-     *
-     * @param string $s_layout
-     *            The layout
-     */
-    public function setLayout($s_layout);
-
-    /**
      * Checks if ajax-mode is active
      *
      * @return boolean if ajax-mode is active
@@ -103,13 +87,6 @@ interface Config
      * Sets the framework in ajax-mode
      */
     public function setAjax();
-
-    /**
-     * Returns the request command
-     *
-     * @return string The command
-     */
-    public function getCommand();
 
     /**
      * Returns the server host
@@ -148,19 +125,18 @@ interface Config
     public function getRegistrationRedirect();
 
     /**
-     * Returns if the normal login is activated
+     * Returns the authorisation guards
      *
-     * @return boolean True if the normal login is activated
+     * @return array
      */
-    public function isNormalLogin();
-
-    public function isLDAPLogin();
-
-    public function getLoginTypes();
-
-    public function getOpenAuth();
-
-    public function isOpenAuthEnabled($s_name);
+    public function getGuards();
+    
+    /**
+     * Returns the default authorisation guard
+     * 
+     * @return string
+     */
+    public function getDefaultGuard();
 
     /**
      * Returns the log location (default admin/data/logs/)

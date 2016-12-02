@@ -60,7 +60,7 @@ abstract class Model extends \youconix\core\Object
      * @param \Builder $builder            
      * @param \Validation $validation            
      */
-    public function __construct(\Builder $builder, \youconix\core\services\Validation $validation)
+    public function __construct(\Builder $builder, \Validation $validation)
     {
         $this->builder = $builder;
         $this->service_QueryBuilder = $this->builder;

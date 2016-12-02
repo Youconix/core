@@ -101,7 +101,7 @@ class User extends \youconix\core\models\Equivalent
      *
      * @var string
      */
-    protected $loginType;
+    protected $loginType = 'normal';
 
     /**
      *
@@ -114,6 +114,14 @@ class User extends \youconix\core\models\Equivalent
      * @var int
      */
     protected $bindToIp = 0;
+    
+    /**
+     *
+     * @var int
+     */
+    protected $password_expired = 0;
+    
+    protected $salt = '';
 
     /**
      * PHP5 constructor
@@ -131,6 +139,7 @@ class User extends \youconix\core\models\Equivalent
         $this->groups = $groups;
         $this->obj_language = $language;
         $this->hashing = $hashing;
+	$this->s_table = 'users';
         
         $this->a_validation = array(
             'username' => 'type:string|required',
@@ -145,6 +154,7 @@ class User extends \youconix\core\models\Equivalent
             'loginType' => 'type:string|required',
             'language' => 'type:string',
             'bindToIp' => 'type:enum|required|set:0,1',
+	    'password_expired' => 'type:enum|required|set:0,1',
         );
     }
 
@@ -168,7 +178,7 @@ class User extends \youconix\core\models\Equivalent
             throw new \DBException("Unknown user with userid " . $i_userid);
         }
         
-        $a_data = $database->fetch_assoc();
+        $a_data = $database->fetch_object();
         
         $this->setData($a_data[0]);
     }
@@ -176,26 +186,26 @@ class User extends \youconix\core\models\Equivalent
     /**
      * Sets the user data
      *
-     * @param array $a_data
+     * @param \stdClass $data
      *            user data
      */
-    public function setData($a_data)
+    public function setData(\stdClass $data)
     {
-        \youconix\core\Memory::type('array', $a_data);
         
-        $this->userid = (int) $a_data['id'];
-        $this->username = $a_data['nick'];
-        $this->email = $a_data['email'];
-        $this->profile = $a_data['profile'];
-        $this->bot = (int) $a_data['bot'];
-        $this->registrated = (int) $a_data['registrated'];
-        $this->loggedIn = (int) $a_data['lastLogin'];
-        $this->active = (int) $a_data['active'];
-        $this->blocked = (int) $a_data['blocked'];
-        $this->loginType = $a_data['loginType'];
-        $this->language = $a_data['language'];
-        $this->passwordExpired = $a_data['password_expired'];
-        $this->bindToIp = $a_data['bindToIp'];
+        $this->userid = (int) $data->id;
+        $this->username = $data->nick;
+        $this->email = $data->email;
+        $this->profile = $data->profile;
+        $this->bot = (int) $data->bot;
+        $this->registrated = (int) $data->registrated;
+        $this->loggedIn = (int) $data->lastLogin;
+        $this->active = (int) $data->active;
+        $this->blocked = (int) $data->blocked;
+        $this->loginType = $data->loginType;
+        $this->language = $data->language;
+        $this->passwordExpired = $data->password_expired;
+        $this->bindToIp = $data->bindToIp;
+	$this->password_expired = $data->password_expired;
         
         $s_systemLanguage = $this->obj_language->getLanguage();
         if (defined('USERID') && USERID == $this->userid && $this->obj_language != $s_systemLanguage) {
@@ -263,7 +273,6 @@ class User extends \youconix\core\models\Equivalent
 
     /**
      * Sets a new password
-     * Note : username has to be set first!
      *
      * @param string $s_password
      *            plain text password
@@ -274,18 +283,10 @@ class User extends \youconix\core\models\Equivalent
     {
         \youconix\core\Memory::type('string', $s_password);
         
-        $s_salt = $this->getSalt($this->getUsername(), $this->s_loginType);
-        
-        $this->s_password = $this->hashing->hashUserPassword($s_password, $s_salt);
-        
-        $this->builder->update('users')->bindString('password', $this->password);
-        
-        if ($bo_expired) {
-            $this->builder->bindString('password_expired', '1');
-        }
-        
-        $this->builder->getWhere()->bindInt('id', $this->userid);
-        $this->builder->getResult();
+	$this->password = $this->hashing->hash($s_password);
+	if( $bo_expired ){
+	  $this->password_expired = 1;
+	}
     }
 
     /**
@@ -298,14 +299,9 @@ class User extends \youconix\core\models\Equivalent
      * @return bool True if the password is changed
      */
     public function changePassword($s_passwordOld, $s_password)
-    {
-        $s_salt = $this->getSalt($this->getUsername(), $this->loginType);
-        if (is_null($s_salt)) {
-            return false;
-        }
-        
-        $s_passwordOld = $this->hashing->hashUserPassword($s_passwordOld, $s_salt);
-        $s_password = $this->hashing->hashUserPassword($s_password, $s_salt);
+    {        
+        $s_passwordOld = $this->hashing->hash($s_passwordOld);
+        $s_password = $this->hashing->hash($s_password);
         
         $this->builder->select('users', 'id')
             ->getWhere()
@@ -327,44 +323,6 @@ class User extends \youconix\core\models\Equivalent
         $this->builder->getResult();
         
         return true;
-    }
-
-    /**
-     * Returns the user salt
-     *
-     * @param string $s_username
-     *            The username
-     * @param string $s_loginType
-     *            The login type
-     * @return NULL|string The salt if the user exists
-     */
-    public function getSalt($s_username, $s_loginType)
-    {
-        $this->builder->select('users', 'salt,id')
-            ->getWhere()
-            ->bindString('nick', $s_username)
-            ->bindString('active', '1')
-            ->bindString('loginType', $s_loginType);
-        $database = $this->builder->getResult();
-        
-        if ($database->num_rows() == 0) {
-            return null;
-        }
-        
-        $a_data = $database->fetch_assoc();
-        
-        if (empty($a_data[0]['salt'])) {
-            $s_salt = $this->hashing->createSalt();
-            $this->builder->update('users')
-                ->bindString('salt', $s_salt)
-                ->getWhere()
-                ->bindInt('id', $a_data[0]['id']);
-            $this->builder->getResult();
-            
-            return $s_salt;
-        }
-        
-        return $a_data[0]['salt'];
     }
 
     /**
@@ -733,7 +691,9 @@ class User extends \youconix\core\models\Equivalent
             ->bindString('activation', $this->activation)
             ->bindString('profile', $this->profile)
             ->bindString('loginType', $this->loginType)
-            ->bindInt('bindToIp',$this->bindToIp);
+            ->bindInt('bindToIp',$this->bindToIp)
+	    ->bindString('password_expired',$this->password_expired)
+	    ->bindString('salt',$this->salt);
         
         $this->userid = (int) $this->builder->getResult()->getId();
         
@@ -759,10 +719,12 @@ class User extends \youconix\core\models\Equivalent
             ->bindString('active', $this->active)
             ->bindString('blocked', $this->blocked)
             ->bindString('profile', $this->profile)
-            ->bindInt('bindToIp',$this->bindToIp)
-            ->getWhere()
-            ->bindInt('id', $this->userid);
-        $this->builder->getResult();
+            ->bindInt('bindToIp',$this->bindToIp);
+	
+	if( !empty($this->password) ){
+	  $this->builder->bindString('password',$this->password)->bindString('password_expired',$this->password_expired);
+	}
+        $this->builder->getWhere()->bindInt('id', $this->userid)->getResult();
     }
 
     /**
@@ -782,5 +744,24 @@ class User extends \youconix\core\models\Equivalent
             ->bindInt('id', $this->userid);
         $this->builder->getResult();
         $this->userid = null;
+    }
+
+    public function __get($s_key){
+        switch($s_key){
+          case 'nick' :
+            return $this->getUsername();
+        }
+        return parent::__get($s_key);
+    }
+
+    public function __set($s_key,$s_value){
+        switch($s_key){
+          case 'nick' :
+            $this->setUsername($s_value);
+            break;
+
+          default :
+            parent::__set($s_key, $s_value);
+        }
     }
 }

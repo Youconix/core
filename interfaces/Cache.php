@@ -37,6 +37,11 @@ interface Cache
     public function clearSiteCache();
 
     /**
+     * Clears the template parser cache files
+     */
+    public function clearTemplateCache();
+
+    /**
      * Returns the no cache pages
      *
      * @return array The pages

@@ -152,12 +152,18 @@ class Mysqli extends \youconix\core\database\GeneralDAL
         
         $this->obj_query = null;
         
-        if (preg_match_all('/:[a-zA-Z-_0-9]+/s', $s_query, $a_matches)) {
+        if (preg_match_all('/:[a-zA-Z\-_0-9\.]+/s', $s_query, $a_matches)) {
             $i = 0;
+
+            $a_keys = [];
             foreach ($a_matches[0] as $field) {
-                $s_query = str_replace($field, '?', $s_query);
-                $this->a_bindedKeys[$field] = $i;
-                $i ++;
+              $a_keys[] = $field;
+            }
+
+            $i_start = (count($a_keys)-1);
+            for($i=$i_start; $i>=0; $i--){
+              $s_query = str_replace($a_keys[$i],'?',$s_query);
+              $this->a_bindedKeys[$a_keys[$i]] = $i;
             }
         }
         $this->s_query = $s_query;
@@ -436,8 +442,8 @@ class Mysqli extends \youconix\core\database\GeneralDAL
         $a_temp = [];
         while ($this->obj_query->fetch()) {
             $object = new \stdClass();
-            foreach ($this->a_result as $s_key => $value) {
-                $object->$s_key = $value;
+            foreach ($this->a_result as $s_fieldkey => $value) {
+                $object->$s_fieldkey = $value;
             }
             $a_temp[] = $object;
         }

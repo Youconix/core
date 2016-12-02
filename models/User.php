@@ -52,7 +52,7 @@ class User extends \youconix\core\models\Model
      *
      * @param array $a_userid
      *            Array from user IDs
-     * @return User array The data objects
+     * @return \youconix\core\models\data\User[] array The data objects
      */
     public function getUsersById($a_userid)
     {
@@ -61,13 +61,11 @@ class User extends \youconix\core\models\Model
         $a_users = array();
         $this->builder->select('users', '*')
             ->getWhere()
-            ->addAnd('id', 'i', array(
-            0 => $a_userid
-        ), 'IN');
+            ->bindInt('id', $a_userid,'AND', 'IN');
         $service_Database = $this->builder->getResult();
         
         if ($service_Database->num_rows() > 0) {
-            $a_data = $service_Database->fetch_assoc();
+            $a_data = $service_Database->fetch_object();
             
             foreach ($a_data as $a_user) {
                 $i_userid = (int) $a_user['id'];
@@ -118,34 +116,24 @@ class User extends \youconix\core\models\Model
      *            The username
      * @param string $s_email
      *            The email address
-     * @return \youconix\core\models\Model The user object or null if the user does not exist
+     * @return \youconix\core\models\User The user object or null if the user does not exist
      */
     public function getByName($s_username, $s_email = '')
     {
         $this->builder->select('users', '*')
             ->getWhere()
-            ->addAnd(array(
-            'username',
-            'active',
-            'blocked'
-        ), array(
-            's',
-            's',
-            's'
-        ), array(
-            $s_username,
-            '1',
-            '0'
-        ));
+            ->bindString('username',$s_username)
+            ->bindString('active','1')
+            ->bindString('blocked','0');
         if (! empty($s_email)) {
-            $this->builder->getWhere()->addAnd('email', 's', $s_email);
+            $this->builder->getWhere()->bindString('email', $s_email);
         }
         $database = $this->builder->getResult();
         if ($database->num_rows() == 0) {
             return null;
         }
         
-        $a_data = $database->fetch_assoc();
+        $a_data = $database->fetch_object();
         $obj_User = $this->userData->cloneModel();
         $obj_User->setData($a_data[0]);
         return $obj_User;
@@ -184,7 +172,7 @@ class User extends \youconix\core\models\Model
             ->limit(25, $i_start);
         $service_Database = $this->builder->getResult();
         
-        $a_users = $service_Database->fetch_assoc();
+        $a_users = $service_Database->fetch_object();
         $a_result = array(
             'number' => 0,
             'data' => array()
@@ -218,21 +206,10 @@ class User extends \youconix\core\models\Model
             ->order('nick', 'ASC')
             ->limit(25)
             ->getWhere()
-            ->addOr(array(
-            'nick',
-            'email'
-        ), array(
-            's',
-            's'
-        ), array(
-            $s_username,
-            $s_username
-        ), array(
-            'LIKE',
-            'LIKE'
-        ));
+            ->bindString('nick','%'.$s_username.'%','OR','LIKE')
+            ->bindString('email','%'.$s_username.'%','OR','LIKE');
         
-        $a_users = $this->builder->getResult()->fetch_assoc();
+        $a_users = $this->builder->getResult()->fetch_object();
         $a_result = array(
             'number' => 0,
             'data' => array()
@@ -242,6 +219,7 @@ class User extends \youconix\core\models\Model
             $obj_User = $this->userData->cloneModel();
             $obj_User->setData($a_user);
             $a_result['data'][] = $obj_User;
+            $a_result['number']++;
         }
         
         return $a_result;
@@ -274,7 +252,7 @@ class User extends \youconix\core\models\Model
     {
         $this->builder->select('users', 'id')
             ->getWhere()
-            ->addAnd('activation', 's', $s_code);
+            ->bindString('activation', $s_code);
         $service_Database = $this->builder->getResult();
         if ($service_Database->num_rows() == 0)
             return false;
@@ -284,19 +262,13 @@ class User extends \youconix\core\models\Model
         try {
             $this->builder->transaction();
             
-            $this->builder->insert('profile', 'userid', 'i', $i_userid)->getResult();
+            $this->builder->insert('profile')->bindInt('userid', $i_userid)->getResult();
             
-            $this->builder->update('users', array(
-                'activation',
-                'active'
-            ), array(
-                's',
-                's'
-            ), array(
-                '',
-                '1'
-            ));
-            $this->builder->getWhere()->addAnd('id', 'i', $i_userid);
+            $this->builder->update('users')
+                ->bindString('activation','')
+                ->bindString('active','1');
+            
+            $this->builder->getWhere()->bindInt('id',$i_userid);
             $this->builder->getResult();
             
             define('USERID', $i_userid);
@@ -336,40 +308,11 @@ class User extends \youconix\core\models\Model
         \youconix\core\Memory::type('string', $s_username);
         \youconix\core\Memory::type('int', $i_userid);
         \youconix\core\Memory::type('string', $s_type);
+
+        $query = $this->builder->select('users','id')->getWhere()->bindString('nick',$s_username)->bindString('loginType',$s_type);
         
         if ($i_userid != - 1) {
-            $this->builder->select('users', 'id')
-                ->getWhere()
-                ->addAnd(array(
-                'nick',
-                'loginType',
-                'id'
-            ), array(
-                's',
-                's',
-                'i'
-            ), array(
-                $s_username,
-                $s_type,
-                $i_userid
-            ), array(
-                '=',
-                '=',
-                '<>'
-            ));
-        } else {
-            $this->builder->select('users', 'id')
-                ->getWhere()
-                ->addAnd(array(
-                'nick',
-                'loginType'
-            ), array(
-                's',
-                's'
-            ), array(
-                $s_username,
-                $s_type
-            ));
+          $query->bindInt('id',$i_userid,'AND','<>');
         }
         
         $service_Database = $this->builder->getResult();
@@ -393,28 +336,15 @@ class User extends \youconix\core\models\Model
     {
         \youconix\core\Memory::type('string', $s_email);
         \youconix\core\Memory::type('int', $i_userid);
+
+        $this->builder->select('users', 'id')
+        ->getWhere()
+        ->bindString('email',$s_email);
         
         if ($i_userid != - 1) {
-            $this->builder->select('users', 'id')
-                ->getWhere()
-                ->addAnd(array(
-                'email',
-                'id'
-            ), array(
-                's',
-                'i'
-            ), array(
-                $s_email,
-                $i_userid
-            ), array(
-                '=',
-                '<>'
-            ));
-        } else {
-            $this->builder->select('users', 'id')
-                ->getWhere()
-                ->addAnd('email', 's', $s_email);
-        }
+            $this->builder->getWhere()
+              ->bindInt('id',$i_userid,'AND','<>');
+        } 
         
         $service_Database = $this->builder->getResult();
         if ($service_Database->num_rows() != 0) {

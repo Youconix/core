@@ -22,7 +22,7 @@ abstract class Equivalent extends \youconix\core\models\Model
      * @param \Validation $validation            
      * @param \youconix\core\models\EquavalentHelper $helper
      */
-    public function __construct(\Builder $builder, \youconix\core\services\Validation $validation,\youconix\core\models\EquavalentHelper $helper)
+    public function __construct(\Builder $builder, \Validation $validation,\youconix\core\models\EquavalentHelper $helper)
     {
         parent::__construct($builder, $validation);
         
@@ -116,12 +116,20 @@ abstract class Equivalent extends \youconix\core\models\Model
     }
 
     /**
-     * Sets the data
-     * 
-     * @param  array    $a_data The data
+     * Sets the user data
+     *
+     * @param \stdClass $data
+     *            user data
      */
-    public function setData($a_data){
-        foreach($a_data AS $s_field => $value){
+    public function setData(\stdClass $data)
+    {
+        $keys = get_object_vars($data);
+
+        foreach($keys AS $s_field => $value){
+            if( is_numeric($s_field) ){
+              continue;
+            }
+
             $this->$s_field = $value;
         }
     }
@@ -143,10 +151,10 @@ abstract class Equivalent extends \youconix\core\models\Model
         if ($database->num_rows() == 0) {
             throw new \RuntimeException('Call to unknown ' . $this->s_primary . ' ' . $i_id . ' from table ' . $this->s_table . '.');
         }
-        $a_data = $database->fetch_assoc();
+        $a_data = $database->fetch_object();
         
         $item = clone $this;
-        $item->setData($a_data);
+        $item->setData($a_data[0]);
         return $item;
     }
     
@@ -164,7 +172,7 @@ abstract class Equivalent extends \youconix\core\models\Model
         $database = $this->builder->getResult();
         $result = [];
         if( $database->num_rows() > 0 ){
-            foreach($database->fetch_assoc() AS $item){
+            foreach($database->fetch_object() AS $item){
                 $object = clone $this;
                 $object->setdata($item);
                 $result[] = $object;
@@ -249,7 +257,7 @@ abstract class Equivalent extends \youconix\core\models\Model
         $s_primary = $this->s_primary;
         
         $this->builder->delete($this->s_table);
-        $this->builder->getWhere()->bindInt($s_primary, $this->s_primary);
+        $this->builder->getWhere()->bindInt($s_primary, $this->$s_primary);
         $this->builder->getResult();
     }
     
@@ -284,7 +292,7 @@ abstract class Equivalent extends \youconix\core\models\Model
         if( $database->num_rows() == 0 ){
             return [];
         }
-        $dataRaw = $database->fetch_assoc();
+        $dataRaw = $database->fetch_object();
         $data = [];
         foreach($dataRaw AS $item){
             $newClass = clone $class;
@@ -326,7 +334,7 @@ abstract class Equivalent extends \youconix\core\models\Model
         if( $database->num_rows() == 0 ){
             return [];
         }
-        $dataRaw = $database->fetch_assoc();
+        $dataRaw = $database->fetch_object();
         $data = [];
         foreach($dataRaw AS $item){
             $newClass = clone $class;
@@ -334,5 +342,28 @@ abstract class Equivalent extends \youconix\core\models\Model
             $data[] = $newClass;
         }
         return $data;
+    }
+
+    public function __get($s_key){
+        $s_call = 'get'.ucfirst($s_key);
+        if(method_exists($this,$s_call) ){
+          return $this->$s_call();
+        }
+
+        if( exist($this->$s_key) ){
+          return $this->$s_key;
+        }
+        return null;
+    }
+
+    public function __set($s_key,$s_value){
+        $s_call = 'set'.ucfirst($s_key);
+        if(method_exists($this,$s_call) ){
+          return $this->$s_call($s_value);
+        }
+
+        if( exist($this->$s_key) ){
+          $this->$s_key = $s_value;
+        }
     }
 }
