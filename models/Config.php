@@ -155,14 +155,6 @@ class Config extends Model implements \Config
       return $this->s_command;
     }
     
-    /**
-     * Returns the default template directory
-     * 
-     * @return string
-     */
-    public function getTemplateDir(){
-      return $this->s_templateDir;
-    }
 
     /**
      * Returns the settings service
@@ -371,34 +363,6 @@ class Config extends Model implements \Config
         }
     }
 
-    /**
-     * Detects the template directory and layout
-     */
-    public function detectTemplateDir()
-    {
-        $this->stylesDir = 'styles';
-        
-        $s_uri = $this->getPage();
-        while (strpos($s_uri, '//') !== false) {
-            $s_uri = str_replace('//', '/', $s_uri);
-        }
-        if (preg_match('#^/?vendor/#', $s_uri)) {
-            $this->loadTemplateDir();
-            preg_match('#^/?vendor/([a-zA-Z0-9\-_]+/[a-zA-Z0-0\-_]+)/#', $s_uri, $a_matches);
-            if(count($a_matches) > 0 ){
-                $this->templateDir = 'vendor' . DS . $a_matches[1];
-            
-                $this->stylesDir = substr($this->templateDir, 0, strrpos($this->templateDir, '/'));
-            }
-        } else 
-            if (preg_match('#^/?admin/#', $s_uri)) {
-                $this->loadAdminTemplateDir();
-            } else {
-                $this->loadTemplateDir();
-            }
-        
-        $this->notify();
-    }
 
     /**
      * Loads the template directory
