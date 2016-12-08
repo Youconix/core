@@ -1002,28 +1002,19 @@ class Memory
             $s_url = substr($s_url, 1);
         }
         $s_url = substr($s_url, 0, strrpos($s_url, '/'));
-        
-        $a_dirs = explode('/', $s_url);
-        $s_wwwRoot = $_SERVER['DOCUMENT_ROOT'];
-        
-        /* Seach for Memory */
-        $s_base = '';
-        $i_pos = 0;
-        $i_max = count($a_dirs);
-        
-        while ($i_pos <= $i_max) {
-            if (file_exists($s_wwwRoot . '/' . $s_base . '/include/Memory.php')) {
-                return '/' . $s_base;
-            }
-            
-            if (! empty($s_base)) {
-                $s_base .= '/';
-            }
-            $s_base .= $a_dirs[$i_pos];
-            $i_pos ++;
-        }
-        
-        throw new \RuntimeException('Unable to detect website root for ' . $_SERVER['SCRIPT_NAME'] . '.');
+        echo($s_url);
+        if( $_SERVER['SCRIPT_NAME'] == '/router.php' ){
+        return './';
+      }
+
+      $a_dirs = explode('/',$_SERVER['SCRIPT_NAME']);
+      
+      $s_path = '';
+      $i_max = (count($a_dirs)-1);
+      for($i=0; $i<$i_max;$i++){
+        $s_path .= '..'.DIRECTORY_SEPARATOR;
+      }
+      return $s_path;
     }
 }
 
