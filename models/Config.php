@@ -336,13 +336,13 @@ class Config extends Model implements \Config
      */
     protected function detectTemplateDir(){
       if( substr($this->getPage(),0,4) == 'admin' ){
-	$this->s_templateDir = $this->settings->get('templates/admin_dir');
+	$this->templateDir = $this->settings->get('templates/admin_dir');
       }
       else if( $this->isMobile () ){
-	$this->s_templateDir = $this->settings->get('templates/mobile_dir');
+	$this->templateDir = $this->settings->get('templates/mobile_dir');
       }
       else {
-	$this->s_templateDir = $this->settings->get('templates/default_dir');
+	$this->templateDir = $this->settings->get('templates/default_dir');
       }
     }
 
