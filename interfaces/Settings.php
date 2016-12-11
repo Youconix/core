@@ -9,7 +9,7 @@ interface Settings
 
     const SSL_ALL = 2;
 
-    const REMOTE = 'http://framework.youconix.nl/2/';
+    const REMOTE = 'https://framework.youconix.nl/2/';
 
     const MAJOR = 2;
 
@@ -27,4 +27,13 @@ interface Settings
      * Saves the settings file
      */
     public function save($s_file = '');
+
+    /**
+     * Checks of the given part of the loaded file exists
+     *
+     * @param string $s_path
+     *            The path to the language-part
+     * @return boolean, true if the part exists otherwise false
+     */
+    public function exists($s_path);
 }

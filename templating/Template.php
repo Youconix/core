@@ -54,13 +54,17 @@ class Template extends \youconix\core\services\Service implements \Output {
       $s_templateDir = $this->config->getTemplateDir();
     }
 
+    $s_view = str_replace('.',DS,$s_view);
+
+    $this->fileHandler->preparePath('files'.DS.'cache'.DS.'views'.DS.$s_templateDir.DS.dirname($s_view));
+
     $s_templateDir = NIV . 'styles' . DS . $s_templateDir . DS . 'templates' . DS;
 
-    $s_file = $s_templateDir . DS . $s_view . '.blade.php';
-    if (!$this->fileHandler->exists($s_file) || !$this->fileHandler->isReadable($s_file)) {
-      $s_file = $s_templateDir . DS . $s_view . '.tpl';
+    $s_file = $s_view . '.blade.php';
+    if (!$this->fileHandler->exists($s_templateDir.DS.$s_file) || !$this->fileHandler->isReadable($s_templateDir.DS.$s_file)) {
+      $s_file = $s_view . '.tpl';
 
-      if (!$this->fileHandler->exists($s_file) || !$this->fileHandler->isReadable($s_file)) {
+      if (!$this->fileHandler->exists($s_templateDir.DS.$s_file) || !$this->fileHandler->isReadable($s_templateDir.DS.$s_file)) {
 	throw new \TemplateException('Template ' . $s_view . ' in directory ' . $s_templateDir . ' does not exist.');
       }
 
@@ -69,8 +73,8 @@ class Template extends \youconix\core\services\Service implements \Output {
       $this->parser = \Loader::inject('\youconix\core\templating\TemplateBlade');
       $this->bo_blade = true;
     }
-
-    $this->parser->load($s_file, $s_templateDir);
+    
+    $this->parser->load($s_file, $s_templateDir.DS);
     $this->s_view = $s_view;
   }
 

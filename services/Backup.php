@@ -60,6 +60,10 @@ class Backup extends \youconix\core\services\Service
         error_reporting(E_ALL);
     }
 
+    protected function cleanBackups(){
+      $this->file->deleteDirectoryContent($this->s_backupDir);
+    }
+
     protected function openZip($s_name)
     {
         if (! $this->isZipSupported()) {
@@ -109,6 +113,7 @@ class Backup extends \youconix\core\services\Service
 
     public function createBackupFull()
     {
+        $this->cleanBackups();
         $s_filename = $this->openZip('full_backup_' . date('d-m-Y_H:i'));
         if (is_null($s_filename)) {
             return null;
@@ -119,11 +124,15 @@ class Backup extends \youconix\core\services\Service
         
         $s_root = $_SERVER['DOCUMENT_ROOT'] . $this->config->getBase();
         $a_skipDirs = array(
-            $s_root . DATA_DIR . DS . 'backups',
-            $s_root . DATA_DIR . DS . 'tmp',
-            $s_root . 'files',
-            $s_root . '.git'
+            $s_root . DATA_DIR . 'backups',
+            $s_root . DATA_DIR . 'tmp',
+            $s_root . 'files'.DS.'cache',
+            $s_root . '.git',
+            $s_root.'vendor'
         );
+        foreach($a_skipDirs AS $key => $dir){
+          $a_skipDirs = str_replace(['../','./'],['',''],$a_skipDirs);
+        }
         $s_directory = NIV;
         
         $a_files = $this->file->readFilteredDirectory($s_root, $a_skipDirs);

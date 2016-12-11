@@ -40,15 +40,19 @@ abstract class TemplateParent {
     $this->s_file = $s_file;
     $this->s_templateDir = $s_templateDir;
 
-    $this->loadTemplates($s_file);
+    $this->loadTemplates($s_templateDir.DS.$s_file);
 
     $s_hash = str_replace(['./', '//'], ['', '/'], $s_file);
     while (strpos($s_hash, '../') !== false) {
       $s_hash = str_replace('../', '', $s_hash);
     }
-    $this->s_cachefile = realpath($_SERVER['DOCUMENT_ROOT']) . DS . 'files' . DS . 'cache' . DS . 'views' . DS . str_replace(['/', '\\'], ['.', '.'], $s_hash);
-    if (!$this->checkCache()) {
+
+    $a_dirs = explode(DS,str_replace(['./','../'],['',''],$s_templateDir));
+
+    $this->s_cachefile = realpath($_SERVER['DOCUMENT_ROOT']) . DS . 'files' . DS . 'cache' . DS . 'views' . DS . $a_dirs[1].DS.$s_hash;
+    if ( defined('DEBUG') || !$this->checkCache()) {
       $this->parse();
+
       $this->fileHandler->writeFile($this->s_cachefile, $this->s_template);
     }
   }
@@ -59,19 +63,8 @@ abstract class TemplateParent {
    * @return boolean
    */
   protected function checkCache() {
-    // Check dirs 
-    $bo_dirs = true;
-    if (!$this->fileHandler->exists(NIV . 'files' . DS . 'cache')) {
-      $this->fileHandler->newDirectory(NIV . 'files' . DS . 'cache');
-      $bo_dirs = false;
-    }
-    if (!$this->fileHandler->exists(NIV . 'files' . DS . 'cache' . DS . 'views')) {
-      $this->fileHandler->newDirectory(NIV . 'files' . DS . 'cache' . DS . 'views');
-      $bo_dirs = false;
-    }
-
     // check file
-    if (!$bo_dirs || !$this->fileHandler->exists($this->s_cachefile)) {
+    if ( !$this->fileHandler->exists($this->s_cachefile)) {
       return false;
     }
     $file = $this->fileHandler->getFile($this->s_cachefile);

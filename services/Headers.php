@@ -171,17 +171,38 @@ class Headers extends Service implements \Headers
      */
     public function forceDownloadFile($s_file, $s_contentType)
     {
+        set_time_limit(300);
         $i_size = filesize($s_file);
         
         $this->bo_forceDownload = true;
         $this->contentType($s_contentType);
         $this->a_headers[] = array(
+            'Content-Transfer-Encoding',
+            'Binary'
+        );
+        $this->a_headers[] = array(
             'Content-Disposition',
             'attachment; filename="' . basename($s_file) . '"'
         );
-        $this->contentLength($i_length);
+        $this->contentLength($i_size);
         $this->cache(- 1);
-        readfile($s_file);
+        $this->printHeaders();
+        
+        $i_chunk = 4096;
+
+        if( $i_size <= $i_chunk ){
+          readfile($s_file);
+        }
+        else {
+          $file = fopen($s_file,'r');
+          while(!feof($file) ){
+            print( @fread($file,$i_chunk) );
+
+            ob_flush();
+            flush();
+          }
+          fclose($file);
+        }
         exit();
     }
 
@@ -206,8 +227,9 @@ class Headers extends Service implements \Headers
             'Content-Disposition',
             'attachment; filename="' . $s_name . '"'
         );
-        $this->contentLength($i_length);
+        $this->contentLength($i_size);
         $this->cache(- 1);
+        $this->printHeaders();
         echo ($s_content);
         exit();
     }

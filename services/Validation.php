@@ -240,11 +240,22 @@ class Validation extends \youconix\core\services\Service  implements \Validation
         
         switch ($s_expectedType) {
             case 'port':
-                if ($s_type != 'int' && ! is_numeric($s_type)) {
+                if ($s_type != 'int' && ! is_numeric($s_field)) {
                     $this->a_errors[] = 'Invalid type for field ' . $s_key . '. Found ' . $s_type . ' but expected ' . $s_expectedType . '.';
                 }
                 if ($s_field < 1 || $s_field > 65535) {
                     $this->a_errors = 'Invalid amount for field ' . $s_key . '. Ports must be between 1 and 65535.';
+                }
+                break;
+
+            case 'port-optional':
+                if( !empty($s_field) ){
+                  if ($s_type != 'int' && ! is_numeric($s_field)) {
+                      $this->a_errors[] = 'Invalid type for field ' . $s_key . '. Found ' . $s_type . ' but expected ' . $s_expectedType . '.';
+                  }
+                  if ($s_field < 1 || $s_field > 65535) {
+                      $this->a_errors = 'Invalid amount for field ' . $s_key . '. Ports must be between 1 and 65535.';
+                  }
                 }
                 break;
             
