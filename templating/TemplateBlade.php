@@ -149,9 +149,9 @@ class TemplateBlade extends \youconix\core\templating\TemplateParent
 
   protected function parseFields($s_template)
   {
-    $s_template = preg_replace('/@{{\s{1}(\$[a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}}}/si',
+    $s_template = preg_replace('/@{{\s{1}(\$?[\$a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}}}/si',
         '@|| ${1} ||', $s_template);
-    $s_template = preg_replace('/{!!\s{1}(\$[\$a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}!!}/si',
+    $s_template = preg_replace('/{!!\s{1}(\$?[\$a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}!!}/si',
         '<?php echo( ${1} ); ?>', $s_template);
     $s_template = preg_replace('/{{\s{1}([\a-zA-Z0-9\-_\(\)]*\$[a-zA-Z0-9\-_><\[\]\'"\(\)]+[\)]*)\s{1}}}/si',
         '<?php echo( nl2br(htmlentities(${1})) ); ?>', $s_template);

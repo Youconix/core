@@ -14,7 +14,7 @@ namespace youconix\core\services;
 class Validation extends \youconix\core\services\Service  implements \Validation
 {
 
-    protected $a_errors;
+    protected $a_errors = [];
 
     /**
      * Validates the given email address
@@ -148,9 +148,7 @@ class Validation extends \youconix\core\services\Service  implements \Validation
      * @param string $s_rules	The validation rules
      */
     public function validateField($s_key, $field, $s_rules)
-    {
-        $this->a_errors = array();
-        
+    {        
         /* Parse rules */
         $a_validation = array();
         $a_rules = explode('|', $s_rules);
