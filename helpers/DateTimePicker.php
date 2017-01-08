@@ -1,53 +1,9 @@
 <?php
 namespace youconix\core\helpers;
 
-class DateTimePicker extends \youconix\core\helpers\Helper {
-  /**
-   *
-   * @var \Language
-   */
-  protected $language;
-
-  /**
-   *
-   * @var \Config
-   */
-  protected $config;
-
-  protected $s_name;
-  protected $s_date;
-  protected $s_time;
-  protected $s_field;
-
-  public function __construct(\Language $language,\Config $config){
-    $this->language = $language;
-    $this->config = $config;
-  }
-
-  public function setName($s_name){
-    $this->s_name = $s_name;
-  }
-
-  public function setDate($s_date){
-    $this->s_date = date('Y-m-d',strtotime($s_date));
-  }
-
+class DateTimePicker extends \youconix\core\helpers\DatePicker {
   public function setTime($s_time){
     $this->s_time = date('H:i:s',  strtotime($s_time));
-  }
-
-  public function setField($s_field){
-    $this->s_field = $s_field;
-  }
-
-  protected function generateDays(){
-    $s_output = '';
-
-    for($i=0; $i<=6; $i++){
-      $s_output .= '<span class="datepicker_day_names">'.$this->language->get('system/weekdaysShort/day'.$i).'</span>';
-    }
-
-    return $s_output;
   }
 
   protected function generateTimePicker(){
@@ -73,21 +29,8 @@ class DateTimePicker extends \youconix\core\helpers\Helper {
       ';
   }
 
-  public function addHead(\Output $template){
-    $a_months = [];
-    for($i=1; $i<=12; $i++){
-      $a_months[] = $this->language->get('system/months/month'.$i);
-    }
-
-    $template->append('head','<script src="/js/widgets/datepicker.js" type="text/javascript"></script>');
-    $template->append('head','<link rel="stylesheet" href="/'.$this->config->getSharedStylesDir().'css/widgets/datepicker.css" type="text/css">');
-    $template->append('head','<script type="text/javascript">
-        var monthNames = '.json_encode($a_months).';
-        </script>');
-  }
-
   public function generate(){
-    $s_output = '<section class="datepicker" id="datepicker_'.$this->s_name.'">
+    $s_output = '<section class="datetimepicker" id="datepicker_'.$this->s_name.'">
       <div class="datepicker_bar">
         <div class="datepicker_left"></div>
         <div class="datepicker_month_year"></div>

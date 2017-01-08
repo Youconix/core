@@ -1,5 +1,5 @@
 <?php
-namespace core\helpers;
+namespace youconix\core\helpers;
 
 /**
  * Helper for date manipulating
