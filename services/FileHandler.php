@@ -182,6 +182,29 @@ class FileHandler extends \youconix\core\services\Service
   }
 
   /**
+   * Reads a CSV file
+   *
+   * @param string $s_file
+   * @return array
+   * @throws \IOException
+   */
+  public function readCSVFile($s_file){
+    if( !$this->exists($s_file) || !is_readable($s_file) ){
+      throw new \IOException('Can not read '.$s_file.'. Check the permissions');
+    }
+
+    $a_csv = [];
+
+    $file = fopen($s_file,'r');
+    while (($a_data = fgetcsv($file, 0, ",")) !== FALSE) {
+        $a_csv[] = $a_data;
+    }
+    fclose($file);
+
+    return $a_csv;
+  }
+
+  /**
    * Overwrites the given file or generates it if does not exists
    *
    * @param string $s_file
@@ -363,7 +386,7 @@ class FileHandler extends \youconix\core\services\Service
     \youconix\core\Memory::type('int', $i_rights);
 
     if (function_exists('chmod')) {
-      chmod($s_file, $i_rights);
+      @chmod($s_file, $i_rights);
 
       return true;
     } else {
