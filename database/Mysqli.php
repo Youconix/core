@@ -162,7 +162,7 @@ class Mysqli extends \youconix\core\database\GeneralDAL
 
             $i_start = (count($a_keys)-1);
             for($i=$i_start; $i>=0; $i--){
-              $s_query = str_replace($a_keys[$i],'?',$s_query);
+              $s_query = str_replace($a_keys[$i].' ','? ',$s_query);
               $this->a_bindedKeys[$a_keys[$i]] = $i;
             }
         }

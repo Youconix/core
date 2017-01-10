@@ -623,9 +623,9 @@ class Builder_Mysqli implements \Builder
         $a_data = [];
         foreach ($this->a_fields as $field) {
           if ($this->a_types[$field] != 'l') {
-            $a_data[] = $field.' = :'.$field;
+            $a_data[] = $field.' = :'.$field.' ';
           } else {
-            $a_data[] = $field.' = '.$this->a_values[$field];
+            $a_data[] = $field.' = '.$this->a_values[$field].' ';
             unset($this->a_values[$field]);
             unset($this->a_types[$field]);
           }
@@ -908,7 +908,7 @@ class Builder_Mysqli implements \Builder
    */
   public function describe($s_table)
   {
-    $this->service_Database->prepare('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table');
+    $this->service_Database->prepare('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table ');
     $this->service_Database->bindString('database',
         $this->service_Database->getDatabase());
     $this->service_Database->bindString('table', DB_PREFIX.$s_table);
@@ -1100,7 +1100,7 @@ abstract class QueryConditions_Mysqli
   public function bindLiteral($s_field, $statement, $s_type = 'AND',
                               $s_key = '=')
   {
-    $this->bind($s_field, $s_value, $s_type, $s_key, 'l');
+    $this->bind($s_field, $statement, $s_type, $s_key, 'l');
 
     return $this;
   }
@@ -1150,7 +1150,7 @@ abstract class QueryConditions_Mysqli
 
     switch ($s_key) {
       case 'BETWEEN' :
-        $this->s_query .= $s_field.' BETWEEN :'.$s_field.'_1 AND :'.$s_field.'_2';
+        $this->s_query .= $s_field.' BETWEEN :'.$s_field.'_1 AND :'.$s_field.'_2 ';
         $this->a_values[$s_field.'_1'] = $value[0];
         $this->a_types[$s_field.'_1'] = $s_type[0];
 
@@ -1168,12 +1168,12 @@ abstract class QueryConditions_Mysqli
         $this->s_query .= $s_field.' IN ('.implode(',', $a_fields).')';
         break;
       case 'LIKE' :
-        $this->s_query .= $s_field.' LIKE :'.$s_field;
+        $this->s_query .= $s_field.' LIKE :'.$s_field.' ';
         $this->a_types[$s_field] = $s_type;
         $this->a_values[$s_field] = $value;
         break;
       default:
-        $this->s_query .= $s_field.' '.$s_key.' :'.$s_field.'_'.$counter;
+        $this->s_query .= $s_field.' '.$s_key.' :'.$s_field.'_'.$counter.' ';
         $this->a_values[$s_field.'_'.$counter] = $value;
         $this->a_types[$s_field.'_'.$counter] = $s_type;
         break;
