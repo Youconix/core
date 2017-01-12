@@ -1160,7 +1160,7 @@ abstract class QueryConditions_Mysqli
       case 'IN' :
         $a_fields = [];
         for ($i = 0; $i < count($value); $i ++) {
-          $a_fields[] = ':'.$s_field.'_'.($counter+$i);
+          $a_fields[] = ':'.$s_field.'_'.($counter+$i).' ';
           $this->a_types[$s_field.'_'.($counter+$i)] = $s_type;
           $this->a_values[$s_field.'_'.($counter+$i)] = $value[$i];
         }
