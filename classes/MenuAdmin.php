@@ -107,6 +107,7 @@ class MenuAdmin implements \Menu
             $a_links[] = $item;
           } else
           if ($item->tagName == 'title') {
+
             ($this->language->exists($item->nodeValue)) ? $tabItem->title = $this->language->get($item->nodeValue)
                       : $tabItem->title = $item->nodeValue;
           } else {
@@ -115,7 +116,7 @@ class MenuAdmin implements \Menu
           }
         }
 
-        $tabItem->item_id = 'admin_'.$s_module.'_'.strtolower(str_replace(' ','_',$tabItem->title));
+        $tabItem->item_id = $tabItem->id;
 
         $tabItem->links = $this->setLinks($a_links);
         $menu_tab_content->items[] = $tabItem;
