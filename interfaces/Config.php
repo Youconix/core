@@ -168,4 +168,11 @@ interface Config
     public function isSslEnabled();
 
     public function isMobile();
+
+    /**
+     * Returns the maximun upload size in bytes
+     *
+     * @return int
+     */
+    public function getUploadMaxSize();
 }

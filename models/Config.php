@@ -680,4 +680,30 @@ class Config extends Model implements \Config
     {
         return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
     }
+
+    /**
+     * Returns the maximun upload size in bytes
+     *
+     * @return int
+     */
+    public function getUploadMaxSize(){
+      $i_postMaxSize = $this->parse_size(ini_get('post_max_size'));
+      $i_uploadMaxSize = $this->parse_size(ini_get('upload_max_filesize'));
+
+      if( $i_uploadMaxSize > 0 && $i_uploadMaxSize < $i_postMaxSize ){
+        return $i_uploadMaxSize;
+      }
+      return $i_postMaxSize;
+    }
+
+    protected function parse_size($s_size) {
+      $a_unit = preg_replace('/[^bkmgtpezy]/i', '', $s_size); // Remove the non-unit characters from the size.
+      $i_size = preg_replace('/[^0-9\.]/', '', $s_size); // Remove the non-numeric characters from the size.
+      if ($a_unit) {
+        // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
+        return round($i_size * pow(1024, stripos('bkmgtpezy', $a_unit[0])));
+      }
+      
+      return round($i_size);
+}
 }
