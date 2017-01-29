@@ -325,7 +325,18 @@ abstract class TemplateParent {
       ob_end_clean();
 
       $trace = $e->getTrace();
-      $message = $e->getMessage() . ' at rule ' . $trace[0]['line'] . ' at view ' . $trace[0]['file'];
+      $line = '?';
+      $file = '?';
+      if( array_key_exists('line', $trace[0]) ){
+        $line = $trace[0]['line'];
+        $file = $trace[0]['file'];
+      }
+      else if(array_key_exists('args', $trace[0]) && array_key_exists(3,$trace[0]['args']) ){
+        $line = $trace[0]['args'][3];
+        $file = $trace[0]['args'][4]['s_file'];
+      }
+
+      $message = $e->getMessage() . ' at rule ' . $line . ' at view ' . $file;
       throw new \TemplateException($message, $e);
     }
   }
