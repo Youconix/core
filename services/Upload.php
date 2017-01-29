@@ -161,18 +161,6 @@ class Upload extends Service
     $this->model_Image->resizeImage($s_file, $i_maxWidth, $i_maxHeight);
   }
 
-  /**
-   * Generates a trumbnail with max width 50 pixels.
-   * Works only with jpg, gif and png
-   *
-   * @param String $s_file
-   *            file url
-   */
-  public function makeTrumb($s_file)
-  {
-    $this->model_Image->makeTrumb($s_file);
-  }
-
   public function addHead(\Output $output)
   {
     $output->append('head',
