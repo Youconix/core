@@ -20,6 +20,10 @@ class CurlManager extends Service
     
     protected $i_headerSize;
 
+    protected $s_content;
+
+    protected $s_headers;
+
     /**
      * Returns if the object schould be treated as singleton
      *
@@ -88,6 +92,8 @@ class CurlManager extends Service
         }
         
         curl_close($ch);
+
+        $this->parseResponse($s_result);
         
         return $s_result;
     }
@@ -128,6 +134,8 @@ class CurlManager extends Service
         }
         
         curl_close($ch);
+
+        $this->parseResponse($s_result);
         
         return $s_result;
     }
@@ -198,17 +206,30 @@ class CurlManager extends Service
         }
     }
 
+    protected function parseResponse($s_response){
+        $this->s_headers = substr($s_response, 0, $this->getHeaderSize());
+        $this->s_content = substr($s_response, $this->getHeaderSize());
+    }
+
     /**
      * Returns the response header
      *
      * @return string The response header
      */
-    public function getHeader()
+    public function getHeaderCode()
     {
         return $this->s_header;
     }
     
     public function getHeaderSize(){
     	return $this->i_headerSize;
+    }
+
+    public function getHeaders(){
+        return $this->s_headers;
+    }
+
+    public function getContent(){
+        return $this->s_content;
     }
 }
