@@ -27,11 +27,6 @@ namespace youconix\core\services;
  */
 class Upload extends Service
 {
-  /**
-   *
-   * @var \youconix\core\models\Image
-   */
-  protected $model_Image;
 
   /**
    * @var \youconix\core\services\DefaultMimeTypes
@@ -41,12 +36,10 @@ class Upload extends Service
   /**
    * PHP 5 constructor
    *
-   * @param \youconix\core\models\Image $model_Image
    * @param \youconix\core\services\DefaultMimeTypes $defaultMimes
    */
-  public function __construct(\youconix\core\models\Image $model_Image,\youconix\core\services\DefaultMimeTypes $defaultMimes)
+  public function __construct(\youconix\core\services\DefaultMimeTypes $defaultMimes)
   {
-    $this->model_Image = $model_Image;
     $this->defaultMimes = $defaultMimes;
   }
 
