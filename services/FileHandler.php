@@ -274,6 +274,94 @@ class FileHandler extends \youconix\core\services\Service
   }
 
   /**
+     * Renames the given file
+     *
+     * @param string $s_nameOld
+     *            The current url
+     * @param string $s_nameNew
+     *            The new url
+     * @throws \IOException when the file does not exist or is not writable (needed for renaming)
+     */
+    public function renameFile($s_nameOld, $s_nameNew)
+    {
+        \youconix\core\Memory::type('string', $s_nameOld);
+        \youconix\core\Memory::type('string', $s_nameNew);
+
+        /* Check file */
+        if (! $this->exists($s_nameOld)) {
+            throw new \IOException('File ' . $s_nameOld . ' does not exist.');
+        }
+
+        if (! rename($s_nameOld, $s_nameNew)) {
+            throw new \IOException('File ' . $s_nameOld . ' can not be renamed.');
+        }
+    }
+
+    /**
+     * Copy's the given file to the given directory
+     *
+     * @param string $s_file
+     *            The file to copy
+     * @param string $s_target
+     *            The target directory
+     * @throws \IOException when the file is not readable or the target directory is not writable
+     */
+    public function copyFile($s_file, $s_target)
+    {
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_target);
+
+        /* Check file */
+        if (! $this->exists($s_file)) {
+            throw new \IOException('Can not read file ' . $s_file . '.');
+        }
+
+        /* Check target */
+        if (! is_writable($s_target)) {
+            throw new \IOException('Can not write in directory ' . $s_target . '.');
+        }
+
+        $a_filename = explode('/', $s_file);
+        $s_filename = end($a_filename);
+
+        copy($s_file, $s_target . '/' . $s_filename);
+    }
+
+  /**
+     * Moves the given file to the given directory
+     *
+     * @param string $s_file
+     *            The current url
+     * @param string $s_target
+     *            The target directory
+     * @throws \IOException when the target directory is not writable (needed for moving)
+     */
+    public function moveFile($s_file, $s_target)
+    {
+        \youconix\core\Memory::type('string', $s_file);
+        \youconix\core\Memory::type('string', $s_target);
+
+        /* Check file and target-directory */
+        if (! $this->exists($s_file)) {
+            throw new \IOException('File ' . $s_file . ' does not exist');
+        }
+
+        if (! is_writable($s_file)) {
+            throw new \IOException('File ' . $s_file . ' is not writable, needed for deleting.');
+        }
+
+        if (! is_writable($s_target)) {
+            throw new \IOException('Directory ' . $s_target . ' is not writable');
+        }
+
+        /* Copy old file */
+        $this->copyFile($s_file, $s_target);
+
+        /* Delete old file */
+        $this->deleteFile($s_file);
+    }
+
+  /**
    * Deletes the given file
    *
    * @param string $s_file
