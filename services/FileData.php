@@ -38,7 +38,6 @@ class FileData extends Service
     {
         \youconix\core\Memory::type('string', $s_file);
 
-        $s_finfo = \finfo_open(FILEINFO_MIME_TYPE);
         if (function_exists('finfo_open')) {
             $s_finfo = finfo_open(FILEINFO_MIME_TYPE);
             $s_mimeType = finfo_file($s_finfo, $s_file);
