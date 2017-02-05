@@ -308,7 +308,7 @@ class Stats extends \youconix\core\models\Model
         $this->builder->select('stats_unique', 'datetime')
             ->group('datetime')
             ->getWhere()
-            ->bindtInt('datetime', [
+            ->bindInt('datetime', [
             $i_startDate,
             $i_endDate
         ], 'AND', 'BETWEEN');

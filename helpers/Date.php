@@ -218,4 +218,18 @@ class Date extends \youconix\core\helpers\Helper
                 return 28;
         }
     }
+
+    /**
+     * Returns the amount of days in the month according to the Gregorian calendar
+     *
+     * @param int $i_month
+     * @param int $i_year
+     */
+    public function getDaysInMonth($i_month,$i_year){
+      if(function_exists('cal_days_in_month') ){
+        return cal_days_in_month(CAL_GREGORIAN, $i_month, $i_year);
+      }
+
+      return date('t',mktime(0,0,0,$i_month,1,$i_year));
+    }
 }
