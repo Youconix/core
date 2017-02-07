@@ -45,14 +45,14 @@ class Updater extends \youconix\core\services\Service
 
     public function checkUpdates()
     {
-        $s_content = $this->curlManager->performGetCall($this->s_remote . 'checkupdates/' . $this->s_version, array());
-        $i_header = $this->curlManager->getHeader();
+         $this->curlManager->performGetCall($this->s_remote . 'checkupdates/' . $this->s_version, array());
+        $i_header = $this->curlManager->getHeaderCode();
         
         if ($i_header != 200) {
             return null;
         }
         
-        $s_content = substr($s_content, $this->curlManager->getHeaderSize());
+        $s_content = $this->curlManager->getContent();
         $this->xml->loadXML($s_content);
         $this->xml->save(NIV . 'files/updater.xml');
         

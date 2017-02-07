@@ -3,7 +3,6 @@ namespace youconix\core\services;
 
 /**
  * Mailer service
- * Wraps the class PHPMailer (GPL)
  *
  * This file is part of Miniature-happiness
  *
@@ -11,12 +10,12 @@ namespace youconix\core\services;
  * @author Rachelle Scheijen
  * @since 1.0
  */
-class Mailer extends Service
+class Mailer extends Service implements \Mailer
 {
 
     /**
      *
-     * @var \Mailer
+     * @var \MailerLib
      */
     protected $obj_phpMailer;
 
@@ -28,7 +27,11 @@ class Mailer extends Service
 
     protected $s_language;
 
-    protected $service_File;
+    /**
+     *
+     * @var \youconix\core\services\FileHandler
+     */
+    protected $file;
 
     protected $s_domain;
 
@@ -38,19 +41,17 @@ class Mailer extends Service
      * Inits the class Mailer
      *
      * @param \Language $language
-     *            The language service
-     * @param core\services\File $service_File
-     *            The file service
+     * @param \youconix\core\services\FileHandler $file
      * @param \Config $config
-     *            The Config model.
+     * @param \MailerLib $mailer
      */
-    public function __construct(\Language $language, \youconix\core\services\File $service_File, \Config $config, \Mailer $mailer)
+    public function __construct(\Language $language, \youconix\core\services\FileHandler $file, \Config $config, \MailerLib $mailer)
     {
         $this->obj_phpMailer = $mailer;
         
         $this->language = $language;
         $this->s_language = $this->language->getLanguage();
-        $this->service_File = $service_File;
+        $this->file = $file;
         
         $this->s_domain = $_SERVER['HTTP_HOST'];
         $this->s_domainUrl = $config->getProtocol() . $this->s_domain . $config->getBase();
@@ -61,7 +62,7 @@ class Mailer extends Service
      *
      * @param boolean $bo_html
      *            true for html mail, default true
-     * @return PHPMailer mailer
+     * @return \MailerLib mailer
      */
     public function getMailer($bo_html = true)
     {
@@ -76,36 +77,22 @@ class Mailer extends Service
      * Sends the registration activation email
      *
      * @param string $s_username
-     *            username
      * @param string $s_email
-     *            email address
-     * @param string $s_url
-     *            activation url
+     * @param string $s_activationUrl
      * @return boolean if the email is send
      */
-    public function registrationMail($s_username, $s_email, $s_url)
+    public function registrationMail($s_username, $s_email, $s_activationUrl)
     {
-        $a_mail = $this->getMail('registration');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'username',
-            'url'
-        ), array(
-            $s_username,
-            $s_url
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'username',
-            'url'
-        ), array(
-            $s_username,
-            $s_url
-        ));
-        
+        $mail = $this->getMail('registration');
+        $mail->set('username',$s_username);
+        $mail->set('url',$s_activationUrl);
+        $mail->render();
+
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_username);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject() );
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -123,27 +110,16 @@ class Mailer extends Service
      */
     public function adminAdd($s_username, $s_password, $s_email)
     {
-        $a_mail = $this->getMail('registrationAdmin');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'username',
-            'password'
-        ), array(
-            $s_username,
-            $s_password
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'username',
-            'password'
-        ), array(
-            $s_username,
-            $s_password
-        ));
+        $mail = $this->getMail('registrationAdmin');
+        $mail->set('username',$s_username);
+        $mail->set('password',$s_password);
+        $mail->render();
         
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_username);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject());
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -157,42 +133,24 @@ class Mailer extends Service
      *            email address
      * @param string $s_newPassword
      *            new plain text password
-     * @param string $s_hash
-     *            reset confirm code
+     * @param string $s_url
      * @param string $s_expire
      * @return boolean if the email is send
      */
     public function passwordResetMail($s_username, $s_email, $s_newPassword, $s_url,$s_expire)
     {
-        $a_mail = $this->getMail('passwordReset');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'username',
-            'password',
-            'url',
-	    'expire'
-        ), array(
-            $s_username,
-            $s_newPassword,
-            $s_url,
-	    $s_expire
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'username',
-            'password',
-            'url',
-	    'expire'
-        ), array(
-            $s_username,
-            $s_newPassword,
-            $s_url,
-	    $s_expire
-        ));
+        $mail = $this->getMail('passwordReset');
+        $mail->set('username',$s_username);
+        $mail->set('password',$s_newPassword);
+        $mail->set('url',$s_url);
+        $mail->set('expire',$s_expire);
+        $mail->render();
         
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_username);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject());
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -210,27 +168,16 @@ class Mailer extends Service
      */
     public function adminPasswordReset($s_username, $s_email, $s_newPassword)
     {
-        $a_mail = $this->getMail('passwordResetAdmin');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'username',
-            'password'
-        ), array(
-            $s_username,
-            $s_newPassword
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'username',
-            'password'
-        ), array(
-            $s_username,
-            $s_newPassword
-        ));
+        $mail = $this->getMail('passwordResetAdmin');
+        $mail->set('username',$s_username);
+        $mail->set('password',$s_newPassword);
+        $mail->render();
         
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_username);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject());
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -246,23 +193,15 @@ class Mailer extends Service
      */
     public function accountDisableMail($s_username, $s_email)
     {
-        $a_mail = $this->getMail('accountDisabled');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'username'
-        ), array(
-            $s_username
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'username'
-        ), array(
-            $s_username
-        ));
+        $mail = $this->getMail('accountDisabled');
+        $mail->set('username',$s_username);
+        $mail->render();
         
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_username);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject());
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -279,23 +218,15 @@ class Mailer extends Service
         $s_email = $obj_receiver->getEmail();
         $s_username = $obj_receiver->getUsername();
         
-        $a_mail = $this->getMail('PM');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'username'
-        ), array(
-            $s_username
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'username'
-        ), array(
-            $s_username
-        ));
+        $mail = $this->getMail('PM');
+        $mail->set('username',$s_username);
+        $mail->render();
         
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_username);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject());
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -316,31 +247,17 @@ class Mailer extends Service
         $s_email = $a_address['email'];
         $s_name = $a_address['name'];
         
-        $a_mail = $this->getMail('log');
-        $s_body = $this->language->insert($a_mail['body'], array(
-            'name',
-            'message',
-            'domain'
-        ), array(
-            $s_name,
-            nl2br($s_message),
-            $s_domain
-        ));
-        $s_bodyAlt = $this->language->insert($a_mail['bodyAlt'], array(
-            'name',
-            'message',
-            'domain'
-        ), array(
-            $s_name,
-            $s_message,
-            $s_domain
-        ));
+        $mail = $this->getMail('log');
+        $mail->set('name',$s_name);
+        $mail->set('message',nl2br($s_message));
+        $mail->set('domain',$s_domain);
+        $mail->render();
         
         $obj_mailer = $this->getMailer();
         $obj_mailer->addAddress($s_email, $s_name);
-        $obj_mailer->setSubject($a_mail['subject']);
-        $obj_mailer->setBody($s_body);
-        $obj_mailer->setAltBody($s_bodyAlt);
+        $obj_mailer->setSubject($mail->getSubject());
+        $obj_mailer->setBody($mail->getText());
+        $obj_mailer->setAltBody($mail->getAltText());
         
         return $this->sendMail($obj_mailer);
     }
@@ -353,57 +270,21 @@ class Mailer extends Service
      * @param string $s_language
      *            The language, optional
      * @throws \Exception the template does not exist
-     * @return array templates
+     * @return \MailMessage
      */
     protected function getMail($s_code, $s_language = '')
     {
-        if (empty($s_language))
+        if (empty($s_language) ){
             $s_language = $this->s_language;
-        
-        if (! $this->service_File->exists(WEBSITE_ROOT . 'emails/' . $s_language . '/' . $s_code . '.tpl')) {
-            throw new \Exception("Can not find the email template " . $s_code . " for language " . $this->s_language);
         }
-        
-        $a_file = explode('<==========>', $this->service_File->readFile(WEBSITE_ROOT . 'emails/' . $s_language . '/' . $s_code . '.tpl'));
-        $a_filePlain = explode('<==========>', $this->service_File->readFile(WEBSITE_ROOT . 'emails/' . $s_language . '/' . $s_code . '_plain.tpl'));
-        
-        $s_htmlBody = $this->service_File->readFile(WEBSITE_ROOT . 'emails/main.tpl');
-        $s_plainBody = $this->service_File->readFile(WEBSITE_ROOT . 'emails/main_plain.tpl');
-        $a_filePlain[1] = str_replace('[content]', $a_filePlain[1], $s_plainBody);
-        $a_file[1] = str_replace('[content]', $a_file[1], $s_htmlBody);
-        
-        $a_file[0] = $this->setMainMail($a_file[0]);
-        $a_file[1] = $this->setMainMail($a_file[1]);
-        $a_filePlain[1] = $this->setMainMail($a_filePlain[1]);
-        
-        return array(
-            'subject' => trim($a_file[0]),
-            'body' => $a_file[1],
-            'bodyAlt' => $a_filePlain[1]
-        );
-    }
 
-    /**
-     * Sets the main email data
-     *
-     * @param string $s_mail
-     *            email
-     * @return string processed email
-     */
-    protected function setMainMail($s_mail)
-    {
-        $s_domain = $this->s_domain;
-        $s_domainUrl = $this->s_domainUrl;
+        $message = new MailMessage();
+        $message->loadEmail($this->file, $s_language, $s_code);
         
-        $s_mail = $this->language->insert($s_mail, array(
-            'domain',
-            'domainUrl'
-        ), array(
-            $s_domain,
-            $s_domainUrl
-        ));
-        
-        return trim($s_mail);
+        $message->set('domain', $this->s_domain);
+        $message->set('domainUrl',$this->s_domainUrl);
+
+        return $message;
     }
 
     /**
@@ -416,4 +297,92 @@ class Mailer extends Service
     {
         return $obj_mailer->send();
     }
+}
+
+class MailMessage implements \MailMessage {
+  /**
+   *
+   * @var \youconix\core\services\FileHandler
+   */
+  protected $file;
+
+  protected $a_entries = [];
+
+  protected $s_text;
+  protected $s_altText;
+  protected $s_subject;
+
+  /**
+   * Loads the email
+   *
+   * @param \youconix\core\services\FileHandler $file
+   * @param string $s_language
+   * @param string $s_code
+   * @throws \Exception the template does not exist
+   */
+  public function loadEmail(\youconix\core\services\FileHandler $file,$s_language,$s_code){
+    $this->file = $file;
+
+    if (! $this->file->exists(WEBSITE_ROOT . 'emails/' . $s_language . '/' . $s_code . '.tpl')) {
+      throw new \Exception("Can not find the email template " . $s_code . " for language " . $s_language);
+    }
+
+    $a_file = explode('<==========>', $this->file->readFile(WEBSITE_ROOT . 'emails/' . $s_language . '/' . $s_code . '.tpl'));
+    $a_filePlain = explode('<==========>', $this->file->readFile(WEBSITE_ROOT . 'emails/' . $s_language . '/' . $s_code . '_plain.tpl'));
+
+    $s_htmlBody = $this->file->readFile(WEBSITE_ROOT . 'emails/main.tpl');
+    $s_plainBody = $this->file->readFile(WEBSITE_ROOT . 'emails/main_plain.tpl');
+    $a_filePlain[1] = str_replace('[content]', $a_filePlain[1], $s_plainBody);
+    $a_file[1] = str_replace('[content]', $a_file[1], $s_htmlBody);
+
+    $this->s_subject = trim($a_file[0]);
+    $this->s_text = $a_file[1];
+    $this->s_altText = $a_filePlain[1];
+  }
+
+  /**
+   * Adds text to the email
+   *
+   * @param string $s_key
+   * @param string $s_text
+   */
+  public function set($s_key,$s_text){
+    $this->a_entries[$s_key] = $s_text;
+  }
+
+  /**
+   * Renders the emails
+   */
+  public function render(){
+    foreach($this->a_entries AS $s_key => $s_value){
+      $this->s_text = str_replace('['.$s_key.']',$s_value,$this->s_text);
+      $this->s_altText = str_replace('['.$s_key.']',$s_value,$this->s_altText);
+    }
+    $this->s_text = trim($this->s_text);
+    $this->s_altText = trim($this->s_altText);
+  }
+
+  /**
+   *
+   * @return string
+   */
+  public function getSubject(){
+    return $this->s_subject;
+  }
+
+  /**
+   *
+   * @return string
+   */
+  public function getText(){
+    return $this->s_text;
+  }
+
+  /**
+   *
+   * @return string
+   */
+  public function getAltText(){
+    return $this->s_altText;
+  }
 }
