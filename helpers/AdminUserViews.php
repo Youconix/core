@@ -172,12 +172,12 @@ class AdminUserViews extends \youconix\core\helpers\Helper
     $a_groups = $this->groups->getGroups();
 
     $this->a_data['newGroups'] = [];
-    foreach($userGroups AS $group){
-      $this->a_data['newGroups'][] = ['value'=>$group->getId(),'text'=>$group->getName()];
+    foreach($a_groups AS $group){
+      $this->a_data['newGroups'][$group->getId()] = ['value'=>$group->getId(),'text'=>$group->getName()];
     }
 
     if( $includeAll ){
-        foreach($userGroups AS $group){
+        foreach($a_groups AS $group){
           $userGroups[$group->getId()] = [
               'name'=>$group->getName(),
               'level'=> $this->language->get('system/rights/level_-1'),
@@ -200,6 +200,10 @@ class AdminUserViews extends \youconix\core\helpers\Helper
             'levelNr' => $group
         ];
       }
+    }
+
+    foreach($user->getGroups() AS $id => $group){
+      unset($this->a_data['newGroups'][$id]);
     }
 
     foreach($userGroups AS $id => $group){

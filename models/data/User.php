@@ -145,7 +145,7 @@ class User extends \youconix\core\models\Equivalent
             'username' => 'type:string|required',
             'email' => 'type:string|required|pattern:email',
             'bot' => 'type:enum|required|set:0,1',
-            'registrated' => 'type:enum|required|set:0,1',
+            'registrated' => 'type:int|required',
             'active' => 'type:enum|required|set:0,1',
             'blocked' => 'type:enum|required|set:0,1',
             'password' => 'type:string|required',
@@ -737,7 +737,7 @@ class User extends \youconix\core\models\Equivalent
         }
         
         /* Delete user from groups */
-        $this->groups->deleteGroupsUser($this->userid);
+        $this->groups->deleteUserFromGroups($this->userid);
         
         $this->builder->delete('users')
             ->getWhere()

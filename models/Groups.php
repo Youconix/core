@@ -221,7 +221,7 @@ class Groups extends \youconix\core\models\Model
      * @param int $i_userid            
      * @param array $a_groups            
      * @param int $i_level
-     *            level
+     *            level, -1 to delete the access level
      * @throws \OutOfBoundsException the group ID does niet exist
      */
     public function editUserLevel($i_userid, $a_groups, $i_level)

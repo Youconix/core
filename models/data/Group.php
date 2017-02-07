@@ -287,7 +287,8 @@ class Group extends \youconix\core\models\Equivalent
         if ($i_level == - 1) {
             $this->builder->delete("group_users")
                 ->getWhere()
-                ->bindInt('userid', $i_userid);
+                ->bindInt('userid', $i_userid)
+                ->bindInt('groupID',$this->id);
             $this->builder->getResult();
         } else 
             if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
