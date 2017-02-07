@@ -76,7 +76,7 @@ class MenuAdmin implements \Menu
     $i = 1;
     foreach ($a_modules as $s_module) {
       $obj_settings = $this->xml->cloneService();
-      $obj_settings->load($s_dir.DS.$s_module.'/settings.xml');
+      $obj_settings->load($s_dir.DS.strtolower($s_module).'/settings.xml');
 
       $s_title = $obj_settings->get('module/title');
 

@@ -29,20 +29,23 @@ class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
     /**
      * Admin graphic class constructor
      *
-     * @param \Config $config            
      * @param \Language $language           
      * @param \youconix\core\classes\HeaderAdmin $header            
      * @param \youconix\core\classes\MenuAdmin $menu            
      * @param \Footer $footer            
      */
-    public function __construct(\Config $config, \Language $language, HeaderAdmin $header, MenuAdmin $menu, \Footer $footer)
+    public function __construct(\Language $language, HeaderAdmin $header, MenuAdmin $menu, \Footer $footer)
     {
-        $this->config = $config;
         $this->header = $header;
         $this->menu = $menu;
         $this->footer = $footer;    
 	$this->language = $language;
     }
+
+    /**
+     * Shows the statistics
+     */
+    protected function loadStats(){}
 }
 
 ?>

@@ -58,7 +58,7 @@ class ControlPanelModules extends \youconix\core\models\Model
 
     $a_files = array();
     foreach ($a_directory as $s_module) {
-      if (!is_dir($s_dir.DIRECTORY_SEPARATOR.$s_module) || !$this->file->exists($s_dir.DIRECTORY_SEPARATOR.$s_module.'/settings.xml')) {
+      if (!is_dir($s_dir.DS.$s_module) || !$this->file->exists($s_dir.DS.$s_module.'/settings.xml')) {
         continue;
       }
 
@@ -85,7 +85,7 @@ class ControlPanelModules extends \youconix\core\models\Model
       $data = $database->fetch_assoc();
 
       foreach ($data as $a_name) {
-        if (in_array($a_name['name'], $a_filesRaw)) {
+        if (in_array(strtolower($a_name['name']), $a_filesRaw)) {
           $a_files[] = $a_name['name'];
         }
       }
@@ -115,7 +115,7 @@ class ControlPanelModules extends \youconix\core\models\Model
 
       foreach ($a_data as $a_item) {
         $obj_settings = $this->xml->cloneService();
-        $obj_settings->load($s_dir.DIRECTORY_SEPARATOR.$a_item['name'].DIRECTORY_SEPARATOR.'settings.xml');
+        $obj_settings->load($s_dir.DS.strtolower($a_item['name']).DS.'settings.xml');
         if ($obj_settings->get('module/version') > $a_item['version']) {
           $a_item['versionNew'] = $obj_settings->get('module/version');
           $a_modules['upgrades'][] = $a_item;
@@ -145,7 +145,7 @@ class ControlPanelModules extends \youconix\core\models\Model
       $a_data = $database->fetch_row();
       $a_modules = array();
       foreach ($a_data as $a_item) {
-        $a_modules[] = $a_item[0];
+        $a_modules[] = strtolower($a_item[0]);
       }
 
       foreach ($a_filesRaw as $s_file) {
@@ -182,7 +182,7 @@ class ControlPanelModules extends \youconix\core\models\Model
     $s_dir = $this->getDirectory();
 
     $obj_settings = $this->xml->cloneService();
-    $obj_settings->load($s_dir.DIRECTORY_SEPARATOR.$s_module.DIRECTORY_SEPARATOR.'settings.xml');
+    $obj_settings->load($s_dir.DS.$s_module.DS.'settings.xml');
 
     foreach ($a_data as $s_key => $value) {
       if ($obj_settings->exists('module/'.$s_key)) {
@@ -219,11 +219,14 @@ class ControlPanelModules extends \youconix\core\models\Model
         ->bindString('name', $s_name);
     $database = $this->builder->getResult();
     if ($database->num_rows() != 0) {
+      echo('not found');
       return;
     }
 
     $s_dir = $this->getDirectory();
-    if (!$this->file->exists($s_dir.DIRECTORY_SEPARATOR.$s_name.DIRECTORY_SEPARATOR.'settings.xml')) {
+    $s_name = strtolower($s_name);
+    if (!$this->file->exists($s_dir.DS.$s_name.DS.'settings.xml')) {
+      echo('dir does not exist '.$s_dir.DS.$s_name.DS.'settings.xml');
       return;
     }
 
@@ -240,7 +243,7 @@ class ControlPanelModules extends \youconix\core\models\Model
 
     if (!empty($a_data['install'])) {
       /* Run module installer */
-      require ($s_dir.DIRECTORY_SEPARATOR.$s_name.DIRECTORY_SEPARATOR.$a_data['install']);
+      require ($s_dir.DS.$s_name.DS.$a_data['install']);
     }
   }
 
@@ -253,15 +256,15 @@ class ControlPanelModules extends \youconix\core\models\Model
    */
   public function removeModule($i_id)
   {
+    echo('id :'.$i_id);
     /* Check if module exists */
     $this->builder->select('admin_modules', 'name')
         ->getWhere()
-        ->bindString('name', $s_name);
+        ->bindInt('id', $i_id);
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return;
     }
-
     $s_name = $database->result(0, 'name');
 
     if (in_array($s_name,
@@ -283,16 +286,16 @@ class ControlPanelModules extends \youconix\core\models\Model
         ->bindInt('id', $i_id);
     $this->builder->getResult();
 
-    if ($this->file->exists($s_dir.DIRECTORY_SEPARATOR.$s_name.DIRECTORY_SEPARATOR.'settings.xml')) {
+    if ($this->file->exists($s_dir.DS.$s_name.DS.'settings.xml')) {
       $a_data = $this->getModuleData($s_name, true);
 
       if (!empty($a_data['deinstall'])) {
         /* Run module deinstaller */
-        require ($s_dir.DIRECTORY_SEPARATOR.$s_name.DIRECTORY_SEPARATOR.$a_data['deinstall']);
+        require ($s_dir.DS.$s_name.DS.$a_data['deinstall']);
       }
     }
 
-    $this->file->deleteDirectory($s_dir.DIRECTORY_SEPARATOR.$s_name);
+    $this->file->deleteDirectory($s_dir.DS.$s_name);
   }
 
   /**
@@ -316,7 +319,7 @@ class ControlPanelModules extends \youconix\core\models\Model
     $s_name = $database->result(0, 'name');
     $s_dir = $this->getDirectory();
 
-    if (!$this->file->exists($s_dir.DIRECTORY_SEPARATOR.$s_name.DIRECTORY_SEPARATOR.'settings.xml')) {
+    if (!$this->file->exists($s_dir.DS.$s_name.DS.'settings.xml')) {
       return;
     }
 
@@ -329,7 +332,7 @@ class ControlPanelModules extends \youconix\core\models\Model
 
     if (!empty($a_data['upgrade'])) {
       /* Run module upgrader */
-      require ($s_dir.DIRECTORY_SEPARATOR.$s_name.DIRECTORY_SEPARATOR.$a_data['upgrade']);
+      require ($s_dir.DS.$s_name.DS.$a_data['upgrade']);
     }
   }
 
