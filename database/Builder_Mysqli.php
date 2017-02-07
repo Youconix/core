@@ -631,7 +631,7 @@ class Builder_Mysqli implements \Builder
           }
         }
 
-        $this->s_resultQuery .= ' SET '.implode(',', $a_data).' ';
+        $this->s_resultQuery .= ' SET '.implode(' , ', $a_data).' ';
 
         $this->addGroup();
 
@@ -656,8 +656,8 @@ class Builder_Mysqli implements \Builder
           }
         }
 
-        $this->s_resultQuery .= '('.implode(',', $this->a_fields).') VALUES ('.implode(',',
-                $a_values).') ';
+        $this->s_resultQuery .= '('.implode(',', $this->a_fields).') VALUES ('.implode(' , ',
+                $a_values).' ) ';
 
         if ($this->bo_upsert) {
           $a_updateFields = [];
