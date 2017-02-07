@@ -1,7 +1,7 @@
 <?php
 namespace youconix\core\mailer;
 
-class PHPMailerDebug extends \youconix\core\services\Service implements \Mailer
+class PHPMailerDebug extends \youconix\core\services\Service implements \MailerLib
 {
     private $s_sender;
     private $s_subject;
