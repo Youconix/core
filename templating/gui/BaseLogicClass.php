@@ -48,22 +48,22 @@ class BaseLogicClass implements \Layout
 
     /**
      *
-     * @var \Config
+     * @var \youconix\core\helpers\Stats
      */
-    protected $config;
+    protected $stats;
 
     /**
      * Base graphic class constructor
      *
-     * @param \Config $config            
+     * @param \youconix\core\helpers\Stats $stats
      * @param \Language $language           
      * @param \Header $header            
      * @param \Menu $menu            
      * @param \Footer $footer            
      */
-    public function __construct(\Config $config, \Language $language, \Header $header, \Menu $menu, \Footer $footer)
+    public function __construct(\youconix\core\helpers\Stats $stats, \Language $language, \Header $header, \Menu $menu, \Footer $footer)
     {
-        $this->config = $config;
+        $this->stats = $stats;
         $this->header = $header;
         $this->menu = $menu;
         $this->footer = $footer;    
@@ -87,11 +87,17 @@ class BaseLogicClass implements \Layout
       }
       
       /* Call statistics */
-      if (! $this->config->isAjax() && stripos($_SERVER['PHP_SELF'], 'admin/') === false)
-	require (NIV . 'stats/statsView.php');
+      $this->loadStats();
       
       $this->header->createHeader($this->template);
       $this->menu->generateMenu($this->template);
       $this->footer->createFooter($this->template);
+    }
+
+    /**
+     * Shows the statistics
+     */
+    protected function loadStats(){
+      $this->stats->load($this->template);
     }
 }

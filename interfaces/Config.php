@@ -175,4 +175,11 @@ interface Config
      * @return int
      */
     public function getUploadMaxSize();
+
+    /**
+     * Returns if the statistics are enabled
+     *
+     * @return bool
+     */
+    public function statsEnabled();
 }
