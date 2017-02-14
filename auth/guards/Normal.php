@@ -192,25 +192,33 @@ class Normal implements \Guard
     }
 
     $session = $this->auth->getSession();
-    if (($request->get('password') !== $request->get('password2')) || (!$session->exists('userid'))) {
+    if (($request->get('password') !== $request->get('password2')) || (!$session->exists('user_id'))) {
       return Normal::FORM_INVALID;
     }
 
-    $i_userid = $session->get('userid');
-    $s_password = $this->hashing->hash($this->post->get('password'));
+    $i_userid = $session->get('user_id');
+    $s_password = $this->hashing->hash($request->get('password'));
     $s_passwordCurrent = $request->get('password_old');
-    $this->builder->update('users')->bindString('password', $s_password)->getWhere()->bindInt('userid',
-        $i_userid)->bindString('password', $s_passwordCurrent);
-    $database = $this->builder->getResult();
-    if ($database->affected_rows() == 0) {
+
+    $database = $this->builder->select('users', '*')->getWhere()->bindInt('id',
+            $i_userid)->getResult();
+    if( $database->num_rows() == 0 ){
       return Normal::FORM_INVALID;
     }
 
-    $database = $this->builder->select('users', '*')->getWhere()->bindInt('userid',
-            $i_userid)->getResult();
     $a_data = $database->fetch_object();
+    if( !$this->hashing->verify($s_passwordCurrent,$a_data[0]->password) ){
+      return Normal::FORM_INVALID;
+    }
+
     $user = $this->auth->createUser($a_data[0]);
+
+    $this->builder->update('users')->bindString('password', $s_password)->bindString('password_expired','0')->getWhere()->bindInt('id',
+        $i_userid);
+    $this->builder->getResult();
+    
     $this->auth->setLogin($user);
+    die();
   }
 
   public function registrationForm(\Output $output, \Input $request)
