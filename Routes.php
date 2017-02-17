@@ -27,9 +27,14 @@ class Routes {
   public function findController(\Config $config) {
     $this->config = $config;
     
-    $s_address = str_replace('router.php','',$_SERVER['PHP_SELF']);
+    if( array_key_exists('router',$_GET) ){
+        $s_address = $_GET['router'];
+    }
+    else {
+        $s_address = str_replace('router.php','',$_SERVER['PHP_SELF']);
+    }
     while(substr($s_address,0,1) == '/'){
-      $s_address = substr($s_address,1);
+        $s_address = substr($s_address,1);
     }
     
     if ($s_address == '/') {

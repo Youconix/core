@@ -119,6 +119,9 @@ class Privileges {
     if ($s_base != '/') {
       $s_page = str_replace($s_base, '', $s_page);
     }
+    while(substr($s_page,0,1) == '/'){
+        $s_page = substr($s_page,1);
+    }
 
     if( is_null($user) ){
       if ($this->config->isAjax()) {
