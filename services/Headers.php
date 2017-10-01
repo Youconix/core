@@ -179,8 +179,9 @@ class Headers extends Service implements \Headers
             'Content-Disposition',
             'attachment; filename="' . basename($s_file) . '"'
         );
-        $this->contentLength($i_length);
+        $this->contentLength($i_size);
         $this->cache(- 1);
+        $this->printHeaders();
         readfile($s_file);
         exit();
     }
@@ -208,6 +209,7 @@ class Headers extends Service implements \Headers
         );
         $this->contentLength($i_length);
         $this->cache(- 1);
+        $this->printHeaders();
         echo ($s_content);
         exit();
     }

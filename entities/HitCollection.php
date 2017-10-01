@@ -1,7 +1,7 @@
 <?php
-namespace youconix\core\models\data;
+namespace youconix\core\entities;
 
-class HitCollection implements \Iterator
+class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
 {
 
     protected $a_items = array();

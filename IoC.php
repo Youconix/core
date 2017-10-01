@@ -14,7 +14,7 @@ class IoC
 
     public static $s_ruleFileHandler = '\youconix\core\services\FileHandler';
 
-    public static $s_ruleConfig = '\youconix\core\models\Config';
+    public static $s_ruleConfig = '\youconix\core\Config';
 
     protected static $a_rules = array();
 
@@ -37,9 +37,9 @@ class IoC
     {
         $s_database = $this->settings->get('settings/SQL/type');
         
-        IoC::$a_rules['DAL'] = '\youconix\core\database\\' . $s_database;
-        IoC::$a_rules['Builder'] = '\youconix\core\database\Builder_' . $s_database;
-        IoC::$a_rules['DatabaseParser'] =  '\youconix\core\database\Parser_'.$s_database;
+        IoC::$a_rules['DAL'] = '\youconix\core\ORM\database\\' . $s_database;
+        IoC::$a_rules['Builder'] = '\youconix\core\ORM\database\Builder_' . $s_database;
+        IoC::$a_rules['DatabaseParser'] =  '\youconix\core\ORM\database\Parser_'.$s_database;
     }
 
     protected function detectLogger()
@@ -97,13 +97,14 @@ class IoC
             'Menu'
         );
         foreach ($a_items as $s_item) {
-            if (file_exists(NIV . 'includes/' . $s_item . '.php')) {
+            if (file_exists(NIV . 'includes/classes/' . $s_item . '.php')) {
                 IoC::$a_rules[$s_item] = '\includes\classes\\' . $s_item;
             } else {
                 IoC::$a_rules[$s_item] = '\youconix\core\classes\\' . $s_item;
             }
         }
         
+	IoC::$a_rules['Entities'] = '\youconix\core\ORM\EntityHelper';
         IoC::$a_rules['Request'] = '\youconix\core\templating\Request';
         IoC::$a_rules['Cache'] = '\youconix\core\services\Cache';
         IoC::$a_rules['Config'] = IoC::$s_ruleConfig;
@@ -113,7 +114,7 @@ class IoC
         IoC::$a_rules['Input'] = '\youconix\core\Input';
         IoC::$a_rules['Output'] = '\youconix\core\templating\Template';
         IoC::$a_rules['Security'] = '\youconix\core\services\Security';
-        IoC::$a_rules['Session'] = '\youconix\core\services\Session';
+        IoC::$a_rules['Session'] = '\youconix\core\services\session\Native';
         IoC::$a_rules['Settings'] = IoC::$s_ruleSettings;
         IoC::$a_rules['Validation'] = '\youconix\core\services\Validation';
     }

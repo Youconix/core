@@ -152,7 +152,7 @@ class Builder_PostgreSql implements \Builder
      * @param string $s_table
      *            name
      * @param string $s_fields
-     *            names sepperated with a ,
+     *            names separated with a ,
      * @return \Builder
      */
     public function select($s_table, $s_fields)
@@ -167,14 +167,20 @@ class Builder_PostgreSql implements \Builder
     /**
      * Creates a insert statement
      *
-     * @param string $s_table            
+     * @param string $s_table
+     * @param boolean $bo_ignoreErrors
      * @return \Builder
      */
-    public function insert($s_table)
+    public function insert($s_table, $bo_ignoreErrors = false)
     {
         $this->bo_create = false;
         
-        $this->s_query = "INSERT INTO " . DB_PREFIX . $s_table . " ";
+	if ($bo_ignoreErrors) {
+	  $this->s_query = "INSERT IGNORE INTO " . DB_PREFIX . $s_table . " ";
+	}
+	else {
+	  $this->s_query = "INSERT INTO " . DB_PREFIX . $s_table . " ";
+	}
         
         $this->a_fields = [];
         $this->a_values = [];
@@ -1199,6 +1205,8 @@ class Where_PostgreSql extends QueryConditions_PostgreSql implements \Where
 
     /**
      * Starts a sub where part
+     * 
+     * @return \Where
      */
     public function startSubWhere()
     {
@@ -1209,6 +1217,8 @@ class Where_PostgreSql extends QueryConditions_PostgreSql implements \Where
 
     /**
      * Ends a sub where part
+     * 
+     * @return \Where
      */
     public function endSubWhere()
     {
@@ -1229,6 +1239,7 @@ class Where_PostgreSql extends QueryConditions_PostgreSql implements \Where
      *            command (AND|OR)
      * @throws DBException the key is invalid
      * @throws DBException the command is invalid
+     * @return \Where
      */
     public function addSubQuery($obj_builder, $s_field, $s_key, $s_command)
     {

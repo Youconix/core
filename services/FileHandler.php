@@ -4,6 +4,12 @@ namespace youconix\core\services;
 class FileHandler extends \youconix\core\services\Service
 {
 
+    /**
+     * Reads the directory
+     *
+     * @param string $s_directory
+     * @return \DirectoryIterator
+     */
     public function readDirectory($s_directory)
     {
         \youconix\core\Memory::type('string', $s_directory);
@@ -11,6 +17,12 @@ class FileHandler extends \youconix\core\services\Service
         return new \DirectoryIterator($s_directory);
     }
 
+    /**
+     * Reads the directory recursive
+     *
+     * @param string $s_directory
+     * @return \RecursiveIteratorIterator
+     */
     public function readRecursiveDirectory($s_directory)
     {
         \youconix\core\Memory::type('string', $s_directory);
@@ -20,18 +32,39 @@ class FileHandler extends \youconix\core\services\Service
         return $iterator;
     }
 
-    public function directoryFilterName(\DirectoryIterator $directory, $a_names = array())
+    /**
+     * Creates a directory filter
+     *
+     * @param \DirectoryIterator $directory
+     * @param array $a_names
+     * @return \youconix\core\classes\DirectoryFilterIteractor
+     */
+    public function directoryFilterName(\DirectoryIterator $directory, array $a_names = array())
     {
         return new \youconix\core\classes\DirectoryFilterIteractor($directory, $a_names);
     }
 
+    /**
+     * Creates a recursive directory filter
+     *
+     * @param \RecursiveIteratorIterator $directory
+     * @param array $a_names
+     * @return \RegexIterator
+     */
     public function recursiveDirectoryFilterName(\RecursiveIteratorIterator $directory, $s_filter)
     {
-        echo ($s_filter);
         return new \RegexIterator($directory, $s_filter, \RegexIterator::MATCH);
     }
 
-    public function readFilteredDirectory($s_directory, $a_skipDirs = array(), $s_extension = '')
+    /**
+     * Reads the directory filtered
+     *
+     * @param string $s_directory
+     * @param array $a_skipDirs
+     * @param string $s_extension
+     * @return \DirectoryIterator[]
+     */
+    public function readFilteredDirectory($s_directory, array $a_skipDirs = array(), $s_extension = '')
     {
         $a_dirs = array();
         $directory = $this->readDirectory($s_directory);
@@ -39,7 +72,7 @@ class FileHandler extends \youconix\core\services\Service
             if ($item->isDot())
                 continue;
             
-            if (in_array($item->getPathname(), $a_skipDirs))
+            if (in_array(realpath($item->getPathname()), $a_skipDirs))
                 continue;
             
             if ($item->isDir()) {
@@ -57,6 +90,78 @@ class FileHandler extends \youconix\core\services\Service
     }
 
     /**
+     * Reads the directory filtered
+     *
+     * @param string $s_directory
+     * @param array $a_skipDirs
+     * @param string $s_extension
+     * @return \DirectoryIterator[]
+     */
+    public function readFilteredDirectoryNames($s_directory, array $a_skipDirs = array(), $s_extension = '')
+    {
+        $a_dirs = array();
+        $directory = $this->readDirectory($s_directory);
+        foreach ($directory as $item) {
+            if ($item->isDot())
+                continue;
+            
+            if (in_array(realpath($item->getPathname()), $a_skipDirs))
+                continue;
+            
+            if ($item->isDir()) {
+                $a_dirs[$item->getBasename()] = $this->readFilteredDirectoryNames($item->getPathname(), $a_skipDirs, $s_extension);
+                continue;
+            }
+            
+            if (! empty($s_extension) && ! preg_match('/' . $s_extension . '$/', $item->getBasename()))
+                continue;
+            
+            $a_dirs[] = $s_directory . DS . $item->getFilename();
+        }
+        
+        return $a_dirs;
+    }
+
+    /**
+     * Returns the requested file
+     *
+     * @param string $s_file
+     * @return \SplFileObject
+     * @throws \IOException if the file does not exist or is not readable
+     */
+    public function getFile($s_file)
+    {
+        \youconix\core\Memory::type('string', $s_file, true);
+        
+        if (! preg_match("#^(http://|ftp://)#si", $s_file) && ! $this->exists($s_file)) {
+            throw new \IOException('File ' . $s_file . ' does not exist!');
+        }
+        
+        $file = new \SplFileObject($s_file);
+        if (! $file->isReadable()) {
+            throw new \IOException('Can not read ' . $s_file . '. Check the permissions');
+        }
+        
+        return $file;
+    }
+
+    /**
+     * Reads the content of a file
+     *
+     * @param \SplFileObject $file
+     * @return string
+     */
+    public function readFileObject(\SplFileObject $file)
+    {
+        $content = '';
+        while (! $file->eof()) {
+            $content .= $file->fgets();
+        }
+        
+        return $content;
+    }
+
+    /**
      * Reads the content from the given file
      *
      * @param string $s_file
@@ -70,21 +175,8 @@ class FileHandler extends \youconix\core\services\Service
     {
         \youconix\core\Memory::type('string', $s_file, true);
         
-        if (! preg_match("#^(http://|ftp://)#si", $s_file) && ! $this->exists($s_file)) {
-            throw new \IOException('File ' . $s_file . ' does not exist!');
-        }
-        
-        $file = new \SplFileObject($s_file);
-        if (! $file->isReadable()) {
-            throw new \IOException('Can not read ' . $s_file . '. Check the permissions');
-        }
-        
-        $content = '';
-        while (! $file->eof()) {
-            $content .= $file->fgets();
-        }
-        
-        return $content;
+        $file = $this->getFile($s_file);
+        return $this->readFileObject($file);
     }
 
     /**
@@ -106,12 +198,7 @@ class FileHandler extends \youconix\core\services\Service
         \youconix\core\Memory::type('string', $s_content);
         \youconix\core\Memory::type('int', $i_rights);
         
-        $this->writeToFile($s_file, $s_content, 'w', $i_rights);
-    }
-
-    protected function writeToFile($s_file, $s_content, $s_mode, $i_rights)
-    {
-        $file = new \SplFileObject($s_file, $s_mode);
+        $file = new \SplFileObject($s_file, 'w');
         
         /* Check permissions */
         if (! $this->exists($s_file)) {
@@ -171,6 +258,45 @@ class FileHandler extends \youconix\core\services\Service
     }
 
     /**
+     * Removes the directory and his content
+     *
+     * @param string $s_directory
+     * @param string $s_extension
+     */
+    public function removeDirectory($s_directory, $s_extension = '')
+    {
+        $this->removeDirectoryContent($s_directory, $s_extension);
+        
+        unlink($s_directory);
+    }
+
+    /**
+     * Removes the content of the directory
+     *
+     * @param string $s_directory
+     * @param string $s_extension
+     */
+    public function removeDirectoryContent($s_directory, $s_extension = '')
+    {
+        if (empty($s_extension)) {
+            $a_dir = $this->readDirectory($s_directory);
+        } else {
+            $a_dir = $this->readFilteredDirectory($s_directory, [], $s_extension);
+        }
+        foreach ($a_dir as $item) {
+            if ($item->isDot())
+                continue;
+            
+            if ($item->isDir()) {
+                $this->removeDirectory($item->getPathname());
+                continue;
+            }
+            
+            unlink($s_directory . DS . $item->getFilename());
+        }
+    }
+
+    /**
      * Checks if the given file or directory exists
      *
      * @param string $s_file
@@ -189,13 +315,25 @@ class FileHandler extends \youconix\core\services\Service
     }
 
     /**
+     * Checks if the file or directory is readable
+     *
+     * @param string $s_file
+     * @return boolean
+     */
+    public function isReadable($s_file)
+    {
+        $file = new \SplFileObject($s_file);
+        return ($file->isReadable());
+    }
+
+    /**
      * Sets the rights from a file or directory.
      * The rights must be in hexadecimal form (0644)
      *
+     * This functies does NOT work on Windows!
+     *
      * @param string $s_file
-     *            The file
      * @param int $i_rights
-     *            The new rights
      * @return boolean on success, false on failure
      */
     public function rights($s_file, $i_rights)
@@ -212,4 +350,5 @@ class FileHandler extends \youconix\core\services\Service
         }
     }
 }
+
 ?>

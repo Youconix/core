@@ -18,34 +18,39 @@ class PasswordForm extends Helper
      * @var \Language
      */
     protected $language;
+    
+    /**
+     *
+     * @var \Config
+     */
+    protected $config;
 
     /**
      * PHP 5 constructor
      *
      * @param \Language $language
-     *            The language service
-     * @param \Output $template
-     *            The template service
+     * @param \Config $config
      */
-    public function __construct(\Language $language, \Output $template)
+    public function __construct(\Language $language,\Config $config)
     {
         $this->language = $language;
-        
-        $s_link = '<script src="{NIV}js/widgets/password_check.js"></script>';
-        $template->setJavascriptLink($s_link);
-        $s_link = '<script src="{NIV}js/validation.js"></script>';
-        $template->setJavascriptLink($s_link);
-        $s_link = '<link rel="stylesheet" href="{NIV}{shared_style_dir}css/HTML5_validation.css">';
-        $template->setCssLink($s_link);
+	$this->config = $config;
     }
 
     /**
      * Generates the form
-     *
+     * 
+     * @param \Output $template
      * @return string The form
      */
-    public function generate()
+    public function generate(\Output $template)
     {
+        $template->append('head','<script src="/js/widgets/password_check.js"></script>');
+        $template->append('head','<script src="/js/validation.js"></script>');
+        $template->append('head','<link rel="stylesheet" href="/'.$this->config->getSharedStylesDir().'css/HTML5_validation.css">');
+	$template->append('head','<link rel="stylesheet" href="/'.$this->config->getSharedStylesDir().'css/widgets/password_form.css">');
+	
+      
         $s_passwordError = $this->language->get('widgets/passwordForm/passwordMissing');
         
         $a_language = array(
@@ -59,44 +64,18 @@ class PasswordForm extends Helper
         
         $s_html = '<section id="passwordForm">
 		<fieldset>
-				<label class="label">' . $this->language->get('widgets/passwordForm/password') . '</label>
-				<span><input type="password" name="password" id="password1" data-validation="' . $s_passwordError . '" data-validation-pattern="' . $a_language['passwordform_toShort'] . '" pattern=".{8,}" required></span>
+		  <label class="label">' . $this->language->get('widgets/passwordForm/password') . ' *</label>
+		  <span><input type="password" name="password" id="password1" data-validation="' . $s_passwordError . '" data-validation-pattern="' . $a_language['passwordform_toShort'] . '" pattern=".{8,}" required></span>
 		</fieldset>
-        <fieldset>
-			<label class="label" for="password2">' . $this->language->get('widgets/passwordForm/passwordAgain') . '</label>
+		<fieldset>
+			<label class="label" for="password2">' . $this->language->get('widgets/passwordForm/passwordAgain') . ' *</label>
 			<span><input type="password" name="password2" id="password2" data-validation="' . $s_passwordError . '" data-validation-pattern="' . $a_language['passwordform_toShort'] . '" pattern=".{8,}" required></span>			
 		</fieldset>
 		</section>
-        <article id="passwordStrength">
-		  <section id="passwordIndicator">
-		  </section>
-				        <section id="passwordStrengthText">
-				    
-				        </section>
-				</article>
-		<style>
-		<!--
-		#passwordIndicator div {	height:12px; width:12px; float:left; margin-right:2px; }
-        #passwordStrength { min-width:250px; max-width:300px; width:auto; padding:4px; border:1px solid #ece9e9;
-		   border-left:1px solid #dedbdb; border-top:1px solid #dedbdb;
-	       background-color:#FFF;
-	       color:#111;
-	       ms-border-radius:5px;
-	       webkit-border-radius:5px;
-	       border-radius:5px;
-	       moz-box-shadow: 10px 10px 5px #888888;
-	       webkit-box-shadow: 10px 10px 5px #888888;
-	       ms-box-shadow: 10px 10px 5px #888888;
-	       box-shadow: 10px 10px 5px #888888;
-           display:none;
-		   position:absolute;
-        }
-        #passwordIndicator { width:99.99%; height:15px; }  
-		.passwordRed	{ background-color:red; }	
-		.passwordYellow { background-color:yellow; }
-		.passwordGreen {	background-color:green; }
-		//-->
-		</style>
+		<article id="passwordStrength">
+		    <section id="passwordIndicator"></section>
+		    <section id="passwordStrengthText"></section>
+		</article>
 		<script>
 		<!--
         $(document).ready(function(){

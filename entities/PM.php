@@ -1,64 +1,62 @@
 <?php
-namespace youconix\core\models\data;
+namespace youconix\core\entities;
 
 /**
  * Personal message data model.
  * Contains the personal message data
- *
- * This file is part of Miniature-happiness
- *
- * @copyright Youconix
- * @author Rachelle Scheijen
- * @since 1.0
+ * 
+ * @Table(name="pm")
  */
-class PM extends \youconix\core\models\Equivalent
+class PM extends \youconix\core\ORM\Entity
 {
 
     /**
      *
-     * @var \youconix\core\models\User
+     * @var \youconix\core\repositories\User
      */
     protected $user;
 
     /**
      *
-     * @var int
+     * @Id
+     * @GeneratedValue
+     * @Column(type="integer")
      */
     protected $id = null;
 
     /**
      *
-     * @var int
+     * @Column(type="integer")
      */
     protected $fromUserid;
 
     /**
      *
-     * @var int
+     * @Column(type="integer")
      */
     protected $toUserid;
 
     /**
      *
-     * @var string
+     * @Column(type="string")
      */
     protected $title;
 
     /**
      *
-     * @var string
+     * @Column(type="string")
      */
     protected $message;
 
     /**
      *
-     * @var int
+     * @Column(type="datetime")
      */
     protected $sendTime;
 
     /**
      *
-     * @var int
+     * @Column(type="boolean")
      */
     protected $unread = 1;
 
@@ -67,9 +65,9 @@ class PM extends \youconix\core\models\Equivalent
      *
      * @param \Builder $builder            
      * @param \Validation $validation            
-     * @param \youconix\core\models\User $user            
+     * @param \youconix\core\repositories\User $user            
      */
-    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\models\User $user)
+    public function __construct(\Builder $builder, \Validation $validation, \youconix\core\repositories\User $user)
     {
         parent::__construct($builder, $validation);
         
@@ -118,9 +116,9 @@ class PM extends \youconix\core\models\Equivalent
     /**
      * Sets the sender
      *
-     * @param \youconix\core\models\data\User $sender The sender
+     * @param \youconix\core\entities\User $sender The sender
      */
-    public function setSender(\youconix\core\models\data\User $sender)
+    public function setSender(\youconix\core\entities\User $sender)
     {        
         $this->fromUserid = $sender->getID();
     }
@@ -196,7 +194,7 @@ class PM extends \youconix\core\models\Equivalent
     }
 
     /**
-     * Returns if the message is allready read
+     * Returns if the message is already read
      *
      * @return boolean True if the message is unread, otherwise false
      */

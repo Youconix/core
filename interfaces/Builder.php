@@ -12,7 +12,7 @@ interface Builder
     public function __construct(\DAL $service_Database);
 
     /**
-     * Returns if the object schould be treated as singleton
+     * Returns if the object should be treated as singleton
      *
      * @return boolean True if the object is a singleton
      */
@@ -34,7 +34,7 @@ interface Builder
      * @param string $s_table
      *            name
      * @param string $s_fields
-     *            names sepperated with a ,
+     *            names separated with a ,
      *            
      * @return \Builder
      */
@@ -44,9 +44,10 @@ interface Builder
      * Creates a insert statement
      *
      * @param string $s_table
+     * @param boolean $bo_ignoreErrors
      * @return \Builder
      */
-    public function insert($s_table);
+    public function insert($s_table, $bo_ignoreErrors = false);
 
     /**
      * Creates a update statement
@@ -192,6 +193,7 @@ interface Builder
      *            of records
      * @param int $i_offset
      *            to start from, default 0 (first record)
+     * @return \Builder
      */
     public function limit($i_limit, $i_offset = 0);
 
@@ -199,6 +201,7 @@ interface Builder
      * Groups the results by the given field
      *
      * @param string $s_field            
+     * @return \Builder
      */
     public function group($s_field);
 
@@ -220,6 +223,8 @@ interface Builder
      *            field to order on, optional
      * @param string $s_ordering2
      *            method (ASC|DESC), optional
+     * 
+     * @return \Builder
      */
     public function order($s_field1, $s_ordering1 = 'ASC', $s_field2 = '', $s_ordering2 = 'ASC');
 
@@ -235,7 +240,7 @@ interface Builder
     public function getSum($s_field, $s_alias = '');
 
     /**
-     * Return the maximun value statement for the given field
+     * Return the maximum value statement for the given field
      *
      * @param string $s_field
      *            field name
@@ -246,7 +251,7 @@ interface Builder
     public function getMaximun($s_field, $s_alias = '');
 
     /**
-     * Return the minimun value statement for the given field
+     * Return the minimum value statement for the given field
      *
      * @param string $s_field
      *            field name
@@ -281,7 +286,7 @@ interface Builder
     /**
      * Returns the query result
      *
-     * @return DAL query result as a database object
+     * @return \DAL query result as a database object
      */
     public function getResult();
 
@@ -407,11 +412,15 @@ interface Where
 
     /**
      * Starts a sub where part
+     * 
+     * @return \Where
      */
     public function startSubWhere();
 
     /**
      * Ends a sub where part
+     * 
+     * @return \Where
      */
     public function endSubWhere();
 
@@ -427,6 +436,7 @@ interface Where
      *            command (AND|OR)
      * @throws \DBException the key is invalid
      * @throws \DBException the command is invalid
+     * @return \Where
      */
     public function addSubQuery($obj_builder, $s_field, $s_key, $s_command);
 

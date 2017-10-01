@@ -318,31 +318,19 @@ abstract class LoginParent extends \youconix\core\models\Model
      * Control panel only function
      * This action will be logged
      *
-     * @param int $i_userid
-     *            The user ID
+     * @param \youconix\core\models\data\User $user
      * @param \DomainException  If the current user does not have site admin privileges
      */
-    public function loginAs($i_userid)
+    public function loginAs(\youconix\core\models\data\User $user)
     {
         $currentUser = $this->user->get();
         if( !$currentUser->isAdmin(GROUP_ADMIN) ){
             $this->logs->info('User '.$currentUser->username().' tried to take over user session '.$i_userid.'! Access denied!',array('type'=>'securityLog'));
             throw new \DomainException('Only site admins can do this. Access denied!');
         }
-        
-        $this->builder->select('users', 'id, nick,lastLogin')
-        ->getWhere()
-        ->bindInt('id', $i_userid);
-        $database = $this->builder->getResult();
-    
-        if ($database->num_rows() == 0) {
-            return;
-        }
-    
-        $a_data = $database->fetch_assoc();
-    
-        $this->session->setLoginTakeover($a_data[0]['id'], $a_data[0]['nick'], $a_data[0]['lastLogin']);
-        $this->logs->info('login','Site admin '.$currentUser->getUsername().' has logged in as user '.$a_data[0]['nick'].' on '.date('Y-m-d H:i:s').'.');
+            
+        $this->session->setLoginTakeover($user->getID(), $user->getUsername(), $user->lastLoggedIn());
+        $this->logs->info('login','Site admin '.$currentUser->getUsername().' has logged in as user '.$user->getUsername().' on '.date('Y-m-d H:i:s').'.');
     }
     
     /**

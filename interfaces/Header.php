@@ -1,10 +1,11 @@
 <?php
 
-interface Header
-{
+interface Header {
 
-    /**
-     * Generates the header
-     */
-    public function createHeader();
+  /**
+   * Generates the header
+   * 
+   * @param \Output $template
+   */
+  public function createHeader(\Output $template);
 }

@@ -5,6 +5,8 @@ interface Menu
 
     /**
      * Generates the menu
+     * 
+     * @param \Output $template
      */
-    public function generateMenu();
+    public function generateMenu(\Output $template);
 }

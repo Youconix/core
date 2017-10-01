@@ -1,6 +1,9 @@
 <?php
 namespace youconix\core\templating\gui;
 
+use \youconix\core\classes\HeaderAdmin AS HeaderAdmin;
+use \youconix\core\classes\MenuAdmin AS MenuAdmin;
+
 /**
  * General admin GUI parent class
  * This class is abstract and should be inheritanced by every admin controller with a gui
@@ -13,7 +16,7 @@ namespace youconix\core\templating\gui;
  * @since 1.0
  * @see core/BaseClass.php
  */
-abstract class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
+class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
 {
 
     /**
@@ -23,52 +26,21 @@ abstract class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicCl
     protected $logs;
 
     /**
-     * Admin class constructor
+     * Admin graphic class constructor
      *
-     * @param \Input $Input            
      * @param \Config $config            
-     * @param \Language $language            
-     * @param \Output $template            
-     * @param \Logger $logs            
+     * @param \Language $language           
+     * @param \youconix\core\classes\HeaderAdmin $header            
+     * @param \youconix\core\classes\MenuAdmin $menu            
+     * @param \Footer $footer            
      */
-    public function __construct(\Input $Input, \Config $config, \Language $language, \Output $template, \Logger $logs)
+    public function __construct(\Config $config, \Language $language, HeaderAdmin $header, MenuAdmin $menu, \Footer $footer)
     {
         $this->config = $config;
-        $this->language = $language;
-        $this->template = $template;
-        $this->logs = $logs;
-        
-        $this->prepareInput($Input);
-        
-        $this->init();
-    }
-
-    /**
-     * Routes the controller
-     *
-     * @see Routable::route()
-     */
-    public function route($s_command)
-    {
-        if (! method_exists($this, $s_command)) {
-            throw new \BadMethodCallException('Call to unkown method ' . $s_command . ' on class ' . get_class($this) . '.');
-        }
-        
-        $this->$s_command();
-    }
-
-    /**
-     * Inits the class AdminLogicClass
-     *
-     * @see BaseLogicClass::init()
-     */
-    protected function init()
-    {
-        if (! $this->config->isAjax()) {
-            exit();
-        }
-        
-        parent::init();
+        $this->header = $header;
+        $this->menu = $menu;
+        $this->footer = $footer;    
+	$this->language = $language;
     }
 }
 

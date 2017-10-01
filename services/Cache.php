@@ -4,8 +4,6 @@ namespace youconix\core\services;
 /**
  * Cache service
  *
- * This file is part of Miniature-happiness
- *
  * @copyright Youconix
  * @author Rachelle Scheijen
  * @version 1.0
@@ -22,7 +20,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
 
     /**
      *
-     * @var \youconix\core\services\File
+     * @var \youconix\core\services\FileHandler
      */
     protected $file;
 
@@ -48,7 +46,14 @@ class Cache extends \youconix\core\services\Service implements \Cache
 
     protected $bo_cache;
 
-    public function __construct(\youconix\core\services\File $file, \Config $config, \Headers $headers, \Builder $builder)
+    /**
+     *
+     * @param \youconix\core\services\FileHandler $file
+     * @param \Config $config
+     * @param \Headers $headers
+     * @param \Builder $builder
+     */
+    public function __construct(\youconix\core\services\FileHandler $file, \Config $config, \Headers $headers, \Builder $builder)
     {
         $this->config = $config;
         $this->file = $file;
@@ -79,7 +84,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
      */
     protected function getDirectory()
     {
-        return $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR;
+        return $_SERVER['DOCUMENT_ROOT'] . DS . 'files' . DS . 'cache' . DS;
     }
 
     /**
@@ -105,28 +110,21 @@ class Cache extends \youconix\core\services\Service implements \Cache
         
         if (! $this->settings->exists('cache/status') || $this->settings->get('cache/status') != 1) {
             $this->bo_cache = false;
+            return $this->bo_cache;
+        }
+        $s_page = $_SERVER['REQUEST_URI'];
+        $a_pages = explode('?', $s_page);
+        
+        $this->builder->select('no_cache', 'id')
+            ->getWhere()
+            ->bindString(' page', $s_page)
+            ->bindString('page', $a_pages[0]);
+        
+        $service_database = $this->builder->getResult();
+        if ($service_database->num_rows() > 0) {
+            $this->bo_cache = false;
         } else {
-            $s_page = $_SERVER['REQUEST_URI'];
-            $a_pages = explode('?', $s_page);
-            
-            $this->builder->select('no_cache', 'id')
-                ->getWhere()
-                ->addOr(array(
-                'page',
-                'page'
-            ), array(
-                's',
-                's'
-            ), array(
-                $s_page,
-                $a_pages[0]
-            ));
-            $service_database = $this->builder->getResult();
-            if ($service_database->num_rows() > 0) {
-                $this->bo_cache = false;
-            } else {
-                $this->bo_cache = true;
-            }
+            $this->bo_cache = true;
         }
         
         return $this->bo_cache;
@@ -139,20 +137,15 @@ class Cache extends \youconix\core\services\Service implements \Cache
      */
     public function checkCache()
     {
-        if ($_SERVER['REQUEST_METHOD'] != 'GET' || ! $this->shouldCache()) {
+        if (($_SERVER['REQUEST_METHOD'] != 'GET') || ! $this->shouldCache()) {
             return false;
         }
         
         $s_language = $this->config->getLanguage();
         $s_directory = $this->getDirectory();
         
-        if (! $this->file->exists($s_directory . 'site' . DIRECTORY_SEPARATOR . $s_language)) {
-            $this->file->newDirectory($s_directory . 'site' . DIRECTORY_SEPARATOR . $s_language);
-            return false;
-        }
-        
-        if (! $this->file->exists($s_directory . 'site' . DIRECTORY_SEPARATOR . $s_language)) {
-            $this->file->newDirectory($s_directory . 'site' . DIRECTORY_SEPARATOR . $s_language);
+        if (! $this->file->exists($s_directory . 'site' . DS . $s_language)) {
+            $this->file->newDirectory($s_directory . 'site' . DS . $s_language);
             return false;
         }
         
@@ -228,14 +221,13 @@ class Cache extends \youconix\core\services\Service implements \Cache
      */
     protected function getAddress($s_page)
     {
-        return $this->getDirectory() . 'site' . DIRECTORY_SEPARATOR . $s_language . DIRECTORY_SEPARATOR . str_replace('/', '_', $s_page) . '.html';
+        return $this->getDirectory() . 'site' . DS . $s_language . DS . str_replace('/', '_', $s_page) . '.html';
     }
 
     /**
      * Clears the given page from the site cache
      *
      * @param string $s_page
-     *            The page ($_SERVER['REQUEST_URI'])
      */
     public function clearPage($s_page)
     {
@@ -263,18 +255,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
     {
         $s_dir = $this->getDirectory() . 'site';
         
-        $a_files = $this->file->readDirectory($s_dir);
-        foreach ($a_files as $s_file) {
-            if ($s_file == '.' || $s_file == '.') {
-                continue;
-            }
-            
-            if (is_dir($s_dir . DIRECTORY_SEPARATOR . $s_file)) {
-                $this->file->deleteDirectory($s_dir . DIRECTORY_SEPARATOR . $s_file);
-            } else {
-                $this->file->deleteFile($s_dir . DIRECTORY_SEPARATOR . $s_file);
-            }
-        }
+        $this->file->removeDirectoryContent($s_dir);
     }
 
     /**
@@ -339,7 +320,7 @@ class Cache extends \youconix\core\services\Service implements \Cache
         
         $this->builder->delete('no_cache')
             ->getWhere()
-            ->addAnd('id', 'i', $i_id);
+            ->bindInt('id', $i_id);
         $this->builder->getResult();
     }
 }

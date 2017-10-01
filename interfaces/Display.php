@@ -6,7 +6,7 @@ interface Display
     /**
      * Generates the HTML code
      *
-     * @return string HTML code
+     * @param \Output $view
      */
-    public function generate();
+    public function generate(\Output $view);
 }

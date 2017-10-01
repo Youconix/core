@@ -1,16 +1,10 @@
 <?php
-namespace youconix\core\database;
+namespace youconix\core\ORM\database;
 
 /**
  * General database connection layer
- *
- * This file is part of Miniature-happiness
- *
- * @copyright Youconix
- * @author Rachelle Scheijen
+ * 
  * @since 1.0
- *
- *
  */
 abstract class GeneralDAL implements \DAL
 {

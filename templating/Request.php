@@ -64,9 +64,9 @@ class Request implements \Request
      * @param \youconix\core\services\Headers $headers            
      * @param \Config $config            
      * @param \Logger $logs            
-     * @param \youconix\core\services\Session $session            
+     * @param \Session $session            
      */
-    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \youconix\core\services\Session $session)
+    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \Session $session)
     {
         $this->headers = $headers;
         $this->config = $config;

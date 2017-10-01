@@ -122,7 +122,7 @@ class Random extends Service
     {
         $s_codeString = 'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ1234567890`~!@#$%^&*()-_+={[}];:\|<,>.?/';
         
-        $i_letters = strlen($s_codeString);
+        $i_letters = (strlen($s_codeString)-1);
         $s_code = '';
         for ($i = 1; $i <= $i_length; $i ++) {
             $s_num = rand(0, $i_letters);

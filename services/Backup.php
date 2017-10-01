@@ -36,14 +36,29 @@ class Backup extends \youconix\core\services\Service
      */
     protected $obj_zip;
 
+    /**
+     *
+     * @var \Headers
+     */
+    protected $headers;
+
     protected $s_root;
 
-    public function __construct(\Logger $logger, \Builder $builder, \youconix\core\services\FileHandler $file, \Config $config)
+    /**
+     * 
+     * @param \Logger $logger
+     * @param \Builder $builder
+     * @param \youconix\core\services\FileHandler $file
+     * @param \Config $config
+     * @param \Headers $headers
+     */
+    public function __construct(\Logger $logger, \Builder $builder, \youconix\core\services\FileHandler $file, \Config $config, \Headers $headers)
     {
         $this->logger = $logger;
         $this->builder = $builder;
         $this->file = $file;
         $this->config = $config;
+        $this->headers = $headers;
         
         $s_root = $_SERVER['DOCUMENT_ROOT'] . $this->config->getBase();
         $this->s_root = str_replace(DS . DS, DS, $s_root);
@@ -55,11 +70,13 @@ class Backup extends \youconix\core\services\Service
         if (! $this->file->exists($this->s_backupDir)) {
             $this->file->newDirectory($this->s_backupDir);
         }
-        
-        ini_set('display_errors', 'on');
-        error_reporting(E_ALL);
     }
 
+    /**
+     * 
+     * @param string $s_name
+     * @return NULL|string
+     */
     protected function openZip($s_name)
     {
         if (! $this->isZipSupported()) {
@@ -81,9 +98,12 @@ class Backup extends \youconix\core\services\Service
         return $s_filename;
     }
 
+    /**
+     * @return string
+     */
     public function createPartialBackup()
     {
-        $s_filename = $this->openZip('backup_' . date('d-m-Y_H:i'));
+        $s_filename = $this->openZip('backup_settings_' . date('d-m-Y_H:i'));
         if (is_null($s_filename)) {
             return null;
         }
@@ -94,19 +114,26 @@ class Backup extends \youconix\core\services\Service
         
         $s_root = $_SERVER['DOCUMENT_ROOT'] . $this->config->getBase();
         $a_skipDirs = array(
-            $s_root . 'admin' . DS . 'data' . DS . 'tmp',
-            $s_root . 'admin' . DS . 'data' . DS . 'backups'
+            realpath($s_root . DATA_DIR . DS . 'backups'),
+            realpath($s_root . DATA_DIR . DS . 'tmp')
         );
-        $a_files = $this->file->readFilteredDirectory($s_root . 'admin' . DS . 'data', $a_skipDirs);
         
-        $this->s_root .= 'admin' . DS . 'data' . DS;
-        $this->addDirectory($a_files, $this->s_root);
+        $s_dir = realpath($s_root . DATA_DIR);
+        $a_files = $this->file->readFilteredDirectoryNames($s_dir, $a_skipDirs);
+        
+        $this->s_root .= DATA_DIR;
+        $s_rootPath = realPath($_SERVER['DOCUMENT_ROOT'] . DS . DATA_DIR) . DS;
+        
+        $this->addDirectory($a_files, $this->s_root, $s_rootPath);
         
         $this->obj_zip->close();
         
-        return $s_filename;
+        return basename($s_filename);
     }
 
+    /**
+     * @return string
+     */
     public function createBackupFull()
     {
         $s_filename = $this->openZip('full_backup_' . date('d-m-Y_H:i'));
@@ -118,40 +145,44 @@ class Backup extends \youconix\core\services\Service
         $this->obj_zip->addFromString('database.sql', $this->backupDatabase());
         
         $s_root = $_SERVER['DOCUMENT_ROOT'] . $this->config->getBase();
-        $a_skipDirs = array(
-            $s_root . DATA_DIR . DS . 'backups',
-            $s_root . DATA_DIR . DS . 'tmp',
-            $s_root . 'files',
-            $s_root . '.git'
-        );
+        $a_skipDirs = [
+            realpath($s_root . DATA_DIR . DS . 'backups'),
+            realpath($s_root . DATA_DIR . DS . 'tmp'),
+            realpath($s_root . 'files' . DS . 'cache'),
+            realpath($s_root . '.git')
+        ];
         $s_directory = NIV;
         
-        $a_files = $this->file->readFilteredDirectory($s_root, $a_skipDirs);
+        $a_files = $this->file->readFilteredDirectoryNames($s_root, $a_skipDirs);
         
-        $this->addDirectory($a_files, $this->s_root);
+        $s_rootPath = $_SERVER['DOCUMENT_ROOT'] . DS;
+        $this->addDirectory($a_files, $this->s_root, $s_rootPath);
         
         $this->obj_zip->close();
         
-        return $s_filename;
+        return basename($s_filename);
     }
 
-    protected function addDirectory($a_files, $s_pre)
+    /**
+     * 
+     * @param array $a_files
+     * @param string $s_pre
+     * @param string $s_rootPath
+     */
+    protected function addDirectory(array $a_files, $s_pre, $s_rootPath)
     {
         foreach ($a_files as $key => $file) {
-            if (! is_object($a_files[$key])) {
+            if (is_array($file)) {
                 $this->obj_zip->addEmptyDir(str_replace($this->s_root, '', $s_pre) . $key);
-                $this->addDirectory($a_files[$key], $s_pre . $key . DS);
+                $this->addDirectory($a_files[$key], $s_pre . $key . DS, $s_rootPath);
                 continue;
             }
             
-            if ($file->getPathname() == '.' || $file->getPathname() == '..') {
+            if (! is_readable($file)) {
                 continue;
             }
             
-            if (! file_exists($file->getPathname()) || ! $file->isReadable()) {
-                continue;
-            }
-            $this->obj_zip->addFile($file->getPathname(), str_replace($this->s_root, '', $file->getPathname()));
+            $this->obj_zip->addFile($file, str_replace($s_rootPath, '', $file));
         }
     }
 
@@ -167,5 +198,25 @@ class Backup extends \youconix\core\services\Service
     protected function isZipSupported()
     {
         return class_exists('ZipArchive');
+    }
+
+    /**
+     * 
+     * @param string $s_file
+     * @throws \Http404Exception
+     */
+    public function download($s_file)
+    {
+        $s_file = $this->s_backupDir . DS . $s_file;
+        if (! $this->file->exists($s_file)) {
+            throw new \Http404Exception();
+        }
+        
+        $this->headers->forceDownloadFile($s_file, 'application/zip');
+    }
+
+    public function removeBackups()
+    {
+        $this->file->removeDirectoryContent($this->s_backupDir, 'zip');
     }
 }

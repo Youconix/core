@@ -274,6 +274,13 @@ class Validation extends \youconix\core\services\Service  implements \Validation
                     $a_errors[] = 'Field ' . $s_key . ' is not a valid IP-address';
                     return false;
                 }
+		
+	    case 'bool':
+	    case 'boolean' :
+		if( !in_array($a_collection[$s_key],[0,1,true,false,'true','false']) ) {
+		  $a_errors[] = 'Field ' . $s_key . ' is not a boolean';
+                  return false;
+		}
         }
         
         return true;
