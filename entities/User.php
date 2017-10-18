@@ -420,11 +420,10 @@ class User extends \youconix\core\ORM\Entity
    */
   public function updateLastLoggedIn()
   {
-    $i_time = time();
-    $this->loggedIn = new \DateTime($i_time);
+    $this->loggedIn = new \DateTime();
 
     $this->builder->update('users')
-	->bindInt('lastLogin', $i_time)
+	->bindInt('lastLogin', $this->loggedIn->getTimestamp())
 	->getWhere()
 	->bindInt('id', $this->getUserId());
     $this->builder->getResult();

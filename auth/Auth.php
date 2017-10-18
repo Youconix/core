@@ -174,7 +174,7 @@ class Auth extends \youconix\core\services\Service
       $s_redirection = str_replace('//', '/', $s_redirection);
     }
 
-    $this->session->setLoginSession($user);
+    $this->setLoginSession($user);
     $user->updateLastLoggedIn();
 
     $this->headers->redirect($s_redirection);
@@ -246,7 +246,7 @@ class Auth extends \youconix\core\services\Service
       return $this->currentUser;
     }
 
-    $i_userid = $this->session->get('userid');
+    $i_userid = ($this->session->exists('userid') ? $this->session->get('userid') : -1);
 
     if ($i_userid == -1) {
       return null;
@@ -282,7 +282,7 @@ class Auth extends \youconix\core\services\Service
     $this->session->set('login', '1');
     $this->session->set('userid', $user->getUserId());
     $this->session->set('username', $user->getUsername());
-    $this->session->set('fingerprint', $user->getFingerprint());
+    $this->session->set('fingerprint', $this->session->getFingerprint($user->getBindToIp()));
     $this->session->set('lastLogin', $user->getLastLogin()->getTimestamp());
   }
 
@@ -322,6 +322,6 @@ class Auth extends \youconix\core\services\Service
       }
     }
 
-    $this->regenerate();
+    $this->session->regenerate();
   }
 }
