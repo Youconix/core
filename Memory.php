@@ -10,7 +10,7 @@ if (!class_exists('\youconix\coreException')) {
  * Memory-handler for controlling memory and auto starting the framework
  * @since 1.0
  */
-class Memory
+final class Memory
 {
 
   private static $bo_testing = false;
@@ -31,7 +31,7 @@ class Memory
    */
   public function __destruct()
   {
-    Memory::reset();
+    self::reset();
   }
 
   /**
@@ -40,7 +40,7 @@ class Memory
    */
   public static function setTesting()
   {
-    Memory::$bo_testing = true;
+    self::$bo_testing = true;
     if (!defined('DEBUG')) {
       define('DEBUG', 'true');
     }
@@ -49,7 +49,7 @@ class Memory
       define('PROCESS', 1);
     }
 
-    Memory::startUp();
+    self::startUp();
   }
 
   /**
@@ -57,7 +57,7 @@ class Memory
    */
   public static function startUp()
   {
-    if (!is_null(Memory::$a_cache)) {
+    if (!is_null(self::$a_cache)) {
       return;
     }
 
@@ -69,7 +69,7 @@ class Memory
 
     try {
       if (!defined('DATA_DIR')) {
-	if (Memory::$bo_testing) {
+	if (self::$bo_testing) {
 	  define('DATA_DIR', NIV . 'admin' . DS . 'data' . DS . 'tests' . DS);
 	} else {
 	  define('DATA_DIR', NIV . 'admin' . DS . 'data' . DS);
@@ -77,104 +77,98 @@ class Memory
       }
 
       /* Prepare cache */
-      Memory::$a_cache = array();
+      self::$a_cache = array();
 
-      Memory::$a_service = array(
+      self::$a_service = array(
 	  'systemPath' => NIV . CORE . 'services' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'services' . DS,
 	  'systemNamespace' => '\youconix\core\services\\',
 	  'userNamespace' => '\includes\services\\'
       );
-      Memory::$a_serviceData = array(
+      self::$a_serviceData = array(
 	  'systemPath' => NIV . CORE . 'services' . DS . 'data' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'services' . DS . 'data' . DS,
 	  'systemNamespace' => '\youconix\core\services\data\\',
 	  'userNamespace' => '\includes\services\data\\'
       );
-      Memory::$a_model = array(
+      self::$a_model = array(
 	  'systemPath' => NIV . CORE . 'repositories' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'repositories' . DS,
 	  'systemNamespace' => '\youconix\core\repositories\\',
 	  'userNamespace' => '\includes\repositories\\'
       );
-      Memory::$a_modelData = array(
+      self::$a_modelData = array(
 	  'systemPath' => NIV . CORE . 'models' . DS . 'entities' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'entities',
 	  'systemNamespace' => '\youconix\core\entities\\',
 	  'userNamespace' => '\includes\entities\\'
       );
-      Memory::$a_helper = array(
+      self::$a_helper = array(
 	  'systemPath' => NIV . CORE . 'helpers' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'helpers' . DS,
 	  'systemNamespace' => '\youconix\core\helpers\\',
 	  'userNamespace' => '\includes\helpers\\'
       );
-      Memory::$a_helperData = array(
+      self::$a_helperData = array(
 	  'systemPath' => NIV . CORE . 'helpers' . DS . 'data' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'helpers' . DS . 'data' . DS,
 	  'systemNamespace' => '\youconix\core\helpers\data\\',
 	  'userNamespace' => '\includes\helpers\data\\'
       );
-      Memory::$a_class = array(
+      self::$a_class = array(
 	  'systemPath' => NIV . CORE . 'classes' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'classes' . DS,
 	  'systemNamespace' => '\youconix\core\classes\\',
 	  'userNamespace' => '\includes\classes\\'
       );
-      Memory::$a_interface = array(
+      self::$a_interface = array(
 	  'systemPath' => NIV . CORE . 'interfaces' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'interfaces' . DS,
 	  'systemNamespace' => '\youconix\core\interfaces\\',
 	  'userNamespace' => '\includes\interfaces\\'
       );
-      Memory::$a_database = array(
+      self::$a_database = array(
 	  'systemPath' => NIV . CORE . 'ORM' . DS,
 	  'userPath' => NIV . 'includes' . DS . 'ORM' . DS,
 	  'systemNamespace' => '\youconix\core\ORM\\',
 	  'userNamespace' => '\includes\ORM\\'
       );
-
-      Memory::loadCoreClass(NIV . CORE . 'Object.php');
-      Memory::loadCoreClass(Memory::$a_service['systemPath'] . 'Service.php');
-      Memory::loadCoreClass(Memory::$a_database['systemPath'] . 'Entity.php');
-      Memory::loadCoreClass(Memory::$a_database['systemPath'] . 'Repository.php');
-      Memory::loadCoreClass(Memory::$a_helper['systemPath'] . 'Helper.php');
-      Memory::loadCoreClass(NIV . CORE . 'Loader.php');
-      Memory::loadCoreClass(NIV . CORE . 'IoC.php');
-
+      
+      require_once(NIV.CORE.'Object.php');
+      require_once(NIV.CORE.'services'.DS.'Service.php');
+      
+      define('DEBUG',true);
+      /* Load IoC */
+      self::$a_cache['IoC'] = self::loadCoreClass('\youconix\core\IoC');
+      
+      /* Load File Handler */
+      self::$a_cache[IoC::$s_ruleFileHandler] = self::loadCoreClass(IoC::$s_ruleFileHandler);
+      
+      /* Load autoloader */
+      require(NIV.CORE.'Loader.php');
+      
+      self::$a_cache['IoC']->load();
+      
       /* Load standard services */
-      $caller = IoC::$s_ruleFileHandler;
-      $service_File = new $caller();
-      Memory::$a_cache[$caller] = $service_File;
+      $service_File = self::$a_cache[IoC::$s_ruleFileHandler];
       if (!$service_File->exists(NIV . 'files' . DS . 'updates')) {
 	$service_File->newDirectory(NIV . 'files' . DS . 'updates', 0700);
       }
 
-      unset($caller);
-
       $caller = IoC::$s_ruleSettings;
-      $service_Settings = \Loader::Inject($caller);
-      Memory::$a_cache[$caller] = $service_Settings;
-      Memory::$a_cache['\Settings'] = $service_Settings;
-      Memory::$a_cache['\youconix\core\services\XmlSettings'] = $service_Settings;
+      $service_Settings = \Loader::inject($caller);
+      self::$a_cache[$caller] = $service_Settings;
+      self::$a_cache['\Settings'] = $service_Settings;
+      self::$a_cache['\youconix\core\services\XmlSettings'] = $service_Settings;
       unset($caller);
       date_default_timezone_set($service_Settings->get('settings/main/timeZone'));
 
-      /* Load IoC */
-      $caller = '\youconix\core\IoC';
-      if (file_exists(NIV . 'includes/IoC.php')) {
-	require_once (NIV . 'includes/IoC.php');
-	$caller = '\includes\IoC';
-      }
-      $IoC = new $caller($service_Settings);
-      Memory::$a_cache['IoC'] = $IoC;
-      
-      Memory::setDefaultValues($service_Settings);
+      self::setDefaultValues($service_Settings);
       
       $entityHelper = \Loader::inject('\youconix\core\ORM\EntityHelper');
       $entityHelper->buildMap();
       $entityHelper->buildProxies();
-      Memory::$a_cache['\youconix\core\ORM\EntityHelper'] = $entityHelper;
+      self::$a_cache['\youconix\core\ORM\EntityHelper'] = $entityHelper;
 
       \Profiler::profileSystem('core/Memory', 'Framework startup complete');
     } catch (\Exception $e) {
@@ -182,13 +176,17 @@ class Memory
     }
   }
 
-  private static function loadCoreClass($s_filename)
+  private static function loadCoreClass($s_className)
   {
-    if (file_exists(str_replace('core', 'files' . DS . 'updates' . DS . 'core', $s_filename))) {
-      require_once (file_exists(str_replace('core', 'files' . DS . 'updates' . DS . 'core', $s_filename)));
-    } else {
-      require_once ($s_filename);
-    }
+    $s_fileName = str_replace('\\',DS,str_replace('\youconix\core\\','',$s_className));
+    
+    require(NIV.CORE.$s_fileName.'.php');
+      if (file_exists(NIV.'includes'.DS.$s_fileName.'.php')) {
+          require(NIV.'includes'.DS.$s_fileName.'.php');
+          $s_className = str_replace('youconix\core','includes',$s_className);
+      }
+      $object = new $s_className();
+      return $object;
   }
 
   /**
@@ -214,9 +212,9 @@ class Memory
 
     error_reporting(E_ALL);
 
-    Memory::$bo_prettyUrls = false;
+    self::$bo_prettyUrls = false;
     if ($service_Settings->exists('settings/main/pretty_urls') && $service_Settings->get('settings/main/pretty_urls') == 1) {
-      Memory::$bo_prettyUrls = true;
+      self::$bo_prettyUrls = true;
     }
   }
 
@@ -229,7 +227,7 @@ class Memory
    */
   public static function IsInCache($s_name)
   {
-    return array_key_exists($s_name, Memory::$a_cache);
+    return array_key_exists($s_name, self::$a_cache);
   }
 
   /**
@@ -242,7 +240,7 @@ class Memory
    */
   public static function setCache($s_name, $object)
   {
-    Memory::$a_cache[$s_name] = $object;
+    self::$a_cache[$s_name] = $object;
   }
 
   /**
@@ -254,11 +252,11 @@ class Memory
    */
   public static function getCache($s_name)
   {
-    if (!Memory::IsInCache($s_name)) {
+    if (!self::IsInCache($s_name)) {
       return null;
     }
 
-    return Memory::$a_cache[$s_name];
+    return self::$a_cache[$s_name];
   }
 
   /**
@@ -270,10 +268,10 @@ class Memory
    */
   public static function getProtocol()
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of core/models/Config->getProtocol().", E_USER_DEPRECATED);
     }
-    return Memory::$a_cache['\youconix\core\models\Config']->getProtocol();
+    return self::$a_cache['\youconix\core\models\Config']->getProtocol();
   }
 
   /**
@@ -285,10 +283,10 @@ class Memory
    */
   public static function getPage()
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of core/models/Config->getPage().", E_USER_DEPRECATED);
     }
-    return Memory::$a_cache['\youconix\core\models\Config']->getPage();
+    return self::$a_cache['\youconix\core\models\Config']->getPage();
   }
 
   /**
@@ -300,10 +298,10 @@ class Memory
    */
   public static function isAjax()
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of core/models/Config->isAjax().", E_USER_DEPRECATED);
     }
-    return Memory::$a_cache['\youconix\core\models\Config']->isAjax();
+    return self::$a_cache['\youconix\core\models\Config']->isAjax();
   }
 
   /**
@@ -314,10 +312,10 @@ class Memory
    */
   public static function setAjax()
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of core/models/Config->setAjax().", E_USER_DEPRECATED);
     }
-    Memory::$a_cache['\youconix\core\models\Config']->setAjax();
+    self::$a_cache['\youconix\core\models\Config']->setAjax();
   }
 
   /**
@@ -327,7 +325,7 @@ class Memory
    */
   public static function isTesting()
   {
-    return Memory::$bo_testing;
+    return self::$bo_testing;
   }
 
   /**
@@ -339,10 +337,10 @@ class Memory
    */
   public static function getBase()
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of core/models/Config->getBase().", E_USER_DEPRECATED);
     }
-    return Memory::$a_cache['\youconix\core\models\Config']->getBase();
+    return self::$a_cache['\youconix\core\models\Config']->getBase();
   }
 
   /**
@@ -356,17 +354,17 @@ class Memory
    */
   public static function ensureClass($s_class)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
 
     if (!class_exists($s_class)) {
-      $service_File = Memory::$a_cache['\youconix\core\services\File'];
-      if (!$service_File->exists(Memory::$a_class['systemPath'] . $s_class . '.inc.php')) {
+      $service_File = self::$a_cache['\youconix\core\services\File'];
+      if (!$service_File->exists(self::$a_class['systemPath'] . $s_class . '.inc.php')) {
 	throw new \RuntimeException('Can not find class ' . $s_class);
       }
 
-      require_once (Memory::$a_class['systemPath'] . $s_class . '.inc.php');
+      require_once (self::$a_class['systemPath'] . $s_class . '.inc.php');
     }
   }
 
@@ -381,16 +379,16 @@ class Memory
    */
   public static function ensureInterface($s_interface)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     if (!interface_exists($s_interface)) {
-      $service_File = Memory::$a_cache['\youconix\core\services\File'];
-      if (!$service_File->exists(Memory::$a_interface['systemPath'] . $s_interface . '.inc.php')) {
+      $service_File = self::$a_cache['\youconix\core\services\File'];
+      if (!$service_File->exists(self::$a_interface['systemPath'] . $s_interface . '.inc.php')) {
 	throw new \RuntimeException('Can not find interface ' . $s_interface);
       }
 
-      require_once (Memory::$a_interface['systemPath'] . $s_interface . '.inc.php');
+      require_once (self::$a_interface['systemPath'] . $s_interface . '.inc.php');
     }
   }
 
@@ -408,13 +406,13 @@ class Memory
    */
   private static function isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback = '')
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     $s_name = ucfirst($s_name);
 
     /* Call class file */
-    $service_File = Memory::$a_cache['\youconix\core\services\File'];
+    $service_File = self::$a_cache['\youconix\core\services\File'];
     $s_path = $s_path . '/' . $s_name . '.php';
 
     if (!$service_File->exists($s_path)) {
@@ -454,12 +452,12 @@ class Memory
    */
   private static function loadModule($s_name, $s_memoryType, $a_data, $s_fallback = '')
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     $s_name = ucfirst($s_name);
 
-    $object = \Loader::Inject($a_data['systemNamespace'] . $s_name);
+    $object = \Loader::inject($a_data['systemNamespace'] . $s_name);
 
     if (is_null($object)) {
       if (!empty($s_fallback) && class_exists($s_fallback . '_' . $s_name)) {
@@ -486,7 +484,7 @@ class Memory
    */
   public static function isHelper($s_name, $bo_data = false)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     $a_memoryItems = array(
@@ -496,14 +494,14 @@ class Memory
     $s_fallback = 'Helper';
 
     if ($bo_data) {
-      $s_path = Memory::$a_helper['systemPath'] . 'data/';
+      $s_path = self::$a_helper['systemPath'] . 'data/';
       $s_namespace = 'core\helpers\data';
     } else {
-      $s_path = Memory::$a_helper['systemPath'];
+      $s_path = self::$a_helper['systemPath'];
       $s_namespace = 'core\helpers';
     }
 
-    return Memory::isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback);
+    return self::isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback);
   }
 
   /**
@@ -521,19 +519,19 @@ class Memory
    */
   public static function helpers($s_name, $bo_data = false)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     if ($bo_data) {
-      return Memory::loadModule($s_name, 'helper-data', Memory::$a_helperData);
+      return self::loadModule($s_name, 'helper-data', self::$a_helperData);
     }
 
-    $a_data = Memory::$a_helper;
+    $a_data = self::$a_helper;
     if ($s_name == 'HTML') {
       $a_data['systemNameSpace'] = '\youconix\core\helpers\html\\';
     }
 
-    return Memory::loadModule($s_name, 'helper', $a_data, 'Helper');
+    return self::loadModule($s_name, 'helper', $a_data, 'Helper');
   }
 
   /**
@@ -549,7 +547,7 @@ class Memory
    */
   public static function isService($s_name, $bo_data = false)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated, and will be removed after version 3.", E_USER_DEPRECATED);
     }
     $a_memoryItems = array(
@@ -557,15 +555,15 @@ class Memory
 	'service-data'
     );
     if ($bo_data) {
-      $s_path = Memory::$a_service['systemPath'] . 'data/';
+      $s_path = self::$a_service['systemPath'] . 'data/';
       $s_namespace = 'core\services\data';
     } else {
-      $s_path = Memory::$a_service['systemPath'];
+      $s_path = self::$a_service['systemPath'];
       $s_namespace = 'core\services';
     }
     $s_fallback = 'Service';
 
-    return Memory::isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback);
+    return self::isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback);
   }
 
   /**
@@ -583,14 +581,14 @@ class Memory
    */
   public static function services($s_name, $bo_data = false)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of \Loader::inject().", E_USER_DEPRECATED);
     }
     if ($bo_data) {
-      return Memory::loadModule($s_name, 'service', Memory::$a_serviceData);
+      return self::loadModule($s_name, 'service', self::$a_serviceData);
     }
 
-    return Memory::loadModule($s_name, 'service', Memory::$a_service, 'Service');
+    return self::loadModule($s_name, 'service', self::$a_service, 'Service');
   }
 
   /**
@@ -606,7 +604,7 @@ class Memory
    */
   public static function isModel($s_name, $bo_data = false)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated, and will be removed following version 3.", E_USER_DEPRECATED);
     }
     $a_memoryItems = array(
@@ -614,15 +612,15 @@ class Memory
 	'model-data'
     );
     if ($bo_data) {
-      $s_path = Memory::$a_model['systemPath'] . 'data/';
+      $s_path = self::$a_model['systemPath'] . 'data/';
       $s_namespace = 'core\models\data';
     } else {
-      $s_path = Memory::$a_model['systemPath'];
+      $s_path = self::$a_model['systemPath'];
       $s_namespace = 'core\models';
     }
     $s_fallback = 'Model';
 
-    return Memory::isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback);
+    return self::isModule($s_name, $a_memoryItems, $s_path, $s_namespace, $s_fallback);
   }
 
   /**
@@ -640,14 +638,14 @@ class Memory
    */
   public static function models($s_name, $bo_data = false)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of \Loader:inject().", E_USER_DEPRECATED);
     }
     if ($bo_data) {
-      return Memory::loadModule($s_name, 'model-data', Memory::$a_modelData);
+      return self::loadModule($s_name, 'model-data', self::$a_modelData);
     }
 
-    return Memory::loadModule($s_name, 'model', Memory::$a_model);
+    return self::loadModule($s_name, 'model', self::$a_model);
   }
 
   /**
@@ -663,13 +661,13 @@ class Memory
    */
   public static function isLoaded($s_type, $s_name)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     $s_type = strtolower($s_type);
     $s_name = ucfirst($s_name);
 
-    if (array_key_exists('\youconix\core\\' . $s_type . 's\\' . $s_name, Memory::$a_cache)) {
+    if (array_key_exists('\youconix\core\\' . $s_type . 's\\' . $s_name, self::$a_cache)) {
       return true;
     }
 
@@ -689,41 +687,41 @@ class Memory
    */
   public static function loadClass($s_class)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     $s_class = ucfirst($s_class);
 
     /* Check model */
-    $service_File = Memory::$a_cache['\youconix\core\services\File'];
+    $service_File = self::$a_cache['\youconix\core\services\File'];
     $bo_override = false;
     $s_path = '';
     $s_caller = '';
     $s_callerParent = '';
 
-    if ($service_File->exists(Memory::$a_class['userPath'] . $s_class . '.php')) {
-      if ($service_File->exists(Memory::$a_class['systemPath'] . $s_class . '.php')) {
+    if ($service_File->exists(self::$a_class['userPath'] . $s_class . '.php')) {
+      if ($service_File->exists(self::$a_class['systemPath'] . $s_class . '.php')) {
 	$bo_override = true;
-	$s_callerParent = Memory::$a_class['systemNamespace'] . $s_class;
+	$s_callerParent = self::$a_class['systemNamespace'] . $s_class;
 
 	if (!class_exists($s_callerParent)) {
-	  require (Memory::$a_class['systemPath'] . $s_class . '.php');
+	  require (self::$a_class['systemPath'] . $s_class . '.php');
 	}
       }
 
-      require_once (Memory::$a_class['userPath'] . $s_class . '.php');
-      $s_path = Memory::$a_class['userPath'] . $s_class . '.php';
-      $s_caller = Memory::$a_class['userNamespace'] . $s_class;
+      require_once (self::$a_class['userPath'] . $s_class . '.php');
+      $s_path = self::$a_class['userPath'] . $s_class . '.php';
+      $s_caller = self::$a_class['userNamespace'] . $s_class;
     } else
-    if ($service_File->exists(Memory::$a_class['systemPath'] . $s_class . '.php')) {
-      require_once (Memory::$a_class['systemPath'] . $s_class . '.php');
-      $s_path = Memory::$a_class['systemPath'] . $s_class . '.php';
-      $s_caller = Memory::$a_class['systemNamespace'] . $s_class;
+    if ($service_File->exists(self::$a_class['systemPath'] . $s_class . '.php')) {
+      require_once (self::$a_class['systemPath'] . $s_class . '.php');
+      $s_path = self::$a_class['systemPath'] . $s_class . '.php';
+      $s_caller = self::$a_class['systemNamespace'] . $s_class;
     } else {
       throw new \RuntimeException('Can not find class ' . $s_class);
     }
 
-    $object = \Loader::Inject($s_caller);
+    $object = \Loader::inject($s_caller);
 
     if (!empty($s_callerParent) && !($object instanceof $s_callerParent)) {
       throw new \OverrideException('Override ' . $s_caller . ' is not a child of ' . $s_callerParent . '.');
@@ -742,19 +740,19 @@ class Memory
    */
   public static function loadInterface($s_interface)
   {
-    if (!Memory::isTesting()) {
+    if (!self::isTesting()) {
       trigger_error("This function has been deprecated.", E_USER_DEPRECATED);
     }
     $s_interface = ucfirst($s_interface);
 
     /* Check model */
-    $service_File = Memory::$a_cache['\youconix\core\services\File'];
+    $service_File = self::$a_cache['\youconix\core\services\File'];
 
-    if ($service_File->exists(Memory::$a_interface['userPath'] . $s_interface . '.php')) {
-      require_once (Memory::$a_interface['userPath'] . $s_interface . '.php');
+    if ($service_File->exists(self::$a_interface['userPath'] . $s_interface . '.php')) {
+      require_once (self::$a_interface['userPath'] . $s_interface . '.php');
     } else
-    if ($service_File->exists(Memory::$a_interface['systemPath'] . $s_interface . '.php')) {
-      require_once (Memory::$a_interface['systemPath'] . $s_interface . '.php');
+    if ($service_File->exists(self::$a_interface['systemPath'] . $s_interface . '.php')) {
+      require_once (self::$a_interface['systemPath'] . $s_interface . '.php');
     } else {
       throw new \RuntimeException('Can not find interface ' . $s_interface);
     }
@@ -861,17 +859,17 @@ class Memory
    */
   public static function delete($s_type, $s_name)
   {
-    \youconix\core\Memory::type('String', $s_type);
-    \youconix\core\Memory::type('String', $s_name);
+    \youconix\core\self::type('String', $s_type);
+    \youconix\core\self::type('String', $s_name);
 
     $s_type = strtolower($s_type);
     $s_name = ucfirst(strtolower($s_name));
 
-    if (array_key_exists('\youconix\core\\' . $s_type . 's\\' . $s_name, Memory::$a_cache)) {
-      unset(Memory::$a_cache['\youconix\core\\' . $s_type . 's\\' . $s_name]);
+    if (array_key_exists('\youconix\core\\' . $s_type . 's\\' . $s_name, self::$a_cache)) {
+      unset(self::$a_cache['\youconix\core\\' . $s_type . 's\\' . $s_name]);
     } else
-    if (array_key_exists('\includes\\' . $s_type . 's\\' . $s_name, Memory::$a_cache)) {
-      unset(Memory::$a_cache['\includes\\' . $s_type . 's\\' . $s_name]);
+    if (array_key_exists('\includes\\' . $s_type . 's\\' . $s_name, self::$a_cache)) {
+      unset(self::$a_cache['\includes\\' . $s_type . 's\\' . $s_name]);
     } else {
       throw new \RuntimeException("Trying to delete " . $s_type . " " . $s_name . " that does not exist");
     }
@@ -892,18 +890,18 @@ class Memory
    */
   public static function reset()
   {
-    Memory::$bo_testing = null;
+    self::$bo_testing = null;
 
-    Memory::$a_service = null;
-    Memory::$a_serviceData = null;
-    Memory::$a_model = null;
-    Memory::$a_modelData = null;
-    Memory::$a_helper = null;
-    Memory::$a_helperData = null;
-    Memory::$a_class = null;
-    Memory::$a_interface = null;
-    Memory::$bo_prettyUrls = null;
-    Memory::$a_cache = null;
+    self::$a_service = null;
+    self::$a_serviceData = null;
+    self::$a_model = null;
+    self::$a_modelData = null;
+    self::$a_helper = null;
+    self::$a_helperData = null;
+    self::$a_class = null;
+    self::$a_interface = null;
+    self::$bo_prettyUrls = null;
+    self::$a_cache = null;
 
     \Profiler::reset();
   }
@@ -923,7 +921,7 @@ class Memory
       $s_url = '/' . $s_url;
     }
 
-    if (Memory::$bo_prettyUrls) {
+    if (self::$bo_prettyUrls) {
       $s_url .= '/';
       $s_url .= implode('/', $a_payload);
     } else {
@@ -954,14 +952,14 @@ class Memory
    * @param String $s_url
    *            The relative url
    * @return String The absolute url
-   * @deprecated See core/Memory::parseUrl()
+   * @deprecated See core/self::parseUrl()
    */
   public static function generateUrl($s_url)
   {
-    if (!Memory::isTesting()) {
-      trigger_error("This function has been deprecated in favour of Memory::parseUrl().", E_USER_DEPRECATED);
+    if (!self::isTesting()) {
+      trigger_error("This function has been deprecated in favour of self::parseUrl().", E_USER_DEPRECATED);
     }
-    return Memory::parseUrl($s_url);
+    return self::parseUrl($s_url);
   }
 
   /**
@@ -974,7 +972,7 @@ class Memory
    */
   public static function redirect($s_url, $a_payload = array())
   {
-    $s_url = Memory::parseUrl($s_url, $a_payload);
+    $s_url = self::parseUrl($s_url, $a_payload);
     header('location: ' . $s_url);
     exit();
   }

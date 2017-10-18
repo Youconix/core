@@ -17,10 +17,10 @@ class IoC
     public static $s_ruleConfig = '\youconix\core\Config';
 
     protected static $a_rules = array();
-
-    public function __construct(\Settings $settings)
+    
+    public function load()
     {
-        $this->settings = $settings;
+        $this->settings = \Loader::inject(self::$s_ruleSettings);
         
         $this->detectDatabase();
         $this->detectLogger();
@@ -117,6 +117,7 @@ class IoC
         IoC::$a_rules['Session'] = '\youconix\core\services\session\Native';
         IoC::$a_rules['Settings'] = IoC::$s_ruleSettings;
         IoC::$a_rules['Validation'] = '\youconix\core\services\Validation';
+        IoC::$a_rules['Layout'] = 'includes\BaseLogicClass';
     }
 
     public static function check($s_name)

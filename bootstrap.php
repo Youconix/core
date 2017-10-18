@@ -6,7 +6,7 @@ function reportException(\Exception $exception, $bo_caught = true)
     $s_error .= $exception->getTraceAsString();
     
     try {
-        $logs = \Loader::Inject('\Logger');
+        $logs = \Loader::inject('\Logger');
         
         if ($bo_caught) {
             $logs->critical($s_error);

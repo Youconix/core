@@ -59,7 +59,7 @@ abstract class Repository extends \youconix\core\Object
 			      \Builder $builder)
   {
     $modelName = explode('\\', get_class($model));
-    $this->model = \Loader::Inject('\files\cache\proxies\\' . end($modelName) . 'Proxy');
+    $this->model = \Loader::inject('\files\cache\proxies\\' . end($modelName) . 'Proxy');
     $this->builder = $builder;
     $this->helper = $helper;
 

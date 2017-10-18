@@ -145,4 +145,4 @@ class Combiner
     }
 }
 
-$combiner = \loader::Inject('\youconix\core\Combiner');
+$combiner = \loader::inject('\youconix\core\Combiner');

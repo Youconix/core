@@ -58,7 +58,7 @@ class Authorization extends Service
             'LDAP'
         );
         foreach ($a_types as $s_type) {
-            $authorization = \Loader::Inject('\youconix\core\services\Authorization' . ucfirst($s_type), true);
+            $authorization = \Loader::inject('\youconix\core\services\Authorization' . ucfirst($s_type), true);
             if( !is_null($authorization) ){
                 $this->a_authorizationTypes[$s_type] = $authorization;
                 $this->a_openID_types[] = $s_type;

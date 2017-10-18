@@ -1,12 +1,13 @@
 <?php
 
+use youconix\core\Memory;
+
 /**
  * General class loader and dependency injection
  * 
- * @author Roxanna Lugtigheid
  * @link        http://www.php-fig.org/psr/psr-4/
  */
-class Loader
+final class Loader
 {
     private static $a_uses = array();
     
@@ -68,7 +69,7 @@ class Loader
                 $s_fileName = 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'exceptions' . DS . $s_className . '.php';
             }
         } else {
-            $s_fileName = Loader::getFileName($s_className);
+            $s_fileName = self::getFileName($s_className);
         }
         
         if (! is_null($s_fileName)) {
@@ -80,13 +81,13 @@ class Loader
         }
     }
 
-    public static function Inject($s_className, $a_arguments = array())
+    public static function inject($s_className, $a_arguments = array())
     {
         \Profiler::profileSystem('core/Loader.php', 'Loading class ' . $s_className);
         
         $s_fileName = null;
         /* Check IoC */
-        $IoC = \youconix\core\Memory::getCache('IoC');
+        $IoC = Memory::getCache('IoC');
         if (! is_null($IoC)) {
             $check = $IoC::check($s_className);
             if (! is_null($check)) {
@@ -108,7 +109,7 @@ class Loader
         }
         
         if (is_null($s_fileName)) {
-            $s_fileName = Loader::getFileName($s_className);
+            $s_fileName = self::getFileName($s_className);
         }
         
         if (is_null($s_fileName)) {
@@ -133,7 +134,7 @@ class Loader
             }
         }
         
-        $object = Loader::injection($s_caller, $s_fileName, $a_arguments);
+        $object = self::injection($s_caller, $s_fileName, $a_arguments);
         
         return $object;
     }
@@ -153,8 +154,8 @@ class Loader
         $ref = new \ReflectionClass($s_caller);
         if (! $ref->isInstantiable()) {
             /* Check cache */
-            if (\youconix\core\Memory::IsInCache($s_caller)) {
-                return \youconix\core\Memory::getCache($s_caller);
+            if (Memory::IsInCache($s_caller)) {
+                return Memory::getCache($s_caller);
             }
             
             throw new \RuntimeException('Can not create a object from class ' . $s_caller . '.');
@@ -163,14 +164,14 @@ class Loader
         $bo_singleton = false;
         if (method_exists($s_caller, 'isSingleton') && $s_caller::isSingleton()) {
             /* Check cache */
-            if (\youconix\core\Memory::IsInCache($s_caller)) {
-                return \youconix\core\Memory::getCache($s_caller);
+            if (Memory::IsInCache($s_caller)) {
+                return Memory::getCache($s_caller);
             } else {
                 $bo_singleton = true;
             }
         }
         
-        $a_matches = Loader::getConstructor($s_filename);
+        $a_matches = self::getConstructor($s_filename);
         
         if (count($a_matches) == 0) {
             /* No arguments */
@@ -191,8 +192,8 @@ class Loader
             }
             
             $a_item = explode(' ', $s_name);
-            if( array_key_exists($a_item[0], Loader::$a_uses) ){
-                $a_item[0] = Loader::$a_uses[$a_item[0]];
+            if( array_key_exists($a_item[0], self::$a_uses) ){
+                $a_item[0] = self::$a_uses[$a_item[0]];
             }
             
             $a_argumentNames[] = $a_item[0];
@@ -205,21 +206,21 @@ class Loader
                 /* No namespace */
                 if (strpos($s_name, 'Helper_') !== false) {
                     $s_name = str_replace('Helper_', '', $s_name);
-                    $a_arguments[] = \youconix\core\Memory::helpers($s_name);
+                    $a_arguments[] = Memory::helpers($s_name);
                 } else 
                     if (strpos($s_name, 'Service_') !== false) {
                         $s_name = str_replace('Service_', '', $s_name);
-                        $a_arguments[] = \youconix\core\Memory::services($s_name);
+                        $a_arguments[] = Memory::services($s_name);
                     } else 
                         if (strpos($s_name, 'Model_') !== false) {
                             $s_name = str_replace('Model_', '', $s_name);
-                            $a_arguments[] = \youconix\core\Memory::models($s_name);
+                            $a_arguments[] = Memory::models($s_name);
                         } else {
                             /* Try to load object */
-                            $a_arguments[] = Loader::inject($s_name);
+                            $a_arguments[] = self::inject($s_name);
                         }
             } else {
-                $a_arguments[] = Loader::inject($s_name);
+                $a_arguments[] = self::inject($s_name);
             }
         }
         
@@ -228,7 +229,7 @@ class Loader
         $object = $ref->newInstanceArgs($a_arguments);
         
         if ($bo_singleton) {
-            \youconix\core\Memory::setCache($s_caller, $object);
+            Memory::setCache($s_caller, $object);
         }
         
         \Profiler::profileSystem('core/Loader.php', 'Loaded class ' . $s_caller);
@@ -245,7 +246,7 @@ class Loader
      */
     private static function getConstructor($s_filename)
     {
-        $service_File = \youconix\core\Memory::getCache(\youconix\core\IoC::$s_ruleFileHandler);
+        $service_File = Memory::getCache(\youconix\core\IoC::$s_ruleFileHandler);
         
         if ($service_File->exists(WEB_ROOT . DS . $s_filename)) {
             $s_file = $service_File->readFile(WEB_ROOT . DS . $s_filename);
@@ -261,7 +262,7 @@ class Loader
         
         // Find use statements
         preg_match_all('#use\\s+([\\\a-z0-9\-_]+\\s+as\\s+[a-z0-9\-_]+)#si', $s_file,$a_uses);
-        Loader::$a_uses = array();
+        self::$a_uses = array();
         foreach($a_uses AS $a_use){
             foreach($a_use AS $s_use){
                 if( substr($s_use, 0,3) == 'use' ){ continue; }
@@ -269,7 +270,7 @@ class Loader
                 $s_use = str_replace(' AS ',' as ',$s_use);
                 $a_parts = explode(' as ',$s_use);
                 
-                Loader::$a_uses[ trim($a_parts[1])] = trim($a_parts[0]);
+                self::$a_uses[ trim($a_parts[1])] = trim($a_parts[0]);
             }
         }
                 
@@ -280,8 +281,8 @@ class Loader
                 return array();
             }
             
-            if( array_key_exists($a_matches[1], Loader::$a_uses) ){
-                $a_matches[1] = Loader::$a_uses[$a_matches[1]];
+            if( array_key_exists($a_matches[1], self::$a_uses) ){
+                $a_matches[1] = self::$a_uses[$a_matches[1]];
             }
             
             switch ($a_matches[1]) {
@@ -340,7 +341,7 @@ class Loader
                     }
             }
             
-            return Loader::getConstructor($s_filename);
+            return self::getConstructor($s_filename);
         }
         
         preg_match('#function\\s+__construct\\s?\({1}\\s?([\\a-zA-Z\\s\$\-_,]+)\\s?\){1}#si', $s_file, $a_matches);
