@@ -76,6 +76,8 @@ class Request implements \Request
         
         $this->get = clone $this->input;
         $this->post = clone $this->input;
+        $this->put = clone $this->input;
+        $this->delete = clone $this->input;
         
         $this->parseRedirect();
     }
@@ -99,6 +101,14 @@ class Request implements \Request
                 $this->session->delete('redirect_' . $s_field);
             }
         }
+    }
+    
+    public function acceptAllInput()
+    {
+        $this->get->getAll('GET');
+        $this->post->getAll('POST');
+        $this->put->getAll('PUT');
+        $this->delete->getAll('DELETE');
     }
 
     /**
@@ -201,7 +211,6 @@ class Request implements \Request
      * Redirects to the given location
      *
      * @param string $s_location
-     *            The loczation
      */
     public function redirect($s_location)
     {
@@ -212,7 +221,6 @@ class Request implements \Request
      * Redirects to the given location while saving the current form values
      *
      * @param string $s_location
-     *            The loczation
      */
     public function redirectWithInput($s_location)
     {
