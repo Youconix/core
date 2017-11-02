@@ -11,23 +11,23 @@ interface Guard {
   
   public function hasRegistration();
   
-  public function loginForm(\Output $output,\Input $request);
+  public function loginForm(\Output $output,\Request $request);
   
-  public function do_login(\Input $request);
+  public function do_login(\Request $request);
   
   public function expiredForm(\Output $output);
   
-  public function updatePassword(\Input $request);
+  public function updatePassword(\Request $request);
   
-  public function resetForm(\Output $output,\Input $request);
+  public function resetForm(\Output $output,\Request $request);
   
-  public function sendResetEmail(\Input $request);
+  public function sendResetEmail(\Request $request);
   
   public function do_reset($hash);
   
-  public function registrationForm(\Output $output,\Input $request);
+  public function registrationForm(\Output $output,\Request $request);
   
-  public function do_registration(\Input $request);
+  public function do_registration(\Request $request);
   
   public function email_confirm();
   

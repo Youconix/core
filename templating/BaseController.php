@@ -4,11 +4,6 @@ namespace youconix\core\templating;
 
 abstract class BaseController {
 
-  /**
-   *
-   * @var \Request
-   */
-  protected $request;
   protected $init_post = [];
   protected $init_get = [];
   protected $init_put = [];

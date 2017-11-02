@@ -59,7 +59,7 @@ class Routes {
     foreach ($a_names as $a_directory) {
       $this->parseDirectory($a_directory);
     }
-    
+
     if (!defined('DEBUG')) {
       $this->file->writeFile($this->s_cacheFile, serialize($this->a_map));
     }
@@ -111,41 +111,70 @@ class Routes {
       if ((strpos($s_rule, '@Route') === false) && (strpos($s_rule, 'function') === false)) {
         continue;
       }
-      if (preg_match('/@Route\("([a-zA-Z0-9_\-\/]+)"\)/s', $s_rule, $a_matches)) {
-        $route = new \stdClass();
-        $route->route = $a_matches[1];
-        $route->index = $route->route;
-        $route->regex = false;
-      } else if (preg_match('/@Route\("([a-zA-Z0-9_\-\/\{\}]+)"/s', $s_rule, $a_matches)) {
-        $s_route = $a_matches[1];
-        $a_parameters = null;
-        preg_match_all('/([^=^\s^,]+="[^"]+")/s', $s_rule, $a_parameters);
-
-        for ($i = 0; $i < count($a_parameters[0]); $i++) {
-          $a_parts = explode('=', $a_parameters[0][$i]);
-          $s_variable = trim($a_parts[0]);
-          $s_value = str_replace('"', '', str_replace("'", '', $a_parts[1]));
-
-          $s_route = str_replace('{' . $s_variable . '}', '(' . $s_value . ')', $s_route);
-        }
-
-        $a_index = explode('{', $a_matches[1]);
-
-        $s_route = preg_replace('/{[^}]+}/s', '([^/]+)', str_replace('/', '\/', $s_route));
-
-        $route = new \stdClass();
-        $route->route = $s_route;
-        $route->index = $a_index[0];
-        $route->regex = true;
+      if (preg_match('/@Route\("([^"]+)", name="([^"]+)"\)/s', $s_rule, $a_matches)) {
+        $route = $this->createRoute($a_matches[1], $a_matches[2]);
+      } else if (preg_match('/@Route\("([^"]+)", name="([^"]+)", requirements=\{([^}]+)\}\)/s', $s_rule, $a_matches)) {
+        $a_parameters = explode(',', $a_matches[3]);
+        $route = $this->createRoute($a_matches[1], $a_matches[2], $a_parameters);
       } else if (!is_null($route)) {
         preg_match('/function\s([a-zA-Z0-9\-_]+)\s?\(/s', $s_rule, $a_matches);
         $route->function = $a_matches[1];
         $route->class = $s_class;
-        $this->a_map[] = $route;
+
+        if (array_key_exists($route->name, $this->a_map)) {
+          throw new \CoreException('Found duplicate route name ' . $route->name . ' pointing to route ' . $route->route_original . '.');
+        }
+
+        $this->a_map[$route->name] = $route;
 
         $route = null;
       }
     }
+  }
+
+  /**
+   * 
+   * @param string $s_route
+   * @param string $s_name
+   * @param array $a_parameters
+   * @return \stdClass
+   */
+  private function createRoute($s_route, $s_name, array $a_parameters = []) {
+    $bo_regex = (strpos($s_route, '{') !== false);
+
+    $route = new \stdClass();
+    $route->route_original = $s_route;
+    $route->regex = $bo_regex;
+    $route->name = $s_name;
+    $route->parameters = [];
+
+    for ($i = 0; $i < count($a_parameters); $i++) {
+      $a_parts = explode(':', $a_parameters[$i]);
+      $s_variable = str_replace('"', '', str_replace("'", '', $a_parts[0]));
+      $s_value = str_replace('"', '', str_replace("'", '', $a_parts[1]));
+
+      $s_route = str_replace('{' . $s_variable . '}', '(' . $s_value . ')', $s_route);
+      $route->parameters[$s_variable] = $s_value;
+    }
+
+    $a_index = explode('{', $s_name);
+
+    $a_matches = null;
+    if (preg_match_all('/{([^}]+)}/s', $s_route, $a_matches)) {
+      $s_replace = '[^/]+';
+      for ($i = 0; $i < count($a_matches[1]); $i++) {
+        $s_route = str_replace('{' . $a_matches[1][$i] . '}', '(' . $s_replace . ')', str_replace('/', '\/', $s_route));
+        $route->parameters[$a_matches[1][$i]] = $s_replace;
+      }
+    }
+    if ($bo_regex) {
+      $s_route = str_replace('/', '\/', $s_route);
+    }
+
+    $route->route = $s_route;
+    $route->index = $a_index[0];
+
+    return $route;
   }
 
   public function clearException() {
@@ -188,7 +217,7 @@ class Routes {
         $this->s_controller = $route->class;
         $this->s_method = $route->function;
         break;
-      } else if ($route->regex && stripos($s_address, $route->index) !== false && preg_match('/' . $route->route . '/s', $s_address, $this->a_arguments)) {
+      } else if ($route->regex && stripos($s_address, $route->index) !== false && preg_match('/^' . $route->route . '$/s', $s_address, $this->a_arguments)) {
         unset($this->a_arguments[0]);
         $this->s_controller = $route->class;
         $this->s_method = $route->function;
