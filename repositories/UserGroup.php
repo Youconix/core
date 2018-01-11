@@ -12,25 +12,25 @@ class UserGroup extends \youconix\core\ORM\Repository
 {
 
   /**
-   * @var \youconix\core\repositories\Groups
+   * @var \youconix\core\repositories\Group
    */
   protected $groups;
 
   /**
    * PHP5 constructor
    *
-   * @param \Entities $helper
+   * @param \EntityManager $manager
    * @param \youconix\core\entities\UserGroup $userGroup
    * @param \Builder $builder
-   * @param \youconix\core\repositories\Groups $groups
+   * @param \youconix\core\repositories\Group $groups
    */
   public function __construct(
-    \Entities $helper, 
+    \EntityManager $manager, 
       \youconix\core\entities\UserGroup $userGroup, 
       \Builder $builder, 
-      \youconix\core\repositories\Groups $groups
+      \youconix\core\repositories\Group $groups
   ){
-    parent::__construct($helper, $userGroup, $builder);
+    parent::__construct($manager, $userGroup, $builder);
     
     $this->groups = $groups;
   }
@@ -53,7 +53,7 @@ class UserGroup extends \youconix\core\ORM\Repository
   {
     $a_userGroups = [];
     foreach($this->groups->getDefaultGroups() as $group){
-      $a_userGroups[] = $this->create($user, $group->getId());
+      $a_userGroups[] = $this->create($user, $group);
     }
     $user->setGroups($a_userGroups);
   }

@@ -19,17 +19,17 @@ class User extends \youconix\core\ORM\Repository
   /**
    * PHP5 constructor
    *
-   * @param \Entities $helper
+   * @param \EntityManager $manager
    * @param \youconix\core\entities\User $userData
    * @param \Builder $builder
    * @param \youconix\core\repositories\UserGroup $userGroups   
    */
   public function __construct(
-  \Entities $helper, \youconix\core\entities\User $userData, \Builder $builder,
+  \EntityManager $manager, \youconix\core\entities\User $userData, \Builder $builder,
   \youconix\core\repositories\UserGroup $userGroups
   )
   {
-    parent::__construct($helper, $userData, $builder);
+    parent::__construct($manager, $userData, $builder);
 
     $this->userGroups = $userGroups;
   }
@@ -77,9 +77,9 @@ class User extends \youconix\core\ORM\Repository
   public function getByName($s_username, $s_email = '')
   {
     if (empty($s_email)) {
-      return $this->findBy(['username' => $s_username, 'active' => 1, 'blocked' => 0]);
+      return $this->findBy(['nick' => $s_username, 'active' => 1, 'blocked' => 0]);
     } else {
-      return $this->findBy(['username' => $s_username, 'email' => $s_email, 'active' => 1,
+      return $this->findBy(['nick' => $s_username, 'email' => $s_email, 'active' => 1,
 	      'blocked' => 0]);
     }
   }
@@ -207,12 +207,12 @@ class User extends \youconix\core\ORM\Repository
   /**
    * Creates a new user object
    *
-   * @param array $a_data
+   * @param \stdClass $data
    * @return \youconix\core\entities\User The user object
    */
-  public function createUser(array $a_data = [])
+  public function createUser(\stdClass $data = null)
   {
-    return $this->getModel($a_data);
+    return $this->getModel($data);
   }
 
   /**

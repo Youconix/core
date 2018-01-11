@@ -77,6 +77,12 @@ class Config implements \Config
    * @var string
    */
   protected $s_page;
+  
+  /**
+   *
+   * @var string
+   */
+  protected $s_url;
 
   /**
    *
@@ -97,7 +103,8 @@ class Config implements \Config
    * @param \Settings $settings            
    * @param \Cookie $cookie            
    */
-  public function __construct(\youconix\core\services\FileHandler $file, \Settings $settings, \Cookie $cookie, \Builder $builder)
+  public function __construct(\youconix\core\services\FileHandler $file,
+			      \Settings $settings, \Cookie $cookie, \Builder $builder)
   {
     $this->file = $file;
     $this->settings = $settings;
@@ -114,9 +121,11 @@ class Config implements \Config
    * Called from the Router
    * 
    * @param string $s_page
+   * @param string $s_url
+   * @param string $s_class
    * @param string $s_command
    */
-  public function setCall($s_page, $s_command)
+  public function setCall($s_page, $s_url, $s_class, $s_command)
   {
     if (substr($s_page, 0, 1) == '/') {
       $s_page = substr($s_page, 1);
@@ -128,10 +137,22 @@ class Config implements \Config
       $s_command = substr($s_command, 1);
     }
 
+    $this->s_url = $s_url;
     $this->s_page = $s_page;
+    $this->s_class = $s_class;
     $this->s_command = $s_command;
 
     $this->detectTemplateDir();
+  }
+
+  /**
+   * Returns the current controller class
+   * 
+   * @return string
+   */
+  public function getClass()
+  {
+    return $this->s_class;
   }
 
   /**
@@ -142,6 +163,15 @@ class Config implements \Config
   public function getPage()
   {
     return $this->s_page;
+  }
+  
+  /**
+   * 
+   * @return string
+   */
+  public function getUrl()
+  {
+    return $this->s_url;
   }
 
   /**
@@ -261,7 +291,8 @@ class Config implements \Config
 	return $this->getLanguagesOld();
       }
 
-      if ($s_languageFile == '..' || $s_languageFile == '.' || strpos($s_languageFile, '.') !== false) {
+      if ($s_languageFile == '..' || $s_languageFile == '.' || strpos($s_languageFile,
+								      '.') !== false) {
 	continue;
       }
 
@@ -335,7 +366,8 @@ class Config implements \Config
     }
 
     if (!defined('WEBSITE_ROOT')) {
-      define('WEBSITE_ROOT', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . $this->base);
+      define('WEBSITE_ROOT',
+	     $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . $this->base);
     }
   }
 
@@ -597,7 +629,8 @@ class Config implements \Config
 
   public function isMobile()
   {
-    return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
+    return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i",
+		      $_SERVER["HTTP_USER_AGENT"]);
   }
 
   /**
@@ -608,7 +641,7 @@ class Config implements \Config
   {
     return $_SERVER['DOCUMENT_ROOT'] . DS . 'files' . DS . 'cache' . DS;
   }
-  
+
   /**
    * 
    * @return string
@@ -616,5 +649,50 @@ class Config implements \Config
   public function getTimezone()
   {
     return 'Europe/Amsterdam';
+  }
+
+  /**
+   * @return boolean
+   */
+  public function getPrettyUrls()
+  {
+    if (!$this->settings->exists('main/pretty_urls')) {
+      return false;
+    }
+
+    return $this->settings->get('main/pretty_urls');
+  }
+
+  /**
+   * @return \stdClass
+   */
+  public function getPasswordSettings()
+  {
+    $level = 1;
+    if ($this->settings->exists('auth/password/level')) {
+      $level = $this->settings->get('auth/password/level');
+    }
+
+    $minimunlength = 8;
+    if ($this->settings->exists('auth/password/minimun_length')) {
+      $minimunlength = $this->settings->get('auth/password/minimun_length');
+    }
+
+    $settings = new \stdClass();
+    $settings->level = $level;
+    $settings->mimimunLength = $minimunlength;
+    return $settings;
+  }
+
+  /**
+   * 
+   * @param int $level
+   * @param int $mimimunLength
+   */
+  public function setPasswordSettings($level, $mimimunLength)
+  {
+    $this->settings->set('auth/password/level', $level);
+    $this->settings->set('auth/password/level', $mimimunLength);
+    $this->settings->save();
   }
 }

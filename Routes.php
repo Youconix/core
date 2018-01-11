@@ -2,7 +2,7 @@
 
 namespace youconix\core;
 
-class Routes {
+final class Routes {
 
   private $class = null;
   private $returnResult = null;
@@ -14,6 +14,9 @@ class Routes {
   private $a_arguments;
   private $a_map;
   private $s_cacheFile;
+  
+  private $bo_prettyUrls;
+  private $s_fullUrl;
 
   /**
    *
@@ -24,6 +27,9 @@ class Routes {
   public function __construct(\Builder $builder, \Config $config, \youconix\core\services\FileHandler $file) {
     $this->builder = $builder;
     $this->file = $file;
+    
+    $this->s_fullUrl = $config->getProtocol().$config->getHost();
+    $this->bo_prettyUrls = $config->getPrettyUrls();
 
     $s_cacheDir = $config->getCacheDirectory();
     $this->s_cacheFile = $s_cacheDir . 'entityMap.php';
@@ -64,6 +70,73 @@ class Routes {
       $this->file->writeFile($this->s_cacheFile, serialize($this->a_map));
     }
   }
+  
+  /**
+   * 
+   * @param string $s_name
+   * @param array $a_parameters
+   * @param boolean $bo_fullUrl
+   * @return string
+   */
+  public function path($s_name, array $a_parameters = [], $bo_fullUrl = false)
+  {
+    $s_route = $this->getRouteByName($s_name, $a_parameters);
+
+    if (!$this->bo_prettyUrls) {
+      $s_route = '/router.php' . $s_route;
+    }
+
+    if ($bo_fullUrl) {
+      $s_route = $this->s_fullUrl . $s_route;
+    }
+
+    return $s_route;
+  }
+
+  /**
+   * 
+   * @param string $s_name
+   * @param array $a_parameters
+   * @return string
+   * @throws \LogicException
+   */
+  public function getRouteByName($s_name, array $a_parameters) {
+    if (!array_key_exists($s_name, $this->a_map)) {
+      throw new \LogicException('Calling to unknown route name ' . $s_name . '.');
+    }
+
+    $route = $this->a_map[$s_name];
+    if (!$route->regex) {
+      return $route->route;
+    }
+
+    $a_missing = [];
+    foreach ($route->parameters as $name => $value) {
+      if (!array_key_exists($name, $a_parameters)) {
+        $a_missing[] = $name;
+      }
+    }
+
+    if (count($a_missing) > 0) {
+      throw new \LogicException('Missing parameters for route ' . $s_name . ': ' . implode(',', $a_missing) . '.');
+    }
+
+    $s_route = $route->route_original;
+    foreach ($a_parameters as $name => $value) {
+      $s_route = str_replace('{' . $name . '}', $value, $s_route);
+    }
+    return $s_route;
+  }
+  
+  public function getAllAddresses()
+  {
+    $addresses = [];
+    foreach($this->a_map as $route){
+      $addresses[] = $route->route_original;
+    }
+    
+    return $addresses;
+  }
 
   /**
    * 
@@ -94,7 +167,7 @@ class Routes {
     $a_matches = null;
 
     $s_nameSpace = '';
-    if (preg_match('/namespace ([a-zA-Z0-9\-_\/]+)/s', $s_content, $a_matches)) {
+    if (preg_match('/namespace ([^\s^;]+)/s', $s_content, $a_matches)) {
       $s_nameSpace = $a_matches[1];
     }
     if (!empty($s_nameSpace)) {
@@ -157,13 +230,13 @@ class Routes {
       $route->parameters[$s_variable] = $s_value;
     }
 
-    $a_index = explode('{', $s_name);
+    $a_index = explode('{', $route->route_original);
 
     $a_matches = null;
     if (preg_match_all('/{([^}]+)}/s', $s_route, $a_matches)) {
       $s_replace = '[^/]+';
       for ($i = 0; $i < count($a_matches[1]); $i++) {
-        $s_route = str_replace('{' . $a_matches[1][$i] . '}', '(' . $s_replace . ')', str_replace('/', '\/', $s_route));
+        $s_route = str_replace('{' . $a_matches[1][$i] . '}', '(' . $s_replace . ')', $s_route);
         $route->parameters[$a_matches[1][$i]] = $s_replace;
       }
     }
@@ -226,11 +299,10 @@ class Routes {
     }
 
     if (empty($this->s_controller)) {
-      die('Page not found');
       throw new \Http404Exception('Unknown page.');
     }
 
-    if ($this->checkController()) {
+    if ($this->checkController($s_address)) {
       return $this->class;
     }
 
@@ -240,14 +312,19 @@ class Routes {
   /**
    * 
    * @return boolean
+   * @param string $s_address
    * @throws \RuntimeException
    */
-  private function checkController() {
+  private function checkController($s_address) {
     $s_file = str_replace('\\', DS, $this->s_controller);
     if (!file_exists(WEB_ROOT . $s_file . '.php')) {
-      $s_file = strtolower($s_file);
+      $s_file = preg_replace_callback('/([A-Z])/s', function($route){
+	return '_'.strtolower($route[1]);
+      }, $s_file);
+      $s_file = str_replace('/_', '/', $s_file);
+      
       if (!file_exists(WEB_ROOT . $s_file . '.php')) {
-        return false;
+	return false;
       }
     }
 
@@ -269,7 +346,7 @@ class Routes {
       return false;
     }
 
-    $this->config->setCall($this->s_controller, $this->s_method);
+    $this->config->setCall($s_file, $s_address, $this->s_controller, $this->s_method);
 
     Routes::checkLogin();
 

@@ -11,7 +11,7 @@ namespace youconix\core\repositories;
  * @see core/services/Session.php
  * @see core/entities/Group.php
  */
-class Groups extends \youconix\core\ORM\Repository
+class Group extends \youconix\core\ORM\Repository
 {
   /**
    *
@@ -22,13 +22,13 @@ class Groups extends \youconix\core\ORM\Repository
   /**
    * PHP5 constructor
    *
-   * @param \Entities $helper
+   * @param \EntityManager $manager
    * @param \Builder $builder
    * @param \youconix\core\entities\Group $group
    */
-  public function __construct(\Entities $helper, \Builder $builder, \youconix\core\entities\Group $group)
+  public function __construct(\EntityManager $manager, \Builder $builder, \youconix\core\entities\Group $group)
   {
-    parent::__construct($helper, $group, $builder);
+    parent::__construct($manager, $group, $builder);
 
     /* Load group-names */
     $a_groups = $this->getAll();
@@ -48,7 +48,7 @@ class Groups extends \youconix\core\ORM\Repository
   {
     $a_groups = [];
     foreach ($this->a_cache as $group) {
-      if ($group->getAutomatic()) {
+      if ($group->isDefault()) {
 	$a_groups[] = $group;
       }
     }

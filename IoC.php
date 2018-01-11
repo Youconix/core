@@ -118,6 +118,7 @@ class IoC
         IoC::$a_rules['Settings'] = IoC::$s_ruleSettings;
         IoC::$a_rules['Validation'] = '\youconix\core\services\Validation';
         IoC::$a_rules['Layout'] = 'includes\BaseLogicClass';
+	IoC::$a_rules['EntityManager'] = '\youconix\core\ORM\EntityManager';
     }
 
     public static function check($s_name)
