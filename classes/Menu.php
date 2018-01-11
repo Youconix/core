@@ -55,7 +55,7 @@ class Menu implements \Menu
 
     $user = $this->auth->getUser();
 
-    if (!is_null($user)) {
+    if (!is_null($user->getUserId())) {
       $this->template->set('menuLoggedIn', true, true);
 
       $this->loggedIn($user);

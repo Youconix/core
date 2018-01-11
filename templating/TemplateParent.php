@@ -15,6 +15,13 @@ abstract class TemplateParent {
    * @var \Config
    */
   protected $config;
+  
+  /**
+   *
+   * @var \youconix\core\Routes
+   */
+  protected $routes;
+  
   protected $s_file;
   protected $s_templateDir;
   protected $a_parser = [];
@@ -24,10 +31,18 @@ abstract class TemplateParent {
   protected $s_cachefile;
   protected $bo_compression = false;
   protected $s_contentType = 'text/html';
-
-  public function __construct(\youconix\core\services\FileHandler $handler, \Config $config) {
+  
+  
+  /**
+   * 
+   * @param \youconix\core\services\FileHandler $handler
+   * @param \Config $config
+   * @param \youconix\core\Routes $routes
+   */
+  public function __construct(\youconix\core\services\FileHandler $handler, \Config $config, \youconix\core\Routes $routes) {
     $this->fileHandler = $handler;
     $this->config = $config;
+    $this->routes = $routes;
   }
 
   /**
@@ -40,8 +55,6 @@ abstract class TemplateParent {
     $this->s_file = $s_file;
     $this->s_templateDir = $s_templateDir;
 
-    $this->loadTemplates($s_file);
-
     $s_hash = str_replace(['./', '//'], ['', '/'], $s_file);
     while (strpos($s_hash, '../') !== false) {
       $s_hash = str_replace('../', '', $s_hash);
@@ -49,6 +62,7 @@ abstract class TemplateParent {
     $this->s_cachefile = realpath($_SERVER['DOCUMENT_ROOT']) . DS . 'files' . DS . 'cache' . DS . 'views' . DS . str_replace(['/', '\\'], ['.', '.'], $s_hash);
     if (!$this->checkCache()) {
       $this->parse();
+      $this->parsePaths();
       $this->fileHandler->writeFile($this->s_cachefile, $this->s_template);
     }
   }
@@ -71,19 +85,19 @@ abstract class TemplateParent {
     }
 
     // check file
-    if (!$bo_dirs || !$this->fileHandler->exists($this->s_cachefile)) {
+    if (!$bo_dirs || defined('DEBUG') || !$this->fileHandler->exists($this->s_cachefile)) {
       return false;
     }
     $file = $this->fileHandler->getFile($this->s_cachefile);
     $newest = 0;
     foreach ($this->a_templates AS $template) {
       if ($template['changed'] > $newest) {
-	$newest = $template['changed'];
+        $newest = $template['changed'];
       }
     }
     foreach ($this->a_includes AS $include) {
       if ($include['changed'] > $newest) {
-	$newest = $include['changed'];
+        $newest = $include['changed'];
       }
     }
 
@@ -158,9 +172,9 @@ abstract class TemplateParent {
     } else
     if (stripos($s_link, '<script') !== false) {
       if (stripos($s_link, 'src=') !== false) {
-	$this->setJavascript($s_link);
+        $this->setJavascript($s_link);
       } else {
-	$this->setJavascript($s_link);
+        $this->setJavascript($s_link);
       }
     } else
     if (stripos($s_link, '<meta') !== false) {
@@ -231,10 +245,10 @@ abstract class TemplateParent {
 
     if (is_object($s_value)) {
       if (($s_value instanceof \youconix\core\helpers\Display)) {
-	$s_value = $s_value->generate();
+        $s_value = $s_value->generate();
       } else
       if (is_subclass_of($s_value, 'CoreHtmlItem')) {
-	$s_value = $s_value->generateItem();
+        $s_value = $s_value->generateItem();
       }
     }
 
@@ -252,7 +266,7 @@ abstract class TemplateParent {
    * @throws \TemplateException if no template is loaded yet
    * @throws \Exception if $s_value is not a string and not a subclass of CoreHtmlItem
    */
-  public function append($s_key, $s_value, $bo_override = false){
+  public function append($s_key, $s_value, $bo_override = false) {
     \youconix\core\Memory::type('string', $s_key);
 
     if (is_null($this->s_template)) {
@@ -265,21 +279,18 @@ abstract class TemplateParent {
 
     if (is_object($s_value)) {
       if (($s_value instanceof \youconix\core\helpers\Display)) {
-	$s_value = $s_value->generate();
+        $s_value = $s_value->generate();
       } else
       if (is_subclass_of($s_value, 'CoreHtmlItem')) {
-	$s_value = $s_value->generateItem();
+        $s_value = $s_value->generateItem();
       }
     }
-    
-    if( $bo_override || !array_key_exists($s_key, $this->a_parser) ){
+    if (!array_key_exists($s_key, $this->a_parser) || $bo_override) {
       $this->a_parser[$s_key] = $s_value;
-    }
-    else if( is_array($this->a_parser[$s_key]) ){
-      $this->a_parser[$s_key] = array_merge($this->a_parser[$s_key],$s_value);
-    }
-    else {
-      $this->a_parser[$s_key] .= PHP_EOL.$s_value;
+    } else if (is_array($this->a_parser[$s_key])) {
+      $this->a_parser[$s_key] = array_merge($this->a_parser[$s_key], $s_value);
+    } else {
+      $this->a_parser[$s_key] .= PHP_EOL . $s_value;
     }
   }
 
@@ -320,13 +331,14 @@ abstract class TemplateParent {
 
     try {
       set_error_handler(function($error, $error_string) {
-	throw new \TemplateException('Template parsing error : ' . $error_string);
+        throw new \TemplateException('Template parsing error : ' . $error_string);
       }, E_ALL);
-
+      
       ob_start();
       include($this->s_cachefile);
 
       $this->s_template = ob_get_contents();
+      $this->parsePaths();
       ob_end_clean();
     } catch (\Exception $e) {
       ob_end_clean();
@@ -357,7 +369,7 @@ abstract class TemplateParent {
     $a_fields = ['title', 'noscript', 'autostart'];
     foreach ($a_fields AS $s_field) {
       if (!array_key_exists($s_field, $this->a_parser)) {
-	$this->a_parser[$s_field] = '';
+        $this->a_parser[$s_field] = '';
       }
     }
     $this->a_parser['LEVEL'] = LEVEL;
@@ -365,14 +377,14 @@ abstract class TemplateParent {
     $this->a_parser['shared_style_dir'] = $this->config->getSharedStylesDir();
     $this->a_parser['NIV'] = $this->config->getBase();
   }
-  
+
   /**
    * Returns the loaded template directory
    *
    * @return string template directory
    */
-  public function getStylesDir(){
-    return '/styles/'.$this->config->getTemplateDir().'/';
+  public function getStylesDir() {
+    return '/styles/' . $this->config->getTemplateDir() . '/';
   }
 
   public function setContentType($s_contentType) {
@@ -381,6 +393,44 @@ abstract class TemplateParent {
 
   public function getContentType() {
     return $this->s_contentType;
+  }
+
+  protected function parsePaths() {
+    $a_matches = null;
+    if (preg_match_all("/path\('([^']+)'\)/si", $this->s_template, $a_matches)) {
+      for($i=0; $i<count($a_matches[1]); $i++){
+        $s_route = $this->path($a_matches[1][$i], '');
+        $this->s_template = str_replace($a_matches[0][$i], $s_route, $this->s_template);
+      }
+    }
+    if (preg_match_all("/path\('([^']+)', {([^}]+)}\)/s", $this->s_template, $a_matches)) {
+      for($i=0; $i<count($a_matches[1]); $i++){
+        $s_route = $this->path($a_matches[1][$i], '{'. str_replace("'", '"', $a_matches[2][$i]).'}');
+        $this->s_template = str_replace($a_matches[0][$i], $s_route, $this->s_template);
+      }
+    }
+    if (preg_match_all("/path\('([^']+)', {([^}]+)}, ((true|false))\)/s", $this->s_template, $a_matches)) {
+      for($i=0; $i<count($a_matches[1]); $i++){
+        $s_route = $this->path($a_matches[1][$i], '{'. str_replace("'", '"', $a_matches[2][$i]).'}', $a_matches[3][$i]);
+        $this->s_template = str_replace($a_matches[0][$i], $s_route, $this->s_template);
+      }
+    }
+  }
+
+  /**
+   * 
+   * @param string $s_name
+   * @param string $s_parameters
+   * @param string $bo_fullUrl
+   * @param boolean $bo_includeProtocol
+   * @return string
+   */
+  protected function path($s_name, $s_parameters, $bo_fullUrl = false) {
+    $a_parameters = (!empty($s_parameters) ? json_decode($s_parameters, true) : []);
+    
+    $s_route = $this->routes->path($s_name, $a_parameters, $bo_fullUrl);
+    
+    return $s_route;
   }
 
   public function getResult() {

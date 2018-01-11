@@ -56,7 +56,6 @@ class Privileges
    * @var \stdClass
    */
   protected $map;
-  
   protected $s_cacheFile;
 
   /**
@@ -73,7 +72,8 @@ class Privileges
   public function __construct(\Headers $headers, \Builder $builder,
 			      \youconix\core\repositories\UserGroup $groups,
 			      \youconix\core\auth\Auth $auth, \Config $config, \Session $session,
-			      \youconix\core\services\FileHandler $file)
+			      \youconix\core\services\FileHandler $file
+			      )
   {
     $this->headers = $headers;
     $this->builder = $builder;
@@ -145,20 +145,22 @@ class Privileges
 
     $i_level = \Session::ANONYMOUS;
     $i_group = 1;
-    
+
     $page = $this->getPage();
     if (!is_null($page)) {
       $i_level = $page['level'];
       $i_group = $page['groupId'];
     }
-    
     $this->checkSSL($i_level);
 
     if ($i_level == \Session::ANONYMOUS) {
       return;
     }
-    
+
     $user = $this->auth->getUser();
+    if (!defined('USERID')) {
+      define('USERID', $user->getUserId());
+    }
 
     /* Get redict url */
     $s_base = $this->config->getBase();
@@ -167,7 +169,7 @@ class Privileges
       $s_page = str_replace($s_base, '', $s_page);
     }
 
-    if (is_null($user)) {
+    if (is_null($user->getUserId())) {
       if ($this->config->isAjax()) {
 	$this->headers->http401();
 	$this->headers->printHeaders();
@@ -179,8 +181,8 @@ class Privileges
     }
 
     /* Check access level */
-    $i_userLevel = $user->getGroup($i_group)->getLevel();
-
+    $i_userLevel = (!is_null($user->getGroup($i_group)) ? $user->getGroup($i_group)->getLevel() : \Session::ANONYMOUS);
+    
     if (($i_userLevel < $i_level)) {
       /*
        * Insuffient rights or no access to the group. No access
@@ -188,10 +190,14 @@ class Privileges
       throw new \Http403Exception('Access denied.');
     }
   }
-  
+
   protected function getPage()
   {
     $s_page = $this->config->getPage();
+    if (substr($s_page, 0, 1) == '/') {
+      $s_page = substr($s_page, 1);
+    }
+    
     if (!array_key_exists($s_page, $this->map->pages)) {
       return;
     }

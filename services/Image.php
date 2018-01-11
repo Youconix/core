@@ -1,5 +1,5 @@
 <?php
-namespace youconix\core\models;
+namespace youconix\core\services;
 
 /**
  * Image is an image manipulatie class
@@ -10,29 +10,8 @@ namespace youconix\core\models;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-class Image extends \youconix\core\models\Model
+class Image extends \youconix\core\services\Upload
 {
-
-    /**
-     *
-     * @var \youconix\core\services\FileData
-     */
-    private $fileData;
-
-    /**
-     * PHP 5 constructor
-     *
-     * @param \Builder $builder            
-     * @param \youconix\core\services\Validation $validation            
-     * @param \youconix\core\services\FileData $fileData            
-     */
-    public function __construct(\Builder $builder, \youconix\core\services\Validation $validation, \youconix\core\services\FileData $fileData)
-    {
-        parent::__construct($builder, $validation);
-        
-        $this->fileData = $fileData;
-    }
-
     /**
      *
      * @param string $s_file            
@@ -136,8 +115,8 @@ class Image extends \youconix\core\models\Model
     {
         $a_mimetype = explode('/', $this->fileData->getMimeType($s_file));
         
-        $s_extension = substr($s_file, strrpos($s_file, '.'));
-        $s_destination = str_replace($s_extension, '_trumb' . $s_extension, $s_file);
+        $s_extension = $this->getExtension($s_file);
+        $s_destination = str_replace('.'.$s_extension, '_trumb.' . $s_extension, $s_file);
         $obj_image = null;
         
         if ($a_mimetype[1] == 'jpg' || $a_mimetype[1] == 'jpeg') {
@@ -229,4 +208,40 @@ class Image extends \youconix\core\models\Model
         
         return $obj_virtualImage;
     }
+	
+	/**
+	 * @param string $s_filename
+	 * @return array
+	 */
+	public function getSizes($s_filename)
+	{
+		$s_extension = $this->getExtension($s_filename);
+        $obj_image = null;
+		
+		$a_sizes = [
+			'width' => 0,
+			'height' => 0
+		];
+        
+		switch($s_extension){
+			case 'jpg':
+			case 'jpeg':
+				$obj_image = imagecreatefromjpeg($s_filename);
+				break;
+			case 'gif':
+                $obj_image = imagecreatefromgif($s_filename);
+				break;
+            case 'png' :
+				$obj_image = imagecreatefrompng($s_filename);
+                break;
+		}
+        
+        if (! is_null($obj_image)) {
+			$a_sizes['width'] = imagesx($obj_image);
+			$a_sizes['height'] = imagesy($obj_image);
+            imagedestroy($obj_image);
+        }
+		
+		return $a_sizes;
+	}
 }

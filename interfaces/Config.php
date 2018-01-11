@@ -2,170 +2,201 @@
 
 interface Config
 {
+
+  /**
+   * Sets the current page and command.
+   * Called from the Router
+   * 
+   * @param string $s_page
+   * @param string $s_url
+   * @param string $s_class
+   * @param string $s_command
+   */
+  public function setCall($s_page, $s_url, $s_class, $s_command);
+
+  /**
+   * Returns the current controller class
+   * 
+   * @return string
+   */
+  public function getClass();
+
+  /**
+   * Returns the current page
+   * 
+   * @return string
+   */
+  public function getPage();
   
-    /**
-     * Sets the current page and command.
-     * Called from the Router
-     * 
-     * @param string $s_page
-     * @param string $s_command
-     */
-    public function setCall($s_page,$s_command);
-    
-    /**
-     * Returns the current page
-     * 
-     * @return string
-     */
-    public function getPage();
-    
-    
-    /**
-     * Returns the current command
-     * 
-     * @return string
-     */
-    public function getCommand();
-    
-    /**
-     * Returns the default template directory
-     * 
-     * @return string
-     */
-    public function getTemplateDir();
+  /**
+   * 
+   * @return string
+   */
+  public function getUrl();
 
-    /**
-     * Returns the settings service
-     *
-     * @return \Settings The service
-     */
-    public function getSettings();
+  /**
+   * Returns the current command
+   * 
+   * @return string
+   */
+  public function getCommand();
 
-    /**
-     * Collects the installed languages
-     *
-     * @return array The installed languages
-     */
-    public function getLanguages();
+  /**
+   * Returns the default template directory
+   * 
+   * @return string
+   */
+  public function getTemplateDir();
 
-    /**
-     * Returns the shared template directory
-     *
-     * @return string template directory
-     */
-    public function getSharedStylesDir();
+  /**
+   * Returns the settings service
+   *
+   * @return \Settings The service
+   */
+  public function getSettings();
 
-    /**
-     * Returns the current language from the user
-     *
-     * @return string The language code
-     */
-    public function getLanguage();
+  /**
+   * Collects the installed languages
+   *
+   * @return array The installed languages
+   */
+  public function getLanguages();
 
-    /**
-     * Returns the used protocol
-     *
-     * @return string protocol
-     */
-    public function getProtocol();
+  /**
+   * Returns the shared template directory
+   *
+   * @return string template directory
+   */
+  public function getSharedStylesDir();
 
-    /**
-     * Checks if the connection is via SSL/TSL
-     *
-     * @return bool True if the connection is encrypted
-     */
-    public function isSLL();
+  /**
+   * Returns the current language from the user
+   *
+   * @return string The language code
+   */
+  public function getLanguage();
 
-    /**
-     * Checks if ajax-mode is active
-     *
-     * @return boolean if ajax-mode is active
-     */
-    public function isAjax();
+  /**
+   * Returns the used protocol
+   *
+   * @return string protocol
+   */
+  public function getProtocol();
 
-    /**
-     * Sets the framework in ajax-mode
-     */
-    public function setAjax();
+  /**
+   * Checks if the connection is via SSL/TSL
+   *
+   * @return bool True if the connection is encrypted
+   */
+  public function isSLL();
 
-    /**
-     * Returns the server host
-     *
-     * @return string The host
-     */
-    public function getHost();
+  /**
+   * Checks if ajax-mode is active
+   *
+   * @return boolean if ajax-mode is active
+   */
+  public function isAjax();
 
-    /**
-     * Returns the path to the website root
-     * This value gets set in {LEVEL}
-     *
-     * @return string path
-     */
-    public function getBase();
+  /**
+   * Sets the framework in ajax-mode
+   */
+  public function setAjax();
 
-    /**
-     * Returns the login redirect url
-     *
-     * @return string The url
-     */
-    public function getLoginRedirect();
+  /**
+   * Returns the server host
+   *
+   * @return string The host
+   */
+  public function getHost();
 
-    /**
-     * Returns the logout redirect url
-     *
-     * @return string The url
-     */
-    public function getLogoutRedirect();
+  /**
+   * Returns the path to the website root
+   * This value gets set in {LEVEL}
+   *
+   * @return string path
+   */
+  public function getBase();
 
-    /**
-     * Returns the registration redirect url
-     *
-     * @return string The url
-     */
-    public function getRegistrationRedirect();
+  /**
+   * Returns the login redirect url
+   *
+   * @return string The url
+   */
+  public function getLoginRedirect();
 
-    /**
-     * Returns the authorisation guards
-     *
-     * @return array
-     */
-    public function getGuards();
-    
-    /**
-     * Returns the default authorisation guard
-     * 
-     * @return string
-     */
-    public function getDefaultGuard();
+  /**
+   * Returns the logout redirect url
+   *
+   * @return string The url
+   */
+  public function getLogoutRedirect();
 
-    /**
-     * Returns the log location (default admin/data/logs/)
-     *
-     * @return string The location
-     */
-    public function getLogLocation();
+  /**
+   * Returns the registration redirect url
+   *
+   * @return string The url
+   */
+  public function getRegistrationRedirect();
 
-    /**
-     * Returns the maximun log file size
-     *
-     * @return int The maximun size in bytes
-     */
-    public function getLogfileMaxSize();
+  /**
+   * Returns the authorisation guards
+   *
+   * @return array
+   */
+  public function getGuards();
 
-    /**
-     * Returns the admin name and email for logging
-     *
-     * @return array The name and email
-     */
-    public function getAdminAddress();
+  /**
+   * Returns the default authorisation guard
+   * 
+   * @return string
+   */
+  public function getDefaultGuard();
 
-    /**
-     * Returns if SSL is enabled
-     *
-     * @return int The SSL code
-     * @see \youconix\core\services\Settings
-     */
-    public function isSslEnabled();
+  /**
+   * Returns the log location (default admin/data/logs/)
+   *
+   * @return string The location
+   */
+  public function getLogLocation();
 
-    public function isMobile();
+  /**
+   * Returns the maximun log file size
+   *
+   * @return int The maximun size in bytes
+   */
+  public function getLogfileMaxSize();
+
+  /**
+   * Returns the admin name and email for logging
+   *
+   * @return array The name and email
+   */
+  public function getAdminAddress();
+
+  /**
+   * Returns if SSL is enabled
+   *
+   * @return int The SSL code
+   * @see \youconix\core\services\Settings
+   */
+  public function isSslEnabled();
+
+  public function isMobile();
+
+  /**
+   * @return boolean
+   */
+  public function getPrettyUrls();
+  
+  /**
+   * @return array
+   */
+  public function getPasswordSettings() ;
+  
+  /**
+   * 
+   * @param int $level
+   * @param int $mimimunLength
+   */
+  public function setPasswordSettings($level, $mimimunLength);
 }

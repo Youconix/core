@@ -95,6 +95,7 @@ class TemplateTpl extends \youconix\core\templating\TemplateParent {
     $this->parseIf();
     
     $this->s_template = preg_replace('/\{([a-z0-9_\-\[\]\'"]+)\}/si','<?php echo($${1}); ?>',$this->s_template);
+    $this->parsePaths();
   }
 
   protected function importChildTemplate($s_parentKey, $s_target, $s_childTemplate) {

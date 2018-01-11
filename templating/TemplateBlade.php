@@ -7,15 +7,30 @@ class TemplateBlade extends \youconix\core\templating\TemplateParent
 
   /**
    * Loads the templates
+   * 
+   * @param string $s_template
+   * @return string
    */
-  protected function loadTemplates($s_file)
+  protected function loadTemplates($s_template)
   {
-    $file = $this->fileHandler->getFile($s_file);
-    $s_template = $this->fileHandler->readFileObject($file);
-    $i_changed = $file->getCTime();
+    if (strpos($s_template, '@extends') !== false) {
+      $a_matches = null;
 
-    $this->a_templates[$s_file] = ['changed' => $i_changed, 'template' => $s_template];
+      preg_match('/@extends\s*([a-z0-9_\-\.\/]+)/si', $s_template, $a_matches);
+      $s_parent = $a_matches[1];
 
+      if (substr($s_parent, 0, 1) !== '/') {
+        $s_parent = $this->s_templateDir.$s_parent;
+      } else {
+        $s_parent = $_SERVER['DOCUMENT_ROOT'].$s_parent;
+      }
+
+      $s_parentTemplate = $this->fileHandler->readFile($s_parent);
+      
+      $s_template = $this->importChildTemplate($s_parentTemplate, $s_template);
+      return $this->loadTemplates($s_template);
+    }
+      
     $a_includes = null;
     if (preg_match_all("/@include\('([a-z0-9_\-\.\/]+)'\)/si", $s_template,
             $a_includes)) {
@@ -33,39 +48,20 @@ class TemplateBlade extends \youconix\core\templating\TemplateParent
           $s_include = $_SERVER['DOCUMENT_ROOT'].$s_include;
         }
 
-        $include = $this->fileHandler->getFile($s_include);
-        $s_includeContent = $this->fileHandler->readFileObject($include);
-        $i_changed = $include->getCTime();
-        $this->a_includes[$s_include] = ['name' => $s_name, 'changed' => $i_changed,
-            'template' => $s_includeContent];
+        $s_includeContent = $this->fileHandler->readFile($s_include);
+        $s_template = str_replace('@include(\''.$s_name.'\')', $s_includeContent, $s_template);
       }
+      
+      return $this->loadTemplates($s_template);
     }
-
-    if (strpos($s_template, '@extends') !== false) {
-      $a_matches = null;
-
-      preg_match('/@extends\s*([a-z0-9_\-\.\/]+)/si', $s_template, $a_matches);
-      $s_template = str_replace($a_matches[0], '', $s_template);
-      $this->a_templates[$s_file]['template'] = $s_template;
-
-      $s_parent = $a_matches[1];
-
-      if (substr($s_parent, 0, 1) !== '/') {
-        $s_parent = $this->s_templateDir.$s_parent;
-      } else {
-        $s_parent = $_SERVER['DOCUMENT_ROOT'].$s_parent;
-      }
-
-      $this->loadTemplates($s_parent);
-    }
+    
+    return $s_template;
   }
 
-  protected function importChildTemplate($s_parentKey, $s_childTemplate)
+  protected function importChildTemplate($s_parentTemplate, $s_childTemplate)
   {
-    $s_template = $this->a_templates[$s_parentKey]['template'];
-
     $a_yields = null;
-    preg_match_all('/@yield\(\'([a-z0-9_\-\.\/]+)\'\)/si', $s_template,
+    preg_match_all('/@yield\(\'([a-z0-9_\-\.\/]+)\'\)/si', $s_parentTemplate,
         $a_yields);
 
     if (is_array($a_yields[1])) {
@@ -78,36 +74,35 @@ class TemplateBlade extends \youconix\core\templating\TemplateParent
       $a_block = null;
 
       if (strpos($s_childTemplate, "@section('".$s_yield."')") !== false) {
-        preg_match("/@section\('".$s_yield."'\)(.*)@endsection/s",
-            $s_childTemplate, $a_block);
-        $s_template = str_replace("@yield('".$s_yield."')", $a_block[1],
-            $s_template);
+	$search = "@section('".$s_yield."')";
+	$start = strpos($s_childTemplate, $search);
+	$end = strpos($s_childTemplate, '@endsection', $start);
+	if ($end === false) {
+	  throw new \TemplateException('Missing @endsection for '.$search.'.');
+	}
+	
+	$start += strlen($search);
+	
+	$block = substr($s_childTemplate, $start, ($end-$start));
+	
+	$s_parentTemplate = str_replace("@yield('".$s_yield."')", $block,
+            $s_parentTemplate);
       } else if (preg_match("/@section\('".$s_yield."'\s*,\s*'(.*)'\)/",
               $s_childTemplate, $a_block)) {
-        $s_template = str_replace("@yield('".$s_yield."')", $a_block[1],
-            $s_template);
+        $s_parentTemplate = str_replace("@yield('".$s_yield."')", $a_block[1],
+            $s_parentTemplate);
       }
     }
 
-    $this->a_templates[$s_parentKey]['template'] = $s_template;
+    return $s_parentTemplate;
   }
 
   protected function parse()
   {
-    $a_files = array_keys($this->a_templates);
-    $i_amount = (count($a_files) - 1);
-
-    for ($i = ($i_amount - 1); $i >= 0; $i--) {
-      $this->importChildTemplate($a_files[$i_amount],
-          $this->a_templates[$a_files[$i]]['template']);
-    }
-
-    $s_template = $this->a_templates[$a_files[$i_amount]]['template'];
-    foreach ($this->a_includes AS $s_file => $include) {
-      $s_template = str_replace("@include('".$include['name']."')",
-          $include['template'], $s_template);
-    }
-
+    $s_template = $this->fileHandler->readFile($this->s_file);
+    $s_template = $this->loadTemplates($s_template);
+    $s_template = preg_replace('/@yield\([^)]+\)/s', '', $s_template);
+    
     $s_template = $this->parseIf($s_template);
     $s_template = $this->parseLoop($s_template, 'foreach');
     $s_template = $this->parseLoop($s_template, 'for');
@@ -116,15 +111,65 @@ class TemplateBlade extends \youconix\core\templating\TemplateParent
     $s_template = $this->parseFields($s_template);
 
     $this->s_template = $s_template;
+    $this->parsePaths();
   }
 
+  /**
+   * 
+   * @param string $s_template
+   * @return string
+   */
   protected function parseIf($s_template)
   {
     $s_template = str_replace(['@else','@endif'],['<?php } else { ?>','<?php } ?>'],$s_template);
-    $s_template = preg_replace('/@if\(([a-zA-Z0-9\-_\$!><\(\)\s=\'"\[\]&\|]+)\)/si','<?php if( $1 ){ ?>',$s_template);
-    $s_template = preg_replace('/@elseif\(([a-zA-Z0-9\-_\$!=><\(\)\s\'"\[\]&\|]+)\)/si','<?php elseif( $1 ){ ?>',$s_template);
+    $s_template = $this->parseIfStatements('if', $s_template);
+    $s_template = $this->parseIfStatements('elseif', $s_template);
     
     return $s_template;
+  }
+  
+  /**
+   * 
+   * @param string $s_statement
+   * @param string $s_template
+   * @return string
+   * @throws \TemplateException
+   */
+  protected function parseIfStatements($s_statement, $s_template) {
+    $i_pos = strpos($s_template, '@'.$s_statement.'(');
+    if ( $i_pos === false) {
+      return $s_template;
+    }
+    
+    $i_open = 1;
+    $i_start = $i_pos;
+    $i_length = strlen($s_template);
+    $i_pos += strlen('@'.$s_statement.'(');
+    while(true){
+      if ($s_template[$i_pos] == '(') {
+        $i_open++;
+      }
+      else if($s_template[$i_pos] == ')') {
+        $i_open--;
+      }
+      
+      $i_pos++;
+      
+      if ($i_open == 0) {
+        break;
+      }
+      
+      if ($i_pos > $i_length) {
+        throw new \TemplateException('Invalid template. Check if-statements.');
+      }
+    }
+    
+    $s_part = substr($s_template,$i_start, ($i_pos-$i_start));
+    $s_replace = str_replace('@'.$s_statement.'(', '<?php '.$s_statement.'(',$s_part);
+    $s_replace = substr_replace($s_replace, '){ ?>', -1);
+    $s_template = str_replace($s_part, $s_replace, $s_template);
+    
+    return $this->parseIfStatements($s_statement, $s_template);
   }
 
   protected function parseLoop($s_template, $s_key)
@@ -149,15 +194,10 @@ class TemplateBlade extends \youconix\core\templating\TemplateParent
 
   protected function parseFields($s_template)
   {
-    $s_template = preg_replace('/@{{\s{1}(\$[a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}}}/si',
-        '@|| ${1} ||', $s_template);
-    $s_template = preg_replace('/{!!\s{1}(\$[\$a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}!!}/si',
-        '<?php echo( ${1} ); ?>', $s_template);
-    $s_template = preg_replace('/{{\s{1}([\a-zA-Z0-9\-_\(\)]*\$[a-zA-Z0-9\-_><\[\]\'"\(\)]+[\)]*)\s{1}}}/si',
-        '<?php echo( nl2br(htmlentities(${1})) ); ?>', $s_template);
-    $s_template = preg_replace('/@\|\|\s{1}(\$[a-zA-Z0-9\-_><\[\]\'"\(\)]+)\s{1}\|\|/si',
-        '{{ ${1} }}', $s_template);
-
+    $s_template = preg_replace('/{!!\s(.*?)(?=\s!!})/si', '<?php echo( ${1} ); ?>', $s_template);
+    $s_template = preg_replace('/{{\s(.*?)(?=\s}})/si', '<?php echo( nl2br(htmlentities(${1})) ); ?>', $s_template);
+    $s_template = preg_replace('( }}| !!})','', $s_template);
+    
     return $s_template;
   }
 

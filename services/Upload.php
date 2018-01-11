@@ -1,5 +1,5 @@
 <?php
-namespace core\services;
+namespace youconix\core\services;
 
 /**
  * File upload service
@@ -24,20 +24,29 @@ namespace core\services;
  *        You should have received a copy of the GNU Lesser General Public License
  *        along with Miniature-happiness. If not, see <http://www.gnu.org/licenses/>.
  */
-class Upload extends Service
+class Upload extends \youconix\core\services\Service
 {
+	/**
+   * @var \youconix\core\services\DefaultMimeTypes
+   */
+  protected $defaultMimeTypes;
 
-    protected $model_Image;
+  /**
+     *
+     * @var \youconix\core\services\FileData
+     */
+    protected $fileData;
 
     /**
      * PHP 5 constructor
-     *
-     * @param \core\models\Image $model_Image
-     *            The image model
+     *          
+     * @param \youconix\core\services\FileData $fileData            
+	 * @param \youconix\core\services\DefaultMimeTypes $defaultMimeTypes
      */
-    public function __construct(\core\models\Image $model_Image)
+    public function __construct(\youconix\core\services\FileData $fileData, \youconix\core\services\DefaultMimeTypes $defaultMimeTypes)
     {
-        $this->model_Image = $model_Image;
+        $this->fileData = $fileData;
+		$this->defaultMimeTypes = $defaultMimeTypes;
     }
 
     /**
@@ -65,7 +74,7 @@ class Upload extends Service
      */
     public function isValid($s_name, $a_extensions, $i_maxSize = -1)
     {
-        $s_mimetype = $this->model_Image->getMimeType($_FILES[$s_name]['tmp_name']);
+        $s_mimetype = $this->fileData->getMimeType($_FILES[$s_name]['tmp_name']);
         
         $a_data = explode('/', $s_mimetype);
         $a_fileExtensions = explode('.', $_FILES[$s_name]['name']);
@@ -128,33 +137,28 @@ class Upload extends Service
         
         return $s_targetName;
     }
-
-    /**
-     * Resizes the given picture
-     * Works only with jpg, gif and png
-     *
-     * @param String $s_file
-     *            file url
-     * @param int $i_maxWidth
-     *            width
-     * @param int $i_maxHeight
-     *            max height
-     * @throws Exception the file is not a jpg,gif or png image
-     */
-    public function resizeImage($s_file, $i_maxWidth, $i_maxHeight)
-    {
-        $this->model_Image->resizeImage($s_file, $i_maxWidth, $i_maxHeight);
-    }
-
-    /**
-     * Generates a trumbnail with max width 50 pixels.
-     * Works only with jpg, gif and png
-     *
-     * @param String $s_file
-     *            file url
-     */
-    public function makeTrumb($s_file)
-    {
-        $this->model_Image->makeTrumb($s_file);
-    }
+	
+	public function addHead(\Output $output)
+  {
+    $output->append('head',
+        '<script src="/js/widgets/fileupload.js" type="text/javascript"></script>');
+  }
+	
+	/**
+   * Returns the default mime types
+   *
+   * @return \youconix\core\services\DefaultMimeTypes
+   */
+  public function getDefaultMimes(){
+    return $this->defaultMimeTypes;
+  }
+  
+  /**
+   * @param string $s_filename 
+   * @return string
+   */
+  public function getExtension($s_filename){
+	  $s_extension = pathinfo($s_filename, PATHINFO_EXTENSION);
+	  return $s_extension;
+  }
 }

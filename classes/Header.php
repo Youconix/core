@@ -63,7 +63,7 @@ class Header implements \Header
     $this->template->set('welcomeHeader', '');
 
     $user = $this->auth->getUser();
-    if (is_null($user)) {
+    if (is_null($user->getUserId())) {
       return;
     }
 
@@ -75,7 +75,7 @@ class Header implements \Header
     }
 
     $s_color = $group->getColor();
-    $header = '<a href="{NIV}profile/view/details/id=' . $user->getUserId() . '" style="color:' . $s_color . '">' . $s_welcome . ' ' . $user->getUsername() . '</a>';
+    $header = '<span style="color:' . $s_color . '">' . $s_welcome . ' ' . $user->getUsername() . '</span>';
     $this->template->set('welcomeHeader', $header, true);
   }
 

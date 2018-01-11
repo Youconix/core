@@ -75,7 +75,7 @@ class Template extends \youconix\core\services\Service implements \Output {
   }
 
   /**
-   * Returns if the object schould be treated as singleton
+   * Returns if the object should be treated as singleton
    *
    * @return boolean True if the object is a singleton
    */
@@ -195,7 +195,7 @@ class Template extends \youconix\core\services\Service implements \Output {
    */
   public function printToScreen() {
     $this->parser->printToScreen();
-
+    
     $this->headers->setHeader('Content-type', $this->parser->getContentType());
     $this->headers->printHeaders();
     echo($this->parser->getResult());
@@ -205,5 +205,4 @@ class Template extends \youconix\core\services\Service implements \Output {
   public function setContentType($s_contentType) {
     $this->parser->setContentType($s_contentType);
   }
-
 }

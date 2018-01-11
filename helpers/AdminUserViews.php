@@ -10,63 +10,33 @@ namespace youconix\core\helpers;
 class AdminUserViews extends \youconix\core\helpers\Helper
 {
   /**
-   *
-   * @var \Language
+   * @var \youconix\core\helpers\forms\UserView
    */
-  protected $language;
-
-  /**
-   * 
-   * @var \Output
-   */
-  protected $template;
-
+  private $userView;
+  
   /**
    *
-   * @var \youconix\core\repositories\Groups
+   * @var \youconix\core\helpers\forms\UserAdd
    */
-  protected $groups;
-
-  /**
-   *
-   * @var \youconix\core\models\data\User
-   */
-  protected $obj_User;
-  protected $a_data = [];
-
-  /**
-   *
-   * @var \youconix\core\helpers\Localisation
-   */
-  protected $localization;
-
-  public function __construct(\Output $template, \Language $language,
-                              \youconix\core\repositories\Groups $groups,
-                              \youconix\core\helpers\Localisation $localization)
+  private $addView;
+  
+  public function __construct(\youconix\core\helpers\forms\UserView $userView, \youconix\core\helpers\forms\UserAdd $addView)
   {
-    $this->template = $template;
-    $this->language = $language;
-    $this->groups = $groups;
-    $this->localization = $localization;
+    $this->userView = $userView;
+    $this->addView = $addView;
   }
-
+  
   /**
    * Generates the add screen
    *
-   * @param \youconix\core\models\data\User $user
-   * @param \youconix\core\Input $post
+   * @param \youconix\core\Input $input
+   * @param \youconix\core\entities\User $user
    * @return \Output
    */
-  public function addScreen(\youconix\core\models\data\User $user,
-                            \youconix\core\Input $post)
+  public function addScreen(\youconix\core\Input $input,\youconix\core\entities\User $user)
   {
-    $this->headersGeneral();
-    $this->setData($post, $user);
-    $this->runView();
-    $this->add();
-    
-    $template = $this->createView('addScreen', $this->a_data);
-    return $template;
+    $this->addView->init($input, $user);
+    return $this->addView->generate('addScreen');
   }
 
   /**
@@ -94,22 +64,13 @@ class AdminUserViews extends \youconix\core\helpers\Helper
   /**
    * Generates the view screen
    *
+   * @param \youconix\core\Input $input
    * @param \youconix\core\entities\User $user
    * @return \Output
    */
-  public function viewScreen(\youconix\core\entities\User $user){
-    $this->headersGeneral();
-    $this->runView();
-    $this->getGroups($user);
-
-    $this->a_data['userid'] = USERID;
-    $this->a_data['user'] = $user;
-    $this->a_data['localisation'] = $this->localization;
-
-    $this->checkDeleteOption();
-
-    $template = $this->createView('view', $this->a_data);
-    return $template;
+  public function viewScreen(\youconix\core\Input $input,\youconix\core\entities\User $user){
+    $this->userView->init($input, $user);
+    return $this->userView->generate('view');
   }
 
   /**
@@ -163,7 +124,7 @@ class AdminUserViews extends \youconix\core\helpers\Helper
    * @param \youconix\core\entities\User $user
    * @param boolean $includeAll
    */
-  protected function  getGroups(\youconix\core\entities\User $user,$includeAll = false){
+  protected function getGroups(\youconix\core\entities\User $user,$includeAll = false){
     $userGroups = [];
     $a_groups = $this->groups->getGroups();
 
@@ -191,9 +152,9 @@ class AdminUserViews extends \youconix\core\helpers\Helper
       foreach($user->getGroups() AS $id => $group){
         $userGroups[$id] = [
             'name' => $a_groups[$id]->getName(),
-            'level' => $this->language->get('system/rights/level_'.$group),
+            'level' => $this->language->get('system/rights/level_'.$group->getLevel()),
             'blocked' => false,
-            'levelNr' => $group
+            'levelNr' => $group->getLevel()
         ];
       }
     }

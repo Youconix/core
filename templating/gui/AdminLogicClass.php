@@ -42,6 +42,10 @@ class AdminLogicClass extends \youconix\core\templating\gui\BaseLogicClass
         $this->footer = $footer;    
 	$this->language = $language;
     }
+    
+    protected function statistics()
+    {
+    }
 }
 
 ?>

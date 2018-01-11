@@ -47,11 +47,13 @@ final class Loader
         }
         
         /* Check for website files */
-        $s_name = strtolower($s_fileName . DS . $s_className . '.php');
-        if (file_exists(WEB_ROOT . $s_name)) {
+	$s_className = preg_replace_callback('/([A-Z])/s', function($route){
+	  return '_'.strtolower($route[1]);
+	}, lcfirst($s_className));
+	$s_name = strtolower($s_fileName . DS . $s_className . '.php');
+	if (file_exists(WEB_ROOT . $s_name)) {
             return $s_name;
-        }
-        
+        }        
         if (defined('WEBSITE_ROOT')) {
             if (file_exists(WEB_ROOT . $s_name . '.php')) {
                 return $s_name . '.php';

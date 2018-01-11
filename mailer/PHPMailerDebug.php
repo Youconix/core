@@ -465,9 +465,9 @@ class PHPMailerDebug extends \youconix\core\services\Service implements \Mailer
     	
     	 
     	
-    	$filename = DIRECTORY_SEPARATOR.date('d-m-Y H:i:s').' email - '.$this->s_subject.'.txt';
-    	$file = new \SplFileInfo(DATA_DIR.DIRECTORY_SEPARATOR.'tmp'.$filename);
-    	$dir = new \SplFileInfo(DATA_DIR.DIRECTORY_SEPARATOR.'tmp');
+    	$filename = '/'.date('d-m-Y H i s').' email - '.$this->s_subject.'.txt';
+    	$file = new \SplFileInfo(DATA_DIR.'/tmp'.$filename);
+    	$dir = new \SplFileInfo(DATA_DIR.'/tmp');
     	if( !$dir->isWritable() ){
     		throw new \IOException('Can not dump email to '.DATA_DIR.DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR.$filename);
     	}

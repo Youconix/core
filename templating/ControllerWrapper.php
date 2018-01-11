@@ -6,44 +6,60 @@ namespace youconix\core\templating;
  * @author Rachelle Scheijen
  * @since 2.0
  */
-final class ControllerWrapper {
+class ControllerWrapper {
     /**
      *
      * @var \Request
      */
-    private $request;
+    protected $request;
     
     /**
      *
      * @var \Layout 
      */
-    private $layout;
+    protected $layout;
     
     /**
      *
      * @var \Output
      */
-    private $output;
+    protected $output;
     
     /**
      *
      * @var \Headers
      */
-    private $headers;
+    protected $headers;
     
     /**
      *
      * @var \Logger
      */
-    private $logger;
+    protected $logger;
     
-    public function __construct(\Request $request,\Layout $layout,\Output $output, \Headers $headers, \Logger $logger)
+    /**
+     *
+     * @var \Language
+     */
+    protected $language;
+    
+    /**
+     * 
+     * @param \Request $request
+     * @param \Layout $layout
+     * @param \Output $output
+     * @param \Headers $headers
+     * @param \Logger $logger
+     * @param \Language $language
+     */
+    public function __construct(\Request $request,\Layout $layout,\Output $output, \Headers $headers, \Logger $logger, \Language $language)
     {
         $this->request = $request;
         $this->layout  = $layout;
         $this->output = $output;
         $this->headers = $headers;
         $this->logger = $logger;
+        $this->language = $language;
     }
     
     public function acceptAllRequestInput()
@@ -109,5 +125,14 @@ final class ControllerWrapper {
     public function getLogger()
     {
         return $this->logger;
+    }
+    
+    /**
+     * 
+     * @return \Language
+     */
+    public function getLanguage()
+    {
+        return $this->language;
     }
 }

@@ -81,7 +81,7 @@ class Normal implements \Guard {
     $post = $request->post();
 
     $s_form = '<h2>' . $this->language->get('login/button') . '</h2>
-	    <form action="/login/do_login/' . $this->getName() . '" method="post">
+	    <form action="path(\'login_do_login\', {\'type\': \''.$this->getName() . '\'})" method="post">
 	<table>
 	  <tbody>
 	    <tr>
@@ -103,8 +103,8 @@ class Normal implements \Guard {
 	      <td colspan="2"><br></td>
 	    </tr>
 	    <tr>
-	      <td><a href="/registration/' . $this->getName() . '">' . $this->language->get('login/registration') . '</a></td>
-	      <td><a href="/password/' . $this->getName() . '">Forgot password</a></td>
+	      <td><a href="path(\'registration_view\', {\'name\' : \''. $this->getName() . '\'})">' . $this->language->get('login/registration') . '</a></td>
+	      <td><a href="path(\'password_screen\', {\'name\' : \'' . $this->getName() . '\'})">Forgot password</a></td>
 	    </tr>
 	  </tbody>
 	</table>
@@ -142,8 +142,8 @@ class Normal implements \Guard {
     if ($database->num_rows() == 0) {
       return Normal::INVALID_LOGIN;
     }
-    $a_data = $database->fetch_assoc();
-    $s_password = $a_data[0]['password'];
+    $data = $database->fetch_object();
+    $s_password = $data[0]->password;
 
     if (!$this->hashing->verify($s_plainPassword, $s_password)) {
       if (!$this->oldHashing($s_username, $s_plainPassword, $s_password)) {
@@ -151,15 +151,15 @@ class Normal implements \Guard {
       }
     }
 
-    if ($a_data[0]['password_expired'] == 1) {
-      $this->session->set('user_id', $a_data[0]['id']);
+    if ($data[0]->password_expired == 1) {
+      $this->session->set('user_id', $data[0]->id);
       return Normal::LOGIN_EXPIRED;
     }
 
-    $a_data[0]['username'] = $a_data[0]['nick'];
-    $a_data[0]['userid'] = $a_data[0]['id'];
+    $data[0]->username = $data[0]->nick;
+    $data[0]->userid = $data[0]->id;
 
-    $user = $this->auth->createUser($a_data[0]);
+    $user = $this->auth->createUser($data[0]);
     $this->auth->setLogin($user);
   }
 
@@ -279,7 +279,7 @@ class Normal implements \Guard {
       <section>
 	<fieldset>
 	    <span class="label"><input type="checkbox" name="conditions" id="reg_conditions" required data-validation="Je moet accoord gaan met de voorwaarden."></span>
-	    <label><a href="/conditions/view" target="_new">' . $this->language->get('registration/conditions') . '</a> *</label>
+	    <label><a href="path(\'conditions_view\')" target="_new">' . $this->language->get('registration/conditions') . '</a> *</label>
 	  </fieldset>
       </section>
 

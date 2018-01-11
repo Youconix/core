@@ -55,6 +55,35 @@ class CurlManager extends Service
     {
         return $this->i_timeout;
     }
+    
+    /**
+     * @param string $s_url
+     * @param string $s_destination
+     */
+    public function download($s_url, $s_destination)
+    {
+        $file = fopen($s_destination, 'w+');
+		
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $s_url);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // allow redirects
+        curl_setopt($ch, CURLOPT_FILE, $file); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->i_timeout); // times out after 4s
+        $this->prepareHeaders($ch);
+        
+        curl_exec($ch);
+        $this->s_header = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->i_headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        
+        if ($this->s_header == 0) {
+            $this->s_header = 404;
+        }
+        
+        curl_close($ch);
+		
+        $this->a_headers = [];
+    }
 
     /**
      * Performs a GET call

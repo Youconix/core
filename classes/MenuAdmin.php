@@ -26,6 +26,12 @@ class MenuAdmin implements \Menu
    * @var \youconix\core\services\Xml
    */
   private $xml;
+  
+  /**
+   *
+   * @var \youconix\core\Routes
+   */
+  private $routes;
 
   /**
    * 
@@ -40,11 +46,13 @@ class MenuAdmin implements \Menu
    */
   public function __construct(\Language $language,
                               \youconix\core\services\Xml $xml,
-                              \youconix\core\models\ControlPanelModules $controlPanelModules)
+                              \youconix\core\models\ControlPanelModules $controlPanelModules,
+			      \youconix\core\Routes $routes)
   {
     $this->language = $language;
     $this->xml = $xml;
     $this->controlPanelModules = $controlPanelModules;
+    $this->routes = $routes;
   }
 
   /**
@@ -111,6 +119,7 @@ class MenuAdmin implements \Menu
           }
         }
 
+	$tabItem->path = $this->routes->path($tabItem->path);
         $tabItem->item_id = 'admin_'.$s_module.'_'.strtolower(str_replace(' ','_',$tabItem->title));
 
         $tabItem->links = $this->setLinks($a_links);
@@ -120,11 +129,6 @@ class MenuAdmin implements \Menu
 
       $i ++;
     }
-
-    $this->template->append('head',
-        '<script src="/admin/modulesjs.php" type="text/javascript"></script>');
-    $this->template->append('head',
-        '<link rel="stylesheet" href="/admin/modulescss.php">');
   }
 
   private function setLinks($a_links)
@@ -145,6 +149,7 @@ class MenuAdmin implements \Menu
 
       $data->link_title = $data->title;
       $data->link_id = $data->id;
+      $data->path = $this->routes->path($data->path);
 
       $a_result[] = $data;
     }

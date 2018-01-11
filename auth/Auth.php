@@ -144,12 +144,98 @@ class Auth extends \youconix\core\services\Service
   /**
    * Creates the user object
    * 
-   * @param \stdClass $a_data
+   * @param \stdClass $data
    * @return \youconix\core\entities\User
    */
-  public function createUser(array $a_data = [])
+  public function createUser(\stdClass $data = null)
   {
-    $user = $this->user->createUser($a_data);
+    $user = $this->user->createUser($data);
+    return $user;
+  }
+  
+  /**
+   * 
+   * @param \Input $input
+   * @throws \ValidationException
+   */
+  protected function checkPasswords(\Input $input)
+  {
+    if ($input->get('password') == '' || $input->get('password') != $input->get('password2')) {
+      throw new \ValidationException($this->language->get('widgets/passwordForm/invalid'));
+    }
+    
+    $settings = $this->config->getPasswordSettings();
+
+    $s_password = $input->get('password');
+    $i_minimunLength = $settings->mimimunLength;
+    switch ($settings->level) {
+      case 1:
+	if (strlen($s_password) < $i_minimunLength) {
+	  $s_error = str_replace('[length]', $i_minimunLength,
+			  'Uw wachtwoord moet minimaal uit [length] tekens bestaan');
+	  throw new \ValidationException($s_error);
+	}
+	break;
+      case 2:
+	if ((strlen($s_password) < $i_minimunLength) || (!preg_match('/[a-zA-Z]/',
+							      $s_password) || !preg_match('/[0-9]/', $s_password))) {
+	  $s_error = str_replace('[length]', $i_minimunLength,
+			  'Uw wachtwoord moet minimaal uit [length] tekens inclusief 1 cijfer bestaan');
+	  throw new \ValidationException($s_error);
+	}
+	break;
+      case 3:
+	if ((strlen($s_password) < $i_minimunLength) || (!preg_match('/[a-zA-Z]/',
+							      $s_password) || !preg_match('/[0-9]/', $s_password) || !preg_match('/^[a-zA-Z0-9]/',
+										$s_password) )) {
+	  $s_error = str_replace('[length]', $i_minimunLength,
+			  'Uw wachtwoord moet minimaal uit [length] tekens inclusief 1 cijfer en 1 speciaal teken bestaan');
+	  throw new \ValidationException($s_error);
+	}
+	break;
+    }
+  }
+  
+  /**
+   * 
+   * @param \Input $input
+   * @return \youconix\core\entities\User
+   * @throws \ValidationException
+   */
+  public function addUser(\Input $input) {
+    $this->checkPasswords($input);
+    
+    $user = $this->createUser();
+    $user->setUsername($input->get('username'));
+    $user->setEmail($input->get('email'));
+    $user->setBot((bool) $input->get('bot'));
+    $user->updatePassword($input->get('password'));
+    $user->setRegistrated(new \DateTime());
+        
+    return $user;
+  }
+  
+  /**
+   * 
+   * @param \Input $input
+   * @param \youconix\core\entities\User $user
+   * @return \youconix\core\entities\User
+   */
+  public function editUser(\Input $input, \youconix\core\entities\User $user){
+    $user->setEmail($input->get('email'));
+    
+    if ($input->has('bot')) {
+      $user->setBot((bool) $input->get('bot'));
+    }
+    if ($input->has('blocked')) {
+      $user->setBot((bool) $input->get('blocked'));
+    }
+    if ($input->has('password')) {
+      $this->checkPasswords($input);
+      $user->updatePassword($input->get('password'));
+      
+    }
+    
     return $user;
   }
 
@@ -236,35 +322,27 @@ class Auth extends \youconix\core\services\Service
 
   /**
    * Returns the current logged in user
-   * Null if the user is not logged in
+   * User object with userid NULL if the user is not logged in
    * 
-   * @return \youconix\core\entities\User | null
+   * @return \youconix\core\entities\User
    */
   public function getUser()
   {
     if (!is_null($this->currentUser)) {
       return $this->currentUser;
     }
+    
+    $this->currentUser = $this->user->createUser();
+    $user = ($this->session->exists('userid') ? $this->user->find($this->session->get('userid')) : null);
 
-    $i_userid = ($this->session->exists('userid') ? $this->session->get('userid') : -1);
-
-    if ($i_userid == -1) {
-      return null;
-    }
-
-    $user = $this->user->find($i_userid);
-    if (is_null($user)) {
-      return null;
-    }
-
-    $bo_bindToIp = $user->getBindToIp();
-    if (!$this->session->exists('fingerprint') || ($this->session->get('fingerprint') != $this->session->getFingerprint($bo_bindToIp))) {
-      return null;
-    }
-
-    $this->currentUser = $user;
-    if (!defined('USERID')) {
-      define('USERID', $user->getID());
+    if (!is_null($user)) {
+      $bo_bindToIp = $user->getBindToIp();
+      if ($this->session->exists('fingerprint') && ($this->session->get('fingerprint') == $this->session->getFingerprint($bo_bindToIp))) {
+	$this->currentUser = $user;
+	if (!defined('USERID')) {
+	  define('USERID', $user->getID());
+	}
+      }
     }
 
     return $this->currentUser;

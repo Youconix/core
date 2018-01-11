@@ -397,10 +397,12 @@ class Mailer extends Service
         
         $s_mail = $this->language->insert($s_mail, array(
             'domain',
-            'domainUrl'
+            'domainUrl',
+	    'subject'
         ), array(
             $s_domain,
-            $s_domainUrl
+            $s_domainUrl,
+	    $s_domain
         ));
         
         return trim($s_mail);

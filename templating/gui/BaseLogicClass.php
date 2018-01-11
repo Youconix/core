@@ -1,17 +1,15 @@
 <?php
 namespace youconix\core\templating\gui;
 
+use stats\StatsView as Statistics;
+
 /**
  * General GUI parent class
  * This class is abstract and should be inheritanced by every controller with a gui
  *
- * This file is part of Miniature-happiness
- *
- * @copyright Youconix
  * @author Rachelle Scheijen
  * @version 1.0
  * @since 1.0
- * @see core/BaseClass.php
  */
 class BaseLogicClass implements \Layout
 {
@@ -51,6 +49,12 @@ class BaseLogicClass implements \Layout
      * @var \Config
      */
     protected $config;
+    
+    /**
+     *
+     * @var stats\StatsView
+     */
+    protected $statistics;
 
     /**
      * Base graphic class constructor
@@ -59,15 +63,17 @@ class BaseLogicClass implements \Layout
      * @param \Language $language           
      * @param \Header $header            
      * @param \Menu $menu            
-     * @param \Footer $footer            
+     * @param \Footer $footer 
+     * @param stats\StatsView $statistics           
      */
-    public function __construct(\Config $config, \Language $language, \Header $header, \Menu $menu, \Footer $footer)
+    public function __construct(\Config $config, \Language $language, \Header $header, \Menu $menu, \Footer $footer, Statistics $statistics)
     {
         $this->config = $config;
         $this->header = $header;
         $this->menu = $menu;
         $this->footer = $footer;    
 	$this->language = $language;
+	$this->statistics = $statistics;
     }
     
     public function parse(\Output $output){
@@ -86,12 +92,18 @@ class BaseLogicClass implements \Layout
 	$this->template->set('mainTitle','');
       }
       
-      /* Call statistics */
-      if (! $this->config->isAjax() && stripos($_SERVER['PHP_SELF'], 'admin/') === false)
-	require (NIV . 'stats/statsView.php');
+      $this->statistics();
       
       $this->header->createHeader($this->template);
       $this->menu->generateMenu($this->template);
       $this->footer->createFooter($this->template);
+    }
+    
+    protected function statistics()
+    {
+      $statisticsEnabled = ($this->config->getSettings()->exists('statistics/enabled') ? $this->config->getSettings()->get('statistics/enabled') : 1);
+      if (! $this->config->isAjax() && $statisticsEnabled) {
+	$this->statistics->generate($this->template);
+      }
     }
 }
