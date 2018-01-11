@@ -14,6 +14,14 @@ interface Entities{
   public function get($s_entity);
   
   /**
+   * 
+   * @param string $s_repository
+   * @return \youconix\core\ORM\Repository
+   * @throws \RuntimeException
+   */
+  public function getRepository($s_repository);
+  
+  /**
    * string
    */
   public function getTimezone();

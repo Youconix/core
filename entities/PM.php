@@ -6,6 +6,7 @@ namespace youconix\core\entities;
  * Contains the personal message data
  * 
  * @Table(name="pm")
+ * @ORM\Entity(repositoryClass="youconix\core\repositories\PM")
  */
 class PM extends \youconix\core\ORM\Entity
 {
@@ -26,15 +27,15 @@ class PM extends \youconix\core\ORM\Entity
 
     /**
      *
-     * @Column(type="integer")
+     * @Column(type="integer", name="fromUserid")
      */
-    protected $fromUserid;
+    protected $sender;
 
     /**
      *
-     * @Column(type="integer")
+     * @Column(type="integer", name="toUserid")
      */
-    protected $toUserid;
+    protected $receiver;
 
     /**
      *
@@ -50,9 +51,9 @@ class PM extends \youconix\core\ORM\Entity
 
     /**
      *
-     * @Column(type="datetime")
+     * @Column(type="datetime", name="sendTime")
      */
-    protected $sendTime;
+    protected $time;
 
     /**
      *
@@ -98,7 +99,7 @@ class PM extends \youconix\core\ORM\Entity
      *
      * @return int
      */
-    public function getID()
+    public function getId()
     {
         return $this->id;
     }

@@ -18,7 +18,7 @@ class UserGroup extends \youconix\core\ORM\Entity
   
   /**
    *
-   * @OneToOne(targetEntity="Groups")
+   * @OneToOne(targetEntity="Group")
    * @JoinColumn(name="groupID", referencedColumnName="id")
    * @var \youconix\core\entities\Group
    */

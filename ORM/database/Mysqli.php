@@ -58,6 +58,9 @@ class Mysqli extends \youconix\core\ORM\database\GeneralDAL
     if (empty($s_username) || empty($s_host) || empty($s_database)) {
       return false;
     }
+    
+    $reporting = error_reporting();
+    error_reporting(0);
 
     /* connect to the database */
     if ($i_port == - 1 || $i_port == '') {
@@ -67,6 +70,8 @@ class Mysqli extends \youconix\core\ORM\database\GeneralDAL
       $obj_connection = new \mysqli($s_host, $s_username, $s_password,
 				    $s_database, $i_port);
     }
+    
+    error_reporting($reporting);
     if ($obj_connection->connect_errno) {
       return false;
     }
@@ -172,10 +177,10 @@ class Mysqli extends \youconix\core\ORM\database\GeneralDAL
 
       $i_start = (count($a_keys) - 1);
       for ($i = $i_start; $i >= 0; $i--) {
-	$s_query = str_replace($a_keys[$i], '?', $s_query);
 	$this->a_bindedKeys[$a_keys[$i]] = $i;
       }
     }
+    $s_query = preg_replace('/:[a-zA-Z\-_0-9\.]+/s', '?', $s_query);
     $this->s_query = $s_query;
 
     $this->query = $this->obj_connection->stmt_init();

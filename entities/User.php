@@ -4,6 +4,7 @@ namespace youconix\core\entities;
 
 /**
  * @Table(name="users")
+ * @ORM\Entity(repositoryClass="youconix\core\repositories\User")
  */
 class User extends \youconix\core\ORM\Entity
 {
@@ -57,7 +58,7 @@ class User extends \youconix\core\ORM\Entity
    *
    * @Column(type="datetime")
    */
-  protected $registrated = 0;
+  protected $registrated;
 
   /**
    *
@@ -79,7 +80,7 @@ class User extends \youconix\core\ORM\Entity
 
   /**
    *
-   * @Column(type="boolean")
+   * @Column(type="boolean", name="password_expired")
    */
   protected $passwordExpired = 0;
 
@@ -120,12 +121,6 @@ class User extends \youconix\core\ORM\Entity
   protected $bindToIp = 0;
 
   /**
-   *
-   * @Column(type="boolean")
-   */
-  protected $password_expired = 0;
-
-  /**
    * PHP5 constructor
    *
    * @param \Builder $builder            
@@ -145,16 +140,15 @@ class User extends \youconix\core\ORM\Entity
 	'username' => 'type:string|required',
 	'email' => 'type:string|required|pattern:email',
 	'bot' => 'type:enum|required|set:0,1',
-	'registrated' => 'type:enum|required|set:0,1',
+	'registrated' => 'type:datetime|required',
 	'active' => 'type:enum|required|set:0,1',
 	'blocked' => 'type:enum|required|set:0,1',
-	'password' => 'type:string|required',
 	'profile' => 'type:string',
 	'activation' => 'type:string',
 	'loginType' => 'type:string|required',
 	'language' => 'type:string',
 	'bindToIp' => 'type:enum|required|set:0,1',
-	'password_expired' => 'type:enum|required|set:0,1',
+	'passwordExpired' => 'type:enum|required|set:0,1',
     );
   }
 
@@ -180,7 +174,6 @@ class User extends \youconix\core\ORM\Entity
     $this->language = $data->language;
     $this->passwordExpired = $data->password_expired;
     $this->bindToIp = $data->bindToIp;
-    $this->password_expired = $data->password_expired;
 
     $s_systemLanguage = $this->obj_language->getLanguage();
     if (defined('USERID') && USERID == $this->userid && $this->obj_language != $s_systemLanguage) {
@@ -206,7 +199,7 @@ class User extends \youconix\core\ORM\Entity
   /**
    * @return int
    */
-  public function getUserId()
+  public function getUserid()
   {
     return $this->userid;
   }
@@ -217,7 +210,7 @@ class User extends \youconix\core\ORM\Entity
    */
   public function getID()
   {
-    return $this->getUserId();
+    return $this->getUserid();
   }
 
   /**
@@ -263,6 +256,23 @@ class User extends \youconix\core\ORM\Entity
   }
 
   /**
+   * @param string $s_passwordHash
+   */
+  public function setPassword($s_passwordHash)
+  {
+    $this->password = $s_passwordHash;
+  }
+  
+  /**
+   * 
+   * @return string
+   */
+  public function getPassword()
+  {
+    return $this->password;
+  }
+  
+  /**
    * Sets a new password
    *
    * @param string $s_password
@@ -270,13 +280,13 @@ class User extends \youconix\core\ORM\Entity
    * @param boolean $bo_expired
    *            true to set the password to expired
    */
-  public function setPassword($s_password, $bo_expired = false)
+  public function updatePassword($s_password, $bo_expired = false)
   {
     \youconix\core\Memory::type('string', $s_password);
 
     $this->password = $this->hashing->hash($s_password);
     if ($bo_expired) {
-      $this->password_expired = 1;
+      $this->passwordExpired = 1;
     }
   }
 
@@ -567,6 +577,11 @@ class User extends \youconix\core\ORM\Entity
   {
     return $this->language;
   }
+  
+  public function setLanguage($language)
+  {
+    $this->language = $language;
+  }
 
   /**
    * Sets the login type
@@ -607,5 +622,13 @@ class User extends \youconix\core\ORM\Entity
   public function getBindToIp()
   {
     return ($this->bindToIp == 1);
+  }
+  
+  public function validate(){
+    if ($this->loginType == 'normal') {
+      $this->a_validation['password'] = 'type:string|required';
+    }
+    
+    return parent::validate();
   }
 }

@@ -27,9 +27,9 @@ abstract class Repository extends \youconix\core\Object
 
   /**
    *
-   * @var \Entities
+   * @var \EntityManager
    */
-  protected $helper;
+  protected $manager;
 
   /**
    *
@@ -39,32 +39,26 @@ abstract class Repository extends \youconix\core\Object
 
   /**
    *
-   * @var string
-   */
-  protected $s_timezone;
-
-  /**
-   *
    * @var array
    */
   protected $a_validation = [];
 
   /**
    * 
-   * @param \Entities $helper
+   * @param \EntityManager $manager
    * @param Entity $model
    * @param \Builder $builder
    */
-  public function __construct(\Entities $helper, Entity $model,
+  public function __construct(\EntityManager $manager, Entity $model,
 			      \Builder $builder)
   {
     $modelName = explode('\\', get_class($model));
     $this->model = \Loader::inject('\files\cache\proxies\\' . end($modelName) . 'Proxy');
+    $this->model->__setManager($manager);
     $this->builder = $builder;
-    $this->helper = $helper;
+    $this->manager = $manager;
 
-    $this->a_map = $helper->get($model->getEntityName());
-    $this->s_timezone = $helper->getTimezone();
+    $this->a_map = $manager->getHelper()->get($model->getEntityName());
     $this->clear();
   }
 
@@ -80,89 +74,15 @@ abstract class Repository extends \youconix\core\Object
 
   /**
    *
-   * @param array $a_data
+   * @param \stdClass $a_data
    * @return Entity
    */
-  protected function getModel(array $a_data = [])
+  protected function getModel(\stdClass $data = null)
   {
     $model = clone $this->model;
-
-    // Load proxies
-    foreach ($this->a_map->fields as $column) {
-      switch ($column['type']) {
-	case 'ManyToOne':
-	case 'OneToOne':
-
-	  $s_dataField = $column['proxySettings']['value'];
-	  if (array_key_exists($column['proxySettings']['value'], $this->a_map->fields)) {
-	    $s_dataField = $this->a_map->fields[$column['proxySettings']['value']]['columnName'];
-	  }
-
-	  if (!array_key_exists($s_dataField, $a_data)) {
-	    continue;
-	  }
-
-	  $s_setter = 'setProxy' . ucfirst($column['proxySettings']['value']);
-	  $model->$s_setter($a_data[$s_dataField]);
-	  break;
-	default:
-	  continue;
-      }
-    }
-
-    // Load data
-    foreach ($this->a_map->fields as $column) {
-      $s_columnName = $column['columnName'];
-      $s_call = $column['setter'];
-
-      if (!array_key_exists($s_columnName, $a_data)) {
-	continue;
-      }
-      if (!method_exists($model, $s_call)) {
-	continue;
-      }
-
-      $value = $a_data[$s_columnName];
-
-      switch ($column['type']) {
-	case 'date':
-	case 'time':
-	case 'datetime':
-	  if (is_int($value)) {
-	    $value = date('Y-m-d H:i:s', $value);
-	  }
-	  $value = new \DateTime($value);
-	  break;
-	case 'datetimez':
-	  $value = new \DateTime($value, new \DateTimeZone($this->s_timezone));
-	  break;
-	case 'object':
-	case 'array':
-	  $value = unserialize($value);
-	  break;
-	case 'json_array':
-	  $value = json_decode($value);
-	  break;
-	case 'simple_array':
-	  $value = explode(',', $value);
-	  break;
-	case 'boolean':
-	  $value = (boolean) $value;
-	  break;
-	case 'smallint':
-	case 'bigint':
-	case 'integer':
-	  $value = (int) $value;
-	  break;
-	case 'float':
-	  $value = (float) $value;
-	  break;
-	case 'ManyToOne':
-	case 'OneToOne':
-	  continue;
-      }
-
-      $model->$s_call($value);
+    $model->__setManager($this->manager);
+    if (!is_null($data)) {
+      $model->__setORMData($data);
     }
 
     return $model;
@@ -182,17 +102,18 @@ abstract class Repository extends \youconix\core\Object
       return $this->a_cache[$i_id];
     }
 
-    $this->builder->select($this->a_map->table, '*')
+    $primaryField = $this->a_map->getPrimary()['field'];
+    $this->builder->select($this->a_map->getTable(), '*')
 	->getWhere()
-	->bindInt($this->a_map->primary, $i_id);
+	->bindInt($primaryField, $i_id);
 
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return null;
     }
-    $a_data = $database->fetch_assoc();
+    $data = $database->fetch_object();
 
-    $model = $this->getModel($a_data[0]);
+    $model = $this->getModel($data[0]);
     $this->a_cache[$i_id] = $model;
     return $model;
   }
@@ -207,7 +128,7 @@ abstract class Repository extends \youconix\core\Object
    */
   public function findBy(array $a_relations, array $a_options = [])
   {
-    $where = $this->builder->select($this->a_map->table, '*')->getWhere();
+    $where = $this->builder->select($this->a_map->getTable(), '*')->getWhere();
     foreach ($a_relations as $s_key => $s_value) {
       $where->bindString($s_key, $s_value);
     }
@@ -232,7 +153,7 @@ abstract class Repository extends \youconix\core\Object
 
   public function getAll($i_start = -1, $i_limit = 25)
   {
-    $this->builder->select($this->a_map->table, '*');
+    $this->builder->select($this->a_map->getTable(), '*');
     if ($i_start != -1) {
       $this->builder->limit($i_limit, $i_start);
     }
@@ -251,8 +172,9 @@ abstract class Repository extends \youconix\core\Object
     if ($database->num_rows() == 0) {
       return [];
     }
-    foreach ($database->fetch_assoc() as $item) {
-      $primary = $item[$this->a_map->primary];
+    foreach ($database->fetch_object() as $item) {
+      $primaryField = $this->a_map->getPrimary()['field'];
+      $primary = $item->$primaryField;
 
       if (array_key_exists($primary, $this->a_cache)) {
 	$model = $this->a_cache[$primary];
@@ -273,10 +195,10 @@ abstract class Repository extends \youconix\core\Object
    */
   private function getPrimary(Entity $entity)
   {
-    $s_field = $this->a_map->primary;
-    $getter = $this->a_map[$s_field]['getter'];
+    $s_field = $this->a_map->primary_field;
+    $getter = $this->a_map->fields[$s_field]['getter'];
 
-    return ['field' => $s_field, 'value' => $entity->$getter()];
+    return ['field' => $this->a_map->primary, 'field_name' => $s_field, 'value' => $entity->$getter()];
   }
 
   /**
@@ -285,12 +207,12 @@ abstract class Repository extends \youconix\core\Object
    */
   public function save(Entity $entity)
   {
-    $this->performValidation();
+    $entity->performValidation();
 
     $a_primary = $this->getPrimary($entity);
 
     if (is_null($a_primary['value'])) {
-      $this->add($entity);
+      $this->add($a_primary, $entity);
 
       $a_primary = $this->getPrimary($entity);
       $this->a_cache[$a_primary['value']] = $entity;
@@ -305,76 +227,100 @@ abstract class Repository extends \youconix\core\Object
    *
    * @param array $a_primary
    * @param Entity $entity
-   *            Adds the item to the database
    */
   protected function add(array $a_primary, Entity $entity)
   {
-    $this->builder->insert($this->a_map->table);
-    $this->buildSave($entity);
+    $this->builder->insert($this->a_map->getTable());
+    $this->buildSave($entity, $a_primary['field_name']);
     $database = $this->builder->getResult();
 
     if ($this->a_map->autoincrement) {
-      $setter = $this->a_map[$a_primary['field']]['setter'];
+      $setter = $this->a_map->fields[$a_primary['field_name']]['setter'];
       $entity->$setter($database->getId());
     }
+    
+    $this->saveReferences($entity, $a_primary);
   }
 
   /**
    *
    * @param array $a_primary
-   * @param Entity $model
-   *            Updates the item in the database
+   * @param Entity $entity
    */
-  protected function update(array $a_primary, Entity $model)
+  protected function update(array $a_primary, Entity $entity)
   {
     $this->builder->update($this->s_table);
-    $this->buildSave($model);
+    $this->buildSave($entity, $a_primary['field_name']);
     $this->builder->getWhere()->bindInt($a_primary['field'], $a_primary['value']);
     $this->builder->getResult();
+    
+    $this->saveReferences($entity, $a_primary);
   }
 
   /**
    * Builds the query
+   * 
+   * @param Entity $model
+   * @param string $s_primaryField
    */
-  protected function buildSave(Entity $model)
+  protected function buildSave(Entity $model, $s_primaryField)
   {
+    $data = $model->__getORMData();
+    
     foreach ($this->a_map->fields as $s_field => $a_settings) {
       $getter = $a_settings['getter'];
+
+      if ($s_field == $s_primaryField) {
+	continue;
+      }
 
       switch ($a_settings['type']) {
 	case 'smallint':
 	case 'bigint':
 	case 'integer':
+	  $this->builder->bindInt($a_settings['columnName'], $data->$s_field);
+	  break;
 	case 'boolean':
-	  $this->builder->bindInt($s_field, $model->$getter());
+	  $i_value = $data->$s_field;
+	  if ($i_value === true) {
+	    $i_value = 1;
+	  } elseif ($i_value === false) {
+	    $i_value = 0;
+	  }
+
+	  $this->builder->bindString($a_settings['columnName'], $i_value);
 	  break;
 	case 'float':
-	  $this->builder->bindFloat($s_field, $model->$getter());
+	  $this->builder->bindFloat($a_settings['columnName'], $data->$s_field);
 	  break;
 	case 'blob':
-	  $this->builder->bindBlob($s_field, $model->$getter());
-	  break;
-	case 'date':
-	case 'time':
-	case 'datetime':
-	case 'datetimez':
-	  $this->builder->bindString($s_field, $model->$getter()->getTimestamp());
-	  break;
-	case 'object':
-	case 'array':
-	  $this->builder->bindString($s_field, serialize($model->$getter()));
-	  break;
-	case 'json_array':
-	  $this->builder->bindString($s_field, json_encode($model->$getter()));
-	  break;
-	case 'simple_array':
-	  $this->builder->bindString($s_field, implode(',', $model->getter()));
-	  break;
-	case 'ManyToOne':
-	case 'OneToOne':
-	  break;
+	  $this->builder->bindBlob($a_settings['columnName'], $data->$s_field);
+	  break;	
 	default:
-	  $this->builder->bindString($s_field, $model->getter());
+	  $this->builder->bindString($a_settings['columnName'], $data->$s_field);
+	  break;
+      }
+    }
+  }
+  
+  protected function saveReferences(Entity $model, array $a_primary)
+  {
+    foreach ($this->a_map->fields as $s_field => $a_settings) {
+      switch ($a_settings['type']) {
+	case 'ManyToOne':
+	  break;
+	
+	case 'OneToMany':
+	  $reference = $this->helper->get($a_settings['proxySettings']['target']);
+	  $valueGetter = $reference->fields[$a_settings['proxySettings']['value']]['getter'];
+	  $i_value = $model->$getter()->$valueGetter();
+	  $s_table = $this->a_map->getTable();
+	  $s_referenceTable = $reference->getTable();
+	  
+	  $this->builder->upsert($s_table.'_'.$s_referenceTable, 'id')
+	      ->bindInt($s_table.'_id', $a_primary['value'])
+	      ->bindInt($s_referenceTable.'_id', $i_value)
+	      ->getResult();
 	  break;
       }
     }

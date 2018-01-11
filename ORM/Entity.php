@@ -30,6 +30,12 @@ abstract class Entity
    * @var bool
    */
   protected $bo_throwError = true;
+  
+  /**
+   *
+   * @var array
+   */
+  protected $a_validationErrors;
 
   /**
    * 
@@ -92,29 +98,38 @@ abstract class Entity
    *
    * @throws \ValidationException the model is invalid
    */
-  protected function performValidation()
+  public function performValidation()
   {
-    $a_error = [];
+    $this->a_validationErrors = [];
 
     $a_keys = array_keys($this->a_validation);
     foreach ($a_keys as $s_key) {
       if (!isset($this->$s_key)) {
-	$a_error[] = 'Error validating non existing field ' . $s_key . '.';
+	$this->a_validationErrors[] = 'Error validating non existing field ' . $s_key . '.';
 	continue;
       }
 
       $this->validation->validateField($s_key, $this->$s_key, $this->a_validation[$s_key]);
     }
 
-    $a_error = array_merge($a_error, $this->validation->getErrors());
-
+    $this->a_validationErrors = array_merge($this->a_validationErrors, $this->validation->getErrors());
+    
     if (!$this->bo_throwError) {
-      return $a_error;
+      return $this->a_validationErrors;
     }
 
-    if (count($a_error) > 0) {
-      throw new \ValidationException("Error validating : \n" . implode("\n", $a_error));
+    if (count($this->a_validationErrors) > 0) {
+      throw new \ValidationException("Error validating : \n" . implode("\n", $this->a_validationErrors));
     }
+  }
+  
+  /**
+   * 
+   * @return array
+   */
+  public function getValidationErors()
+  {
+    return $this->a_validationErrors;
   }
 
   public function __get($s_key)

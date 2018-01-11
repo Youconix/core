@@ -7,6 +7,7 @@ namespace youconix\core\entities;
  * Contains the group data
  * 
  * @Table(name="groups")
+ * @ORM\Entity(repositoryClass="youconix\core\repositories\Group")
  */
 class Group extends \youconix\core\ORM\Entity
 {
@@ -27,9 +28,9 @@ class Group extends \youconix\core\ORM\Entity
 
   /**
    *
-   * @Column(type="boolean")
+   * @Column(type="boolean", name="automatic")
    */
-  protected $automatic = 0;
+  protected $default = 0;
 
   /**
    *
@@ -339,7 +340,6 @@ class Group extends \youconix\core\ORM\Entity
    * Deletes the user from the group
    *
    * @param int $i_userid
-   *            userid
    */
   public function deleteUser($i_userid)
   {

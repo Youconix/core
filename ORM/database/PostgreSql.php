@@ -53,9 +53,14 @@ class PostgreSql extends \youconix\core\database\GeneralDAL
         if ($i_port == - 1)
             $i_port = '';
         
+	$reporting = error_reporting();
+	error_reporting(0);
+	
         try {
             /* connect to the database */
             $s_res = pg_connect("host=" . $s_host . " port=" . $s_port . " dbname=" . $s_database . " user=" . $s_username . " password=" . $s_password);
+	    
+	    error_reporting($reporting);
             
             if (! $s_res) {
                 return false;
@@ -65,6 +70,7 @@ class PostgreSql extends \youconix\core\database\GeneralDAL
             
             return true;
         } catch (\Exception $exception) {
+	  error_reporting($reporting);
             /* Error connecting */
             return false;
         }
