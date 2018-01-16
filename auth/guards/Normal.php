@@ -2,73 +2,67 @@
 
 namespace youconix\core\auth\guards;
 
-class Normal implements \Guard {
-
-  /**
-   *
-   * @var \Language
-   */
-  private $language;
-
-  /**
-   *
-   * @var \Config
-   */
-  private $config;
+class Normal extends \youconix\core\auth\PasswordGuard
+{
 
   /**
    *
    * @var \youconix\core\services\Hashing
    */
-  private $hashing;
+  protected $hashing;
 
   /**
    * 
    * @var \youconix\core\helpers\PasswordForm
    */
-  private $form;
+  protected $form;
 
   /**
    *
    * @var \youconix\core\helpers\Captcha
    */
-  private $captcha;
-
-  /**
-   *
-   * @var \Builder
-   */
-  private $builder;
-
-  /**
-   * @var \youconix\core\auth\Auth 
-   */
-  private $auth;
-
-  /**
-   *
-   * @var \Session
-   */
-  private $session;
+  protected $captcha;
 
   /**
    * 
    * @param \Language $language
-   * @param \Config $config
+   * @param \Settings $settings
    * @param \youconix\core\services\Hashing $hashing
    * @param \Builder $builder
    * @param \youconix\core\helpers\PasswordForm $form
    * @param \youconix\core\helpers\Captcha $captcha
    * @param \Session $session
    */
-  public function __construct(\Language $language, \Config $config, \youconix\core\services\Hashing $hashing, \Builder $builder, \youconix\core\helpers\PasswordForm $form, \youconix\core\helpers\Captcha $captcha, \Session $session) {
-    $this->language = $language;
-    $this->config = $config;
+  public function __construct(\Language $language, \Settings $settings,
+			      \youconix\core\services\Hashing $hashing, \Builder $builder,
+			      \youconix\core\helpers\PasswordForm $form,
+			      \youconix\core\helpers\Captcha $captcha, \Session $session)
+  {
+    parent::__construct($language, $settings, $builder, $session);
+
     $this->hashing = $hashing;
-    $this->builder = $builder;
     $this->form = $form;
     $this->captcha = $captcha;
-    $this->session = $session;
+  }
+
+  protected function loadConfig()
+  {
+    $this->guardConfig = [
+	'enabled' => false,
+	'length' => 8,
+	'strength' => 1
+    ];
+
+    parent::loadConfig();
+  }
+
+  /**
+   * 
+   * @return boolean
+   */
+  public function hasConfig()
+  {
+    return true;
   }
 
   /**
@@ -76,12 +70,13 @@ class Normal implements \Guard {
    * @param \Output $output
    * @param \Request $request
    */
-  public function loginForm(\Output $output, \Request $request) {
+  public function loginForm(\Output $output, \Request $request)
+  {
     $this->auth->getHeaders()->http401();
     $post = $request->post();
 
     $s_form = '<h2>' . $this->language->get('login/button') . '</h2>
-	    <form action="path(\'login_do_login\', {\'type\': \''.$this->getName() . '\'})" method="post">
+	    <form action="path(\'login_do_login\', {\'type\': \'' . $this->getName() . '\'})" method="post">
 	<table>
 	  <tbody>
 	    <tr>
@@ -103,7 +98,7 @@ class Normal implements \Guard {
 	      <td colspan="2"><br></td>
 	    </tr>
 	    <tr>
-	      <td><a href="path(\'registration_view\', {\'name\' : \''. $this->getName() . '\'})">' . $this->language->get('login/registration') . '</a></td>
+	      <td><a href="path(\'registration_view\', {\'name\' : \'' . $this->getName() . '\'})">' . $this->language->get('login/registration') . '</a></td>
 	      <td><a href="path(\'password_screen\', {\'name\' : \'' . $this->getName() . '\'})">Forgot password</a></td>
 	    </tr>
 	  </tbody>
@@ -119,13 +114,14 @@ class Normal implements \Guard {
    * @param \Request $request
    * @return string
    */
-  public function do_login(\Request $request) {
+  public function do_login(\Request $request)
+  {
     $post = $request->post();
 
     if (!$post->validate([
-                'username' => 'type:string|required',
-                'password' => 'type:string|required'
-            ])) {
+	    'username' => 'type:string|required',
+	    'password' => 'type:string|required'
+	])) {
       return Normal::FORM_INVALID;
     }
 
@@ -133,11 +129,11 @@ class Normal implements \Guard {
     $s_plainPassword = $post->get('password');
 
     $this->builder->select('users', '*')
-            ->getWhere()
-            ->bindString('nick', $s_username)
-            ->bindString('active', 1)
-            ->bindString('blocked', 0)
-            ->bindString('loginType', 'normal');
+	->getWhere()
+	->bindString('nick', $s_username)
+	->bindString('active', 1)
+	->bindString('blocked', 0)
+	->bindString('loginType', 'normal');
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return Normal::INVALID_LOGIN;
@@ -147,7 +143,7 @@ class Normal implements \Guard {
 
     if (!$this->hashing->verify($s_plainPassword, $s_password)) {
       if (!$this->oldHashing($s_username, $s_plainPassword, $s_password)) {
-        return Normal::INVALID_LOGIN;
+	return Normal::INVALID_LOGIN;
       }
     }
 
@@ -170,14 +166,16 @@ class Normal implements \Guard {
    * @param string $stored
    * @return boolean
    */
-  private function oldHashing($s_username, $s_plainPassword, $stored) {
+  private function oldHashing($s_username, $s_plainPassword, $stored)
+  {
     $settings = $this->config->getSettings();
     $s_salt = $settings->get('settings/main/salt');
 
     $s_hash = sha1(substr(md5($s_username), 5, 30) . $s_plainPassword . $s_salt);
     if ($s_hash == $stored) {
       $s_password = $this->hashing->hash($s_plainPassword);
-      $this->builder->update('users')->bindString('password', $s_password)->getWhere('nick', $s_username);
+      $this->builder->update('users')->bindString('password', $s_password)->getWhere('nick',
+										     $s_username);
       $this->builder->getResult();
 
       return true;
@@ -189,7 +187,8 @@ class Normal implements \Guard {
    * 
    * @param \Output $output
    */
-  public function expiredForm(\Output $output) {
+  public function expiredForm(\Output $output)
+  {
     $s_form = '<form action="/login/update/' . $this->getName() . '" method="post">
       <h2>' . $this->language->get('login/editPassword') . '</h2>
 	
@@ -222,14 +221,15 @@ class Normal implements \Guard {
    * @param \Request $request
    * @return string
    */
-  public function updatePassword(\Request $request) {
+  public function updatePassword(\Request $request)
+  {
     $post = $request->post();
-    
+
     if (!$post->validate([
-                'password_old' => 'type:string|required',
-                'password' => 'type:string|required',
-                'password2' => 'type:string|required'
-            ])) {
+	    'password_old' => 'type:string|required',
+	    'password' => 'type:string|required',
+	    'password2' => 'type:string|required'
+	])) {
       return Normal::FORM_INVALID;
     }
 
@@ -240,13 +240,15 @@ class Normal implements \Guard {
     $i_userid = $this->session->get('userid');
     $s_password = $this->hashing->hash($post->get('password'));
     $s_passwordCurrent = $post->get('password_old');
-    $this->builder->update('users')->bindString('password', $s_password)->getWhere()->bindInt('userid', $i_userid)->bindString('password', $s_passwordCurrent);
+    $this->builder->update('users')->bindString('password', $s_password)->getWhere()->bindInt('userid',
+											      $i_userid)->bindString('password', $s_passwordCurrent);
     $database = $this->builder->getResult();
     if ($database->affected_rows() == 0) {
       return Normal::FORM_INVALID;
     }
 
-    $database = $this->builder->select('users', '*')->getWhere()->bindInt('userid', $i_userid)->getResult();
+    $database = $this->builder->select('users', '*')->getWhere()->bindInt('userid',
+									  $i_userid)->getResult();
     $a_data = $database->fetch_object();
     $user = $this->auth->createUser($a_data[0]);
     $this->auth->setLogin($user);
@@ -257,9 +259,10 @@ class Normal implements \Guard {
    * @param \Output $output
    * @param \Request $request
    */
-  public function registrationForm(\Output $output, \Request $request) {
+  public function registrationForm(\Output $output, \Request $request)
+  {
     $post = $request->post();
-    
+
     $s_form = '<h2>' . $this->language->get('registration/screenTitle') . '</h2>
 	
     <form action="/registration/save/' . $this->getName() . '" method="post" id="registration_form">
@@ -308,17 +311,18 @@ class Normal implements \Guard {
    * @param \Request $request
    * @return string
    */
-  public function do_registration(\Request $request) {
+  public function do_registration(\Request $request)
+  {
     $post = $request->post();
-    
+
     if (!$post->validate([
-                'username' => 'type:string|required',
-                'email' => 'type:email|required',
-                'password' => 'type:string|required',
-                'password2' => 'type:string|required',
-                'conditions' => 'required',
-                'captcha' => 'type:string|required',
-            ])) {
+	    'username' => 'type:string|required',
+	    'email' => 'type:email|required',
+	    'password' => 'type:string|required',
+	    'password2' => 'type:string|required',
+	    'conditions' => 'required',
+	    'captcha' => 'type:string|required',
+	])) {
       return Normal::FORM_INVALID;
     }
 
@@ -349,7 +353,8 @@ class Normal implements \Guard {
     $user->setUsername($s_username);
     $user->save();
 
-    $this->auth->sendRegistrationMail($this->getName(), $s_username, $s_email, $s_hash);
+    $this->auth->sendRegistrationMail($this->getName(), $s_username, $s_email,
+				      $s_hash);
 
     return Normal::FORM_OKE;
   }
@@ -359,24 +364,29 @@ class Normal implements \Guard {
    * @param string $hash
    * @return string
    */
-  public function do_reset($hash) {
-    $database = $this->builder->select('password_codes', '*')->getWhere()->bindString('code', $hash)
-                    ->bindInt('expire', time(), 'AND', '>=')->getResult();
+  public function do_reset($hash)
+  {
+    $database = $this->builder->select('password_codes', '*')->getWhere()->bindString('code',
+										      $hash)
+	    ->bindInt('expire', time(), 'AND', '>=')->getResult();
     if ($database->num_rows() == 0) {
       return Normal::FORM_INVALID;
     }
 
     $i_userid = $database->result(0, 'userid');
     $s_password = $this->hashing->hash($database->result(0, 'password'));
-    $this->builder->delete('password_codes')->getWhere()->bindInt('userid', $i_userid)->getResult();
-    $this->builder->update('users')->bindString('password', $s_password)->bindString('password_expired', '1')
-            ->bindString('blocked', '0')->getWhere()->bindInt('id', $i_userid)->getResult();
+    $this->builder->delete('password_codes')->getWhere()->bindInt('userid',
+								  $i_userid)->getResult();
+    $this->builder->update('users')->bindString('password', $s_password)->bindString('password_expired',
+										     '1')
+	->bindString('blocked', '0')->getWhere()->bindInt('id', $i_userid)->getResult();
 
     $this->session->set('userid', $i_userid);
     $this->auth->getHeaders()->redirect('/login/expired/' . $this->getName());
   }
 
-  public function email_confirm() {
+  public function email_confirm()
+  {
     
   }
 
@@ -384,8 +394,17 @@ class Normal implements \Guard {
    * 
    * @return string
    */
-  public function getName() {
+  public function getName()
+  {
     return 'normal';
+  }
+
+  /**
+   * @return string
+   */
+  public function getDisplayName()
+  {
+    return 'Username & password';
   }
 
   /**
@@ -393,7 +412,8 @@ class Normal implements \Guard {
    * @param \Output $output
    * @param \Request $request
    */
-  public function resetForm(\Output $output, \Request $request) {
+  public function resetForm(\Output $output, \Request $request)
+  {
     $post = $request->post();
 
     $s_form = '<form action="/password/do_reset/' . $this->getName() . '" method="post">
@@ -422,38 +442,24 @@ class Normal implements \Guard {
 
   /**
    * 
-   * @return boolean
-   */
-  public function hasRegistration() {
-    return true;
-  }
-
-  /**
-   * 
-   * @return boolean
-   */
-  public function hasReset() {
-    return true;
-  }
-
-  /**
-   * 
    * @param \Request $request
    * @return string
    */
-  public function sendResetEmail(\Request $request) {
+  public function sendResetEmail(\Request $request)
+  {
     $post = $request->post();
-    
+
     if (!$post->validate([
-                'username' => 'type:string|required',
-                'email' => 'type:string|required'
-            ])) {
+	    'username' => 'type:string|required',
+	    'email' => 'type:string|required'
+	])) {
       return Normal::FORM_INVALID;
     }
 
     $s_email = $post->get('email');
     $s_username = $post->get('username');
-    $this->builder->select('users', 'id')->getWhere()->bindString('email', $s_email)->bindString('nick', $s_username);
+    $this->builder->select('users', 'id')->getWhere()->bindString('email',
+								  $s_email)->bindString('nick', $s_username);
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return Normal::FORM_INVALID;
@@ -463,57 +469,79 @@ class Normal implements \Guard {
     $i_userid = $database->result(0, 'id');
     $s_password = $this->hashing->createRandom();
     $i_expire = (time() + 3600);
-    $this->builder->delete('password_codes')->getWhere()->bindInt('userid', $i_userid)->getResult();
-    $this->builder->insert('password_codes')->bindInt('userid', $i_userid)->bindString('code', $s_hash)
-            ->bindString('password', $s_password)->bindInt('expire', $i_expire)->getResult();
+    $this->builder->delete('password_codes')->getWhere()->bindInt('userid',
+								  $i_userid)->getResult();
+    $this->builder->insert('password_codes')->bindInt('userid', $i_userid)->bindString('code',
+										       $s_hash)
+	->bindString('password', $s_password)->bindInt('expire', $i_expire)->getResult();
 
-    $this->auth->sendResetMail($this->getName(), $s_username, $s_email, $s_password, $s_hash, $i_expire);
+    $this->auth->sendResetMail($this->getName(), $s_username, $s_email,
+			       $s_password, $s_hash, $i_expire);
 
     return Normal::FORM_OKE;
   }
 
   /**
    * 
-   * @param \youconix\core\auth\Auth $auth
+   * @param \Output $output
    */
-  public function setAuth(\youconix\core\auth\Auth $auth) {
-    $this->auth = $auth;
+  private function addJavascript(\Output $output)
+  {
+    $output->append('head',
+		    '<script src="/js/authorization/normal.js"></script>');
   }
 
   /**
    * 
    * @return string
    */
-  public function getLogo() {
-    return '';
+  public function getConfigForm()
+  {
+    $name = $this->getName();
+
+    $form = '<h3> Password requirements</h3>
+      
+    <fieldset>
+	<label class="label">Minimun length</label>	
+	<input type="range" name="' . $name . '_length" value="' . $this->guardConfig['length'] . '" min="8" max="68" required>	
+	<span id="' . $name . '_length_display">' . $this->guardConfig['length'] . '</span>
+    </fieldset>
+    <fieldset>
+	<label class="label">Demands</label>
+	' . $this->createStrengthRadio(1) . ' <label>No extra requirements</label>
+    </fieldset>
+    <fieldset>
+	<label class="label"></label>
+	' . $this->createStrengthRadio(2) . ' <label>Letters and numbers</label>
+    </fieldset>
+    <fieldset>
+	<label class="label"></label>
+	' . $this->createStrengthRadio(3) . ' <label>Letters, numbers and special characters</label>
+    </fieldset>
+    
+    <script>
+    let rangeField = $("input[name=' . $name . '_length]");
+    rangeField.on("change",() => {
+      $("#' . $name . '_length_display").text(rangeField.val());
+    });
+    rangeField.on("input", () => {
+      rangeField.trigger("change");
+    });
+    </script>';
+
+    return $form;
   }
 
   /**
    * 
-   * @param string $s_username
-   * @return boolean
+   * @param int $value
+   * @return string
    */
-  public function usernameAvailable($s_username) {
-    $database = $this->builder->select('users', 'id')->getWhere()->bindString('nick', $s_username)->getResult();
-    return ($database->num_rows() == 0);
-  }
+  protected function createStrengthRadio($value)
+  {
+    $name = $this->getName();
+    $selected = (($value == $this->guardConfig['strength']) ? 'checked="checked"' : '');
 
-  /**
-   * 
-   * @param string $s_email
-   * @return boolean
-   */
-  public function emailAvailable($s_email) {
-    $database = $this->builder->select('users', 'id')->getWhere()->bindString('email', $s_email)->getResult();
-    return ($database->num_rows() == 0);
+    return '<input type="radio" name="' . $name . '_strength" value="' . $value . '" ' . $selected . ' required>';
   }
-
-  /**
-   * 
-   * @param \Output $output
-   */
-  private function addJavascript(\Output $output) {
-    $output->append('head', '<script src="/js/authorization/normal.js"></script>');
-  }
-
 }
