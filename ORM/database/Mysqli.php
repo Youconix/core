@@ -58,7 +58,7 @@ class Mysqli extends \youconix\core\ORM\database\GeneralDAL
     if (empty($s_username) || empty($s_host) || empty($s_database)) {
       return false;
     }
-    
+
     $reporting = error_reporting();
     error_reporting(0);
 
@@ -70,7 +70,7 @@ class Mysqli extends \youconix\core\ORM\database\GeneralDAL
       $obj_connection = new \mysqli($s_host, $s_username, $s_password,
 				    $s_database, $i_port);
     }
-    
+
     error_reporting($reporting);
     if ($obj_connection->connect_errno) {
       return false;
@@ -130,6 +130,29 @@ class Mysqli extends \youconix\core\ORM\database\GeneralDAL
     if ($this->bo_connection) {
       @$this->obj_connection->close();
       $this->bo_connection = false;
+    }
+  }
+
+  /**
+   * Dumps the database to a file
+   * This function requires exec()!
+   * @param string $target
+   */
+  public function dump($target)
+  {
+    $s_type = $this->settings->get('settings/SQL/type');
+    $username = $this->settings->get('settings/SQL/' . $s_type . '/username');
+    $password = $this->settings->get('settings/SQL/' . $s_type . '/password');
+    $database = $this->settings->get('settings/SQL/' . $s_type . '/database');
+    $host = $this->settings->get('settings/SQL/' . $s_type . '/host');
+    $port = $this->settings->get('settings/SQL/' . $s_type . '/port');
+
+    $command = 'mysqldump ' . $database . ' --password=' . $password . ' --user=' . $username
+	. ' --host=' . $host . ' --port=' . $port . ' --single-transaction > ' . $target;
+    $result = exec($command, $output);
+
+    if ($result !== '') {
+      throw new \Exception('Dumping the database failed: ' . $result);
     }
   }
 

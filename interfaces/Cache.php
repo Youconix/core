@@ -46,10 +46,10 @@ interface Cache
     /**
      * Adds a no-cache page
      *
-     * @param string $s_page
-     *            The page address
+     * @param string $page
+     * @return int
      */
-    public function addNoCachePage($s_page);
+    public function addNoCachePage($page);
 
     /**
      * Deletes the given no-cache page

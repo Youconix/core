@@ -82,10 +82,7 @@ abstract class GuardParent implements \Guard
     }
 
     $items = $this->settings->getBlock($path);
-    foreach ($items[0]->childNodes as $child) {
-      $key = $child->tagName;
-      $value = $child->nodeValue;
-
+    foreach ($items as $key => $value) {
       $this->guardConfig[$key] = $value;
     }
   }

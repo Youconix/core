@@ -43,7 +43,7 @@ class EntityHelper implements \Entities {
     $this->s_siteDir = WEB_ROOT . DS . 'includes' . DS . 'entities';
     $this->s_systemDir = WEB_ROOT . DS . 'vendor' . DS . 'youconix' . DS . 'core' . DS . 'entities';
     $this->s_proxyDir = $s_cacheDir . 'proxies';
-
+    
     if (!$file->exists($this->s_proxyDir)) {
       $file->newDirectory($this->s_proxyDir);
     }
@@ -56,6 +56,14 @@ class EntityHelper implements \Entities {
    */
   public static function isSingleton() {
     return true;
+  }
+  
+  public function dropCache()
+  {
+    $this->file->deleteDirectoryContent($this->s_proxyDir);
+    if ($this->file->exists($this->s_cacheFile)) {
+      $this->file->deleteFile($this->s_cacheFile);
+    }
   }
 
   public function buildMap() {

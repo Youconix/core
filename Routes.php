@@ -2,7 +2,8 @@
 
 namespace youconix\core;
 
-final class Routes {
+final class Routes
+{
 
   private $class = null;
   private $returnResult = null;
@@ -14,7 +15,6 @@ final class Routes {
   private $a_arguments;
   private $a_map;
   private $s_cacheFile;
-  
   private $bo_prettyUrls;
   private $s_fullUrl;
 
@@ -24,11 +24,13 @@ final class Routes {
    */
   private $file;
 
-  public function __construct(\Builder $builder, \Config $config, \youconix\core\services\FileHandler $file) {
+  public function __construct(\Builder $builder, \Config $config,
+			      \youconix\core\services\FileHandler $file)
+  {
     $this->builder = $builder;
     $this->file = $file;
-    
-    $this->s_fullUrl = $config->getProtocol().$config->getHost();
+
+    $this->s_fullUrl = $config->getProtocol() . $config->getHost();
     $this->bo_prettyUrls = $config->getPrettyUrls();
 
     $s_cacheDir = $config->getCacheDirectory();
@@ -42,11 +44,20 @@ final class Routes {
    *
    * @return boolean True if the object is a singleton
    */
-  public static function isSingleton() {
+  public static function isSingleton()
+  {
     return true;
   }
 
-  public function buildMap() {
+  public function dropCache()
+  {
+    if ($this->file->exists($this->s_cacheFile)) {
+      $this->file->deleteFile($this->s_cacheFile);
+    }
+  }
+
+  public function buildMap()
+  {
     if ($this->file->exists($this->s_cacheFile) && !defined('DEBUG')) {
       $s_content = $this->file->readFile($this->s_cacheFile);
       $this->a_map = unserialize($s_content);
@@ -54,14 +65,15 @@ final class Routes {
     }
 
     $a_directoriesToSkip = [
-        realpath(NIV . 'files'),
-        realpath(NIV . 'vendor'),
-        realpath(NIV . 'includes'),
-        realpath(NIV . 'styles')
+	realpath(NIV . 'files'),
+	realpath(NIV . 'vendor'),
+	realpath(NIV . 'includes'),
+	realpath(NIV . 'styles')
     ];
 
     $this->a_map = [];
-    $a_names = $this->file->readFilteredDirectoryNames(NIV, $a_directoriesToSkip, 'php');
+    $a_names = $this->file->readFilteredDirectoryNames(NIV,
+						       $a_directoriesToSkip, 'php');
     foreach ($a_names as $a_directory) {
       $this->parseDirectory($a_directory);
     }
@@ -70,7 +82,7 @@ final class Routes {
       $this->file->writeFile($this->s_cacheFile, serialize($this->a_map));
     }
   }
-  
+
   /**
    * 
    * @param string $s_name
@@ -100,7 +112,8 @@ final class Routes {
    * @return string
    * @throws \LogicException
    */
-  public function getRouteByName($s_name, array $a_parameters) {
+  public function getRouteByName($s_name, array $a_parameters)
+  {
     if (!array_key_exists($s_name, $this->a_map)) {
       throw new \LogicException('Calling to unknown route name ' . $s_name . '.');
     }
@@ -113,12 +126,13 @@ final class Routes {
     $a_missing = [];
     foreach ($route->parameters as $name => $value) {
       if (!array_key_exists($name, $a_parameters)) {
-        $a_missing[] = $name;
+	$a_missing[] = $name;
       }
     }
 
     if (count($a_missing) > 0) {
-      throw new \LogicException('Missing parameters for route ' . $s_name . ': ' . implode(',', $a_missing) . '.');
+      throw new \LogicException('Missing parameters for route ' . $s_name . ': ' . implode(',',
+											   $a_missing) . '.');
     }
 
     $s_route = $route->route_original;
@@ -127,14 +141,14 @@ final class Routes {
     }
     return $s_route;
   }
-  
+
   public function getAllAddresses()
   {
     $addresses = [];
-    foreach($this->a_map as $route){
+    foreach ($this->a_map as $route) {
       $addresses[] = $route->route_original;
     }
-    
+
     return $addresses;
   }
 
@@ -142,7 +156,8 @@ final class Routes {
    * 
    * @param array $a_directory
    */
-  protected function parseDirectory($a_directory) {
+  protected function parseDirectory($a_directory)
+  {
     if (!is_array($a_directory)) {
       $this->parseFile($a_directory);
       return;
@@ -150,9 +165,9 @@ final class Routes {
 
     foreach ($a_directory as $item) {
       if (is_array($item)) {
-        $this->parseDirectory($item);
+	$this->parseDirectory($item);
       } else {
-        $this->parseFile($item);
+	$this->parseFile($item);
       }
     }
   }
@@ -161,7 +176,8 @@ final class Routes {
    * 
    * @param string $s_name
    */
-  protected function parseFile($s_name) {
+  protected function parseFile($s_name)
+  {
     $s_content = $this->file->readFile($s_name);
     $a_rules = preg_split("/\r\n|\n|\r/", $s_content);
     $a_matches = null;
@@ -182,25 +198,27 @@ final class Routes {
 
     foreach ($a_rules as $s_rule) {
       if ((strpos($s_rule, '@Route') === false) && (strpos($s_rule, 'function') === false)) {
-        continue;
+	continue;
       }
-      if (preg_match('/@Route\("([^"]+)", name="([^"]+)"\)/s', $s_rule, $a_matches)) {
-        $route = $this->createRoute($a_matches[1], $a_matches[2]);
-      } else if (preg_match('/@Route\("([^"]+)", name="([^"]+)", requirements=\{([^}]+)\}\)/s', $s_rule, $a_matches)) {
-        $a_parameters = explode(',', $a_matches[3]);
-        $route = $this->createRoute($a_matches[1], $a_matches[2], $a_parameters);
+      if (preg_match('/@Route\("([^"]+)", name="([^"]+)"\)/s', $s_rule,
+		     $a_matches)) {
+	$route = $this->createRoute($a_matches[1], $a_matches[2]);
+      } else if (preg_match('/@Route\("([^"]+)", name="([^"]+)", requirements=\{([^}]+)\}\)/s',
+			    $s_rule, $a_matches)) {
+	$a_parameters = explode(',', $a_matches[3]);
+	$route = $this->createRoute($a_matches[1], $a_matches[2], $a_parameters);
       } else if (!is_null($route)) {
-        preg_match('/function\s([a-zA-Z0-9\-_]+)\s?\(/s', $s_rule, $a_matches);
-        $route->function = $a_matches[1];
-        $route->class = $s_class;
+	preg_match('/function\s([a-zA-Z0-9\-_]+)\s?\(/s', $s_rule, $a_matches);
+	$route->function = $a_matches[1];
+	$route->class = $s_class;
 
-        if (array_key_exists($route->name, $this->a_map)) {
-          throw new \CoreException('Found duplicate route name ' . $route->name . ' pointing to route ' . $route->route_original . '.');
-        }
+	if (array_key_exists($route->name, $this->a_map)) {
+	  throw new \CoreException('Found duplicate route name ' . $route->name . ' pointing to route ' . $route->route_original . '.');
+	}
 
-        $this->a_map[$route->name] = $route;
+	$this->a_map[$route->name] = $route;
 
-        $route = null;
+	$route = null;
       }
     }
   }
@@ -212,7 +230,8 @@ final class Routes {
    * @param array $a_parameters
    * @return \stdClass
    */
-  private function createRoute($s_route, $s_name, array $a_parameters = []) {
+  private function createRoute($s_route, $s_name, array $a_parameters = [])
+  {
     $bo_regex = (strpos($s_route, '{') !== false);
 
     $route = new \stdClass();
@@ -226,7 +245,8 @@ final class Routes {
       $s_variable = str_replace('"', '', str_replace("'", '', $a_parts[0]));
       $s_value = str_replace('"', '', str_replace("'", '', $a_parts[1]));
 
-      $s_route = str_replace('{' . $s_variable . '}', '(' . $s_value . ')', $s_route);
+      $s_route = str_replace('{' . $s_variable . '}', '(' . $s_value . ')',
+			     $s_route);
       $route->parameters[$s_variable] = $s_value;
     }
 
@@ -236,8 +256,9 @@ final class Routes {
     if (preg_match_all('/{([^}]+)}/s', $s_route, $a_matches)) {
       $s_replace = '[^/]+';
       for ($i = 0; $i < count($a_matches[1]); $i++) {
-        $s_route = str_replace('{' . $a_matches[1][$i] . '}', '(' . $s_replace . ')', $s_route);
-        $route->parameters[$a_matches[1][$i]] = $s_replace;
+	$s_route = str_replace('{' . $a_matches[1][$i] . '}', '(' . $s_replace . ')',
+			$s_route);
+	$route->parameters[$a_matches[1][$i]] = $s_replace;
       }
     }
     if ($bo_regex) {
@@ -250,7 +271,8 @@ final class Routes {
     return $route;
   }
 
-  public function clearException() {
+  public function clearException()
+  {
     $this->exception = null;
   }
 
@@ -258,7 +280,8 @@ final class Routes {
    * 
    * @param \Exception $exception
    */
-  public function setException(\Exception $exception) {
+  public function setException(\Exception $exception)
+  {
     $this->exception = $exception;
   }
 
@@ -268,7 +291,8 @@ final class Routes {
    * @return \youconix\core\templating\BaseController
    * @throws \Http404Exception
    */
-  public function findController(\Config $config) {
+  public function findController(\Config $config)
+  {
     $this->config = $config;
 
     $s_address = str_replace('router.php', '', $_SERVER['PHP_SELF']);
@@ -287,14 +311,15 @@ final class Routes {
     $this->s_controller = '';
     foreach ($this->a_map as $route) {
       if (!$route->regex && $s_address == $route->route) {
-        $this->s_controller = $route->class;
-        $this->s_method = $route->function;
-        break;
-      } else if ($route->regex && stripos($s_address, $route->index) !== false && preg_match('/^' . $route->route . '$/s', $s_address, $this->a_arguments)) {
-        unset($this->a_arguments[0]);
-        $this->s_controller = $route->class;
-        $this->s_method = $route->function;
-        break;
+	$this->s_controller = $route->class;
+	$this->s_method = $route->function;
+	break;
+      } else if ($route->regex && stripos($s_address, $route->index) !== false && preg_match('/^' . $route->route . '$/s',
+											     $s_address, $this->a_arguments)) {
+	unset($this->a_arguments[0]);
+	$this->s_controller = $route->class;
+	$this->s_method = $route->function;
+	break;
       }
     }
 
@@ -315,14 +340,16 @@ final class Routes {
    * @param string $s_address
    * @throws \RuntimeException
    */
-  private function checkController($s_address) {
+  private function checkController($s_address)
+  {
     $s_file = str_replace('\\', DS, $this->s_controller);
     if (!file_exists(WEB_ROOT . $s_file . '.php')) {
-      $s_file = preg_replace_callback('/([A-Z])/s', function($route){
-	return '_'.strtolower($route[1]);
+      $s_file = preg_replace_callback('/([A-Z])/s',
+				      function($route) {
+	return '_' . strtolower($route[1]);
       }, $s_file);
       $s_file = str_replace('/_', '/', $s_file);
-      
+
       if (!file_exists(WEB_ROOT . $s_file . '.php')) {
 	return false;
       }
@@ -346,7 +373,8 @@ final class Routes {
       return false;
     }
 
-    $this->config->setCall($s_file, $s_address, $this->s_controller, $this->s_method);
+    $this->config->setCall($s_file, $s_address, $this->s_controller,
+			   $this->s_method);
 
     Routes::checkLogin();
 
@@ -356,7 +384,8 @@ final class Routes {
     if (count($this->a_arguments) === 0) {
       $this->returnResult = call_user_func([$class, $this->s_method]);
     } else {
-      $this->returnResult = call_user_func_array([$class, $this->s_method], $this->a_arguments);
+      $this->returnResult = call_user_func_array([$class, $this->s_method],
+						 $this->a_arguments);
     }
 
     $this->class = $class;
@@ -364,18 +393,20 @@ final class Routes {
     return true;
   }
 
-  private function checkLogin() {
+  private function checkLogin()
+  {
     \Profiler::profileSystem('core/models/Privileges', 'Checking access level');
     \Loader::inject('\youconix\core\models\Privileges')->checkLogin();
-    \Profiler::profileSystem('core/models/Privileges', 'Checking access level completed');
+    \Profiler::profileSystem('core/models/Privileges',
+			     'Checking access level completed');
   }
 
   /**
    * 
    * @return \Output
    */
-  public function getResult() {
+  public function getResult()
+  {
     return $this->returnResult;
   }
-
 }

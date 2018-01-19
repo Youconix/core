@@ -11,30 +11,32 @@ namespace youconix\core\services;
  * @see core/services/Xml.inc.php
  * @since 1.0
  */
-class Settings extends \youconix\core\services\Xml implements \Settings
+class Settings implements \Settings
 {
 
   protected $s_settingsDir;
 
   /**
-   * PHP 5 constructor
+   *
+   * @var \ConfigReader $configReader
    */
-  public function __construct()
+  protected $configReader;
+
+  /**
+   * @param \ConfigReader $configReader
+   */
+  public function __construct(\ConfigReader $configReader)
   {
-    parent::__construct();
-
-    $this->s_settingsDir = DATA_DIR . 'settings';
-
-    if (file_exists($this->s_settingsDir . '/settings.xml')) {
-      $this->load($this->s_settingsDir . '/settings.xml');
-    } else {
+    $this->configReader = $configReader;
+    try {
+      $this->configReader->loadConfig('settings');
+    }
+    catch(\RuntimeException $e){
       $s_base = \youconix\core\Memory::detectBase();
 
       \youconix\core\Memory::redirect($s_base . '/install/');
       exit();
     }
-
-    $this->s_startTag = 'settings';
   }
 
   /**
@@ -50,8 +52,84 @@ class Settings extends \youconix\core\services\Xml implements \Settings
   /**
    * Saves the settings file
    */
-  public function save($s_file = '')
+  public function save($file = '')
   {
-    parent::save($this->s_settingsDir . '/settings.xml');
+    $this->configReader->save($this->s_settingsDir . '/settings.xml');
+  }
+
+  /**
+   * Adds a new node
+   *
+   * @param string $path
+   * @param string $content
+   * @throws \XMLException If the path already exists
+   */
+  public function add($path, $content)
+  {
+    $this->configReader->add($path, $content);
+  }
+
+  /**
+   * Checks of the given part of the loaded file exists
+   *
+   * @param string $path
+   * @return boolean, true if the part exists otherwise false
+   */
+  public function exists($path)
+  {
+    return $this->configReader->exists($path);
+  }
+
+  /**
+   * Gives the asked part of the loaded file
+   *
+   * @param string $path
+   * @return string The content of the requested part
+   * @throws \XMLException when the path does not exist
+   */
+  public function get($path)
+  {
+    return $this->configReader->get($path);
+  }
+
+  /**
+   * Saves the value at the given place
+   *
+   * @param string $path
+   * @param string $content
+   * @throws \XMLException when the path does not exist
+   */
+  public function set($path, $content)
+  {
+    return $this->configReader->set($path, $content);
+  }
+
+  /**
+   * Empties the asked part of the loaded file
+   *
+   * @param string $path
+   * @throws \XMLException when the path does not exist
+   */
+  public function emptyPath($path)
+  {
+    $this->configReader->emptyPath($path);
+  }
+
+  /**
+   * Gives the asked block of the loaded file
+   *
+   * @param string $path
+   * @return string The content of the requested part
+   * @throws \XMLException when the path does not exist
+   * @return array The block
+   */
+  public function getBlock($path)
+  {
+    return $this->configReader->getBlock($path);
+  }
+
+  public function loadConfig($file)
+  {
+    $this->configReader->loadConfig($file);
   }
 }

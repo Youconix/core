@@ -11,6 +11,8 @@ class IoC
     protected $settings;
 
     public static $s_ruleSettings = '\youconix\core\services\Settings';
+    
+    public static $s_configReader = '\youconix\core\configReaders\XmlConfigReader';
 
     public static $s_ruleFileHandler = '\youconix\core\services\FileHandler';
 
@@ -20,13 +22,13 @@ class IoC
     
     public function load()
     {
+	$this->detectDefaults();
+      
         $this->settings = \Loader::inject(self::$s_ruleSettings);
         
         $this->detectDatabase();
         $this->detectLogger();
         $this->detectLanguage();
-        $this->detectDefaults();
-        
         $this->setRules();
     }
 
@@ -116,6 +118,7 @@ class IoC
         IoC::$a_rules['Security'] = '\youconix\core\services\Security';
         IoC::$a_rules['Session'] = '\youconix\core\services\session\Native';
         IoC::$a_rules['Settings'] = IoC::$s_ruleSettings;
+	IoC::$a_rules['ConfigReader'] = IoC::$s_configReader;
         IoC::$a_rules['Validation'] = '\youconix\core\services\Validation';
         IoC::$a_rules['Layout'] = 'includes\BaseLogicClass';
 	IoC::$a_rules['EntityManager'] = '\youconix\core\ORM\EntityManager';

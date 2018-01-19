@@ -146,7 +146,7 @@ class FileHandler extends \youconix\core\services\Service
       if ($item->isDir()) {
 	$this->deleteDirectory($item->getPathname());
       } else {
-	unlink($item->getPathname());
+	$this->deleteFile($item->getPathname());
       }
     }
   }
@@ -403,7 +403,7 @@ class FileHandler extends \youconix\core\services\Service
    * Deletes the given file
    *
    * @param string $s_file
-   * @throws \IOException If the file does not exist
+   * @throws \IOException If the file does not exist or no permissions
    */
   public function deleteFile($s_file)
   {
@@ -411,6 +411,12 @@ class FileHandler extends \youconix\core\services\Service
       throw new \IOException('Can not remove non existing file ' . $s_file);
     }
 
+    /* Check permissions */
+    $file = new \SplFileObject($s_file);
+    if (!$file->isWritable()) {
+      throw new \IOException('Can not remove '.$s_file.'. Permission denied.');
+    }
+    unset($file);
     unlink($s_file);
   }
 

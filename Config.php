@@ -50,7 +50,7 @@ class Config implements \Config
    * 
    * @var bool
    */
-  protected $_ajax = false;
+  protected $ajax = false;
 
   /**
    *
@@ -467,7 +467,7 @@ class Config implements \Config
    */
   public function getHost()
   {
-    return $_SERVER['HTTP_HOST'];
+    return (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : WEB_ROOT);
   }
 
   /**
@@ -540,8 +540,8 @@ class Config implements \Config
     $guards = [];
 
     foreach ($guardsBlock AS $guardsRaw) {
-      foreach ($guardsRaw->childNodes AS $guard) {
-	$guards[] = $guard->nodeValue;
+      foreach ($guardsRaw AS $name => $guard) {
+	$guards[$name] = $guard;
       }
     }
 
@@ -639,7 +639,7 @@ class Config implements \Config
    */
   public function getCacheDirectory()
   {
-    return $_SERVER['DOCUMENT_ROOT'] . DS . 'files' . DS . 'cache' . DS;
+    return WEB_ROOT . DS . 'files' . DS . 'cache' . DS;
   }
 
   /**

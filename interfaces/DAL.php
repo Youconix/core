@@ -316,4 +316,11 @@ interface DAL
    * @return string
    */
   public function getDatabase();
+  
+  /**
+   * Dumps the database to a file
+   * This function requires exec()!
+   * @param string $target
+   */
+  public function dump($target);
 }
