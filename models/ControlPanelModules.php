@@ -210,7 +210,6 @@ class ControlPanelModules
    * Installs the given module
    *
    * @param string $s_name
-   *            The module name
    * @throws \Exception If the module throws an exception
    */
   public function installModule($s_name)
@@ -250,7 +249,6 @@ class ControlPanelModules
    * Removes the given module
    *
    * @param int $i_id
-   *            The module ID
    * @throws \Exception If the module throws an exception
    */
   public function removeModule($i_id)
@@ -258,7 +256,7 @@ class ControlPanelModules
     /* Check if module exists */
     $this->builder->select('admin_modules', 'name')
         ->getWhere()
-        ->bindString('name', $s_name);
+        ->bindInt('id', $i_id);
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return;
@@ -266,12 +264,7 @@ class ControlPanelModules
 
     $s_name = $database->result(0, 'name');
 
-    if (in_array($s_name,
-            array(
-            'general',
-            'settings',
-            'statistics'
-        ))) {
+    if (in_array($s_name, $this->getCoreModules())) {
       /*
        * Framework modules
        * Do not remove
@@ -309,7 +302,7 @@ class ControlPanelModules
     /* Check if module exists */
     $this->builder->select('admin_modules', 'name')
         ->getWhere()
-        ->bindString('name', $s_name);
+        ->bindInt('id', $i_id);
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return;
@@ -335,11 +328,20 @@ class ControlPanelModules
     }
   }
 
+  /**
+   * 
+   * @return array
+   */
   public function getCoreModules()
   {
     return ['general', 'settings', 'statistics'];
   }
 
+  /**
+   * 
+   * @param string $s_extension
+   * @return string
+   */
   public function getCacheFile($s_extension)
   {
     return NIV.'files'.DS.'cache'.DS.'admin_modules.'.$s_extension;

@@ -5,6 +5,8 @@ namespace youconix\core\templating;
 abstract class AdminController extends BaseController
 {
 
+  
+
   /**
    * Loads the given view into the parser
    *
@@ -20,7 +22,13 @@ abstract class AdminController extends BaseController
    */
   protected function createView($s_view, $a_data = [], $s_templateDir = 'admin')
   {
-    return parent::createView($s_view, $a_data, $s_templateDir);
+    $output = $this->wrapper->getOutput();
+
+    $output->load($s_view, $s_templateDir);
+    $output->setArray($a_data);
+    $this->wrapper->getLayout()->parse($output);
+
+    return $output;
   }
 
   /**
@@ -30,5 +38,33 @@ abstract class AdminController extends BaseController
   protected function setDefaultValues(\Output $template)
   {
     $template->append('currentLanguage', $this->getLanguage()->getLanguage());
+  }
+  
+  /**
+   * 
+   * @param string $parent
+   * @param string $field
+   * @return string
+   */
+  protected function getText($parent, $field)
+  {
+    return t('system/admin/' . $parent . '/' . $field);
+  }
+
+  /**
+   * 
+   * @param string $name
+   * @param boolan $value
+   * @return \youconix\core\helpers\OnOff
+   */
+  protected function createSlider($name, $value)
+  {
+    $slider = clone $this->onOff;
+    $slider->setName($name);
+    if ($value) {
+      $slider->setSelected(true);
+    }
+
+    return $slider;
   }
 }

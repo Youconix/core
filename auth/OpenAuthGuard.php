@@ -61,14 +61,14 @@ abstract class OpenAuthGuard extends GuardParent
     $name = $this->getName();
 
     $form = '<fieldset>
-	<label class="label">'.$this->language->get('system/settings/login/appID').' *</label>
+	<label class="label">'.$this->language->get('system/admin/settings/login/appID').' *</label>
 	<input type="text" name="' . $name . '_appId" value="' . $this->guardConfig['appId'] . '" required
-	  data-validation="'.$this->language->get('system/settings/login/facebookAppError').'">
+	  data-validation="'.$this->language->get('system/admin/settings/login/facebookAppError').'">
     </fieldset>
     <fieldset>
-	<label class="label">'.$this->language->get('system/settings/login/appSecret').' *</label>
+	<label class="label">'.$this->language->get('system/admin/settings/login/appSecret').' *</label>
 	<input type="text" name="' . $name . '_appSecret" value="' . $this->guardConfig['appSecret'] . '" required
-	  data-validation="'.$this->language->get('system/settings/login/facebookAppSecretError').'">
+	  data-validation="'.$this->language->get('system/admin/settings/login/facebookAppSecretError').'">
     </fieldset>';
 
     return $form;
