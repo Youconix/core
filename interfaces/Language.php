@@ -6,11 +6,11 @@ interface Language
     /**
      * Gets the name belonging to the language code
      *
-     * @param string $s_code
+     * @param string $code
      *            The language code
      * @return string The language name
      */
-    public function getLanguageText($s_code);
+    public function getLanguageText($code);
 
     /**
      * Returns the language codes
@@ -22,11 +22,11 @@ interface Language
     /**
      * Sets the language
      *
-     * @param string $s_language
+     * @param string $language
      *            code
      * @throws IOException when the language code does not exist
      */
-    public function setLanguage($s_language);
+    public function setLanguage($language);
 
     /**
      * Returns the set language
@@ -45,47 +45,46 @@ interface Language
     /**
      * Gives the asked part of the loaded file
      *
-     * @param string $s_path
+     * @param string $path
      *            The path to the language-part
      * @return string The content of the requested part
-     * @throws XMLException when the path does not exist
+     * @throws IOException when the path does not exist
      */
-    public function get($s_path);
+    public function get($path);
 
     /**
      * Changes the language-values with the given values
      * Collects the text from the language file via the path
      *
-     * @param string $s_path
+     * @param string $path
      *            The path to the language-part
-     * @param array $a_fields
+     * @param array $fields
      *            accepts also a string
-     * @param array $a_values
+     * @param array $values
      *            accepts also a string
      * @return string changed language-string
-     * @throws XMLException when the path does not exist
+     * @throws IOException when the path does not exist
      */
-    public function insertPath($s_path, $a_fields, $a_values);
+    public function insertPath($path, $fields, $values);
 
     /**
      * Changes the language-values with the given values
      *
-     * @param string $s_text            
-     * @param array $a_fields
+     * @param string $text
+     * @param array $fields
      *            accepts also a string
-     * @param array $a_values
+     * @param array $values
      *            accepts also a string
      * @return string changed language-string
      */
-    public function insert($s_text, $a_fields, $a_values);
+    public function insert($text, $fields, $values);
 
     /**
      * Checks of the given part of the loaded file exists
      *
-     * @param string $s_path
+     * @param string $path
      *            The path to the language-part
      * @return boolean, true if the part exists otherwise false
      */
-    public function exists($s_path);
+    public function exists($path);
 }
-?>
