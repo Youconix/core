@@ -18,7 +18,7 @@ final class Loader
    */
     private static function getFileName($className)
     {
-        /* Check for interfaces */
+        /* Check for Interfaces */
         if (file_exists(WEB_ROOT . CORE . 'Interfaces' . DS . $className . '.php')) {
             return CORE . 'Interfaces' . DS . $className . '.php';
         }
@@ -32,10 +32,11 @@ final class Loader
             $namespace = substr($className, 0, $lastNsPos);
             $className = substr($className, $lastNsPos + 1);
             $fileName = str_replace('\\', DS, $namespace) . DS;
+            $fileName = str_replace('youconix/Core/', 'youconix/Core/src/', $fileName);
         }
 
         if (file_exists(WEB_ROOT . 'vendor' . DS . $fileName . DS . $className . '.php')) {
-            return 'vendor' . DS . $fileName . DS . $className . '.php';
+          return 'vendor' . DS . $fileName . DS . $className . '.php';
         }
 
         if (file_exists(WEB_ROOT . 'vendor' . DS . strtolower($fileName) . DS . $fileName . DS . $className . '.php')) {
@@ -102,6 +103,7 @@ final class Loader
             if (!is_null($check)) {
                 $className = $check;
                 $fileName = str_replace('\\', DS, $check) . '.php';
+                $fileName = str_replace('youconix/Core/', 'youconix/Core/src/', $fileName);
 
                 while (substr($fileName, 0, 1) == DS) {
                     $fileName = substr($fileName, 1);
@@ -242,8 +244,6 @@ final class Loader
             Memory::setCache($caller, $object);
         }
 
-        \Profiler::profileSystem('Core/Loader.php', 'Loaded class ' . $caller);
-
         return $object;
     }
 
@@ -259,26 +259,30 @@ final class Loader
             $filename = 'vendor' . DS . $filename;
         }
 
-        $service_File = Memory::getCache(\youconix\core\IoC::$ruleFileHandler);
+        if ( strpos($filename, 'vendor/youconix') !== false && strpos($filename,'Core/src') === false) {
+          $filename = str_replace('youconix/Core/', 'youconix/Core/src/', $filename);
+        }
 
-        if ($service_File->exists(WEB_ROOT . DS . $filename)) {
-            $s_file = $service_File->readFile(WEB_ROOT . DS . $filename);
-        } elseif ($service_File->exists($filename)) {
-            $s_file = $service_File->readFile($filename);
-        } elseif ($service_File->exists(str_replace('.inc.php', '.php', $filename))) {
-            $s_file = $service_File->readFile(str_replace('.inc.php', '.php',
+        $fileHandler = Memory::getCache(\youconix\core\IoC::$ruleFileHandler);
+
+        if ($fileHandler->exists(WEB_ROOT . DS . $filename)) {
+            $file = $fileHandler->readFile(WEB_ROOT . DS . $filename);
+        } elseif ($fileHandler->exists($filename)) {
+            $file = $fileHandler->readFile($filename);
+        } elseif ($fileHandler->exists(str_replace('.inc.php', '.php', $filename))) {
+            $file = $fileHandler->readFile(str_replace('.inc.php', '.php',
                 $filename));
         } else {
             throw new \Exception('Call to unknown file ' . $filename . '.');
         }
 
         // Find use statements
-        self::findUses($s_file);
+        self::findUses($file);
 
-        if (stripos($s_file, '__construct') === false) {
+        if (stripos($file, '__construct') === false) {
             /* Check if file has parent */
             preg_match('#class\\s+[a-z0-9\-_]+\\s+extends\\s+([\\\a-z0-9_\-]+)#si',
-                $s_file, $matches);
+                $file, $matches);
             if (count($matches) == 0) {
                 return array();
             }
@@ -290,27 +294,27 @@ final class Loader
             switch ($matches[1]) {
                 case '\youconix\Core\Models\Model':
                 case 'Model':
-                    $filename = 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.DS.'Models' . DS . 'Model.php';
+                    $filename = 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.DS.'Models' . DS . 'AbstractModel.php';
                     break;
 
-                case '\youconix\Core\Services\Service':
+                case '\youconix\Core\Services\AbstractService':
                 case 'Service':
-                    $filename = 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.'Services' . DS . 'Service.php';
+                    $filename = 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.DS.'Services' . DS . 'AbstractService.php';
                     break;
 
                 case '\youconix\Core\Helpers\Helper':
                 case 'Helper':
-                    $filename = 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.'Helpers' . DS . 'Helper.php';
+                    $filename = 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.DS.'Helpers' . DS . 'AbstractHelper.php';
                     break;
 
                 default:
                     /* Check for namespace parent */
-                    preg_match('#extends\\s+(\\\\{1}[\\\a-zA-Z0-9_\-]+)#si', $s_file, $matches2);
+                    preg_match('#extends\\s+(\\\\{1}[\\\a-zA-Z0-9_\-]+)#si', $file, $matches2);
                     if (count($matches2) > 0) {
                         $filename = self::parentNamespace($matches2);
                     } else {
                         /* Check for namespace */
-                        preg_match('#namespace\\s+([\\a-z-_0-9]+);#', $s_file, $a_namespaces);
+                        preg_match('#namespace\\s+([\\a-z-_0-9]+);#', $file, $a_namespaces);
                         if (count($a_namespaces) > 0) {
                             $filename = str_replace('\\', '/',
                                     $a_namespaces[1] . '/' . $matches[1]) . '.php';
@@ -324,7 +328,7 @@ final class Loader
         }
 
         preg_match('#function\\s+__construct\\s?\({1}\\s?([\\a-zA-Z\\s\$\-_,]+)\){1}#si',
-            $s_file, $matches);
+            $file, $matches);
 
         return $matches;
     }

@@ -15,13 +15,13 @@ class UploadFile extends \File
 
     /**
      *
-     * @var \Language
+     * @var \LanguageInterface
      */
     protected $language;
 
     /**
      *
-     * @var \Logger
+     * @var \LoggerInterface
      */
     protected $logger;
 
@@ -54,11 +54,11 @@ class UploadFile extends \File
     /**
      * Constructor
      *
-     * @param \Language $language            
-     * @param \Logger $logger            
+     * @param \LanguageInterface $language
+     * @param \LoggerInterface $logger            
      * @param \youconix\core\common\File $file            
      */
-    public function __construct(\youconix\core\services\Language $language, \Logger $logger, \youconix\core\common\File $file)
+    public function __construct(\youconix\core\services\Language $language, \LoggerInterface $logger, \youconix\core\common\File $file)
     {
         $this->language = $language;
         $this->logger = $logger;

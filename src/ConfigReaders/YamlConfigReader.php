@@ -1,9 +1,9 @@
 <?php
 
-namespace youconix\core\ConfigReaders;
+namespace youconix\Core\ConfigReaders;
 
 
-class YamlConfigReader extends \youconix\core\ConfigReaders\AbstractConfig implements \ConfigReader
+class YamlConfigReader extends \youconix\Core\ConfigReaders\AbstractConfig implements \ConfigReader
 {
 
   /**

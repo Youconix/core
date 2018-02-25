@@ -15,12 +15,12 @@ final class AdminControllerWrapper extends ControllerWrapper
    *
    * @param \Request $request
    * @param \youconix\core\templating\gui\AdminLogicClass $layout
-   * @param \Output $output
+   * @param \OutputInterface $output
    * @param \Headers $headers
-   * @param \Logger $logger
-   * @param \Language $language
+   * @param \LoggerInterface $logger
+   * @param \LanguageInterface $language
    */
-  public function __construct(\Request $request, Layout $layout, \Output $output, \Headers $headers, \Logger $logger, \Language $language)
+  public function __construct(\Request $request, Layout $layout, \OutputInterface $output, \Headers $headers, \LoggerInterface $logger, \LanguageInterface $language)
   {
     parent::__construct($request, $layout, $output, $headers, $logger, $language);
   }

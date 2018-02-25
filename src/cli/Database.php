@@ -4,11 +4,11 @@ namespace youconix\core\cli;
 
 class Database extends \youconix\core\templating\CliController {
   /**
-   * @var \DAL
+   * @var \DALInterface
    */
   private $dal;
   
-  public function __construct(\DAL $dal)
+  public function __construct(\DALInterface $dal)
   {
     parent::__construct();
     

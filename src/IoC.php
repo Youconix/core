@@ -7,7 +7,7 @@ class IoC
 
   /**
    *
-   * @var \Settings
+   * @var \SettingsInterface
    */
   protected $settings;
 
@@ -39,49 +39,49 @@ class IoC
   {
     $s_database = $this->settings->get('settings/SQL/type');
 
-    IoC::$rules['DAL'] = '\youconix\Core\ORM\Database\\' . $s_database;
-    IoC::$rules['Builder'] = '\youconix\Core\ORM\Database\Builder_' . $s_database;
-    IoC::$rules['DatabaseParser'] = '\youconix\Core\ORM\Database\Parser_' . $s_database;
+    IoC::$rules['DALInterface'] = '\youconix\Core\ORM\Database\\' . $s_database;
+    IoC::$rules['BuilderInterface'] = '\youconix\Core\ORM\Database\Builder_' . $s_database;
+    IoC::$rules['DatabaseParserInterface'] = '\youconix\Core\ORM\Database\Parser_' . $s_database;
   }
 
   protected function detectLogger()
   {
-    if (!interface_exists('\Logger')) {
+    if (!interface_exists('\LoggerInterface')) {
       require(NIV . 'Core/Interfaces/LoggerInterface.php');
     }
 
-    if (defined('LOGGER')) {
+    if (defined('LoggerInterface')) {
       $type = LOGGER;
     } elseif (!$this->settings->exists('settings/main/logs')) {
       $type = 'default';
     } else {
-      $type = $this->settings->get('main/logs');
+      $type = $this->settings->get('settings/main/logs');
     }
 
     switch ($type) {
       case 'default':
-        IoC::$rules['Logger'] = '\youconix\Core\Services\Logger\LoggerDefault';
+        IoC::$rules['LoggerInterface'] = '\youconix\Core\Services\Logger\LoggerDefault';
         break;
 
       case 'error_log':
-        IoC::$rules['Logger'] = '\youconix\Core\Services\Logger\LoggerErrorLog';
+        IoC::$rules['LoggerInterface'] = '\youconix\Core\Services\Logger\LoggerErrorLog';
         break;
 
       case 'sys_log':
-        IoC::$rules['Logger'] = '\youconix\Core\Services\Logger\LoggerSysLog';
+        IoC::$rules['LoggerInterface'] = '\youconix\Core\Services\Logger\LoggerSysLog';
         break;
 
       default:
-        IoC::$rules['Logger'] = $type;
+        IoC::$rules['LoggerInterface'] = $type;
     }
   }
 
   protected function detectLanguage()
   {
     if ($this->settings->exists('settings/language/type') && $this->settings->get('settings/language/type') == 'mo') {
-      IoC::$rules['Language'] = '\youconix\Core\Services\Data\LanguageMO';
+      IoC::$rules['LanguageInterface'] = '\youconix\Core\Services\Data\LanguageMO';
     } else {
-      IoC::$rules['Language'] = '\youconix\Core\Services\Data\LanguageXML';
+      IoC::$rules['LanguageInterface'] = '\youconix\Core\Services\Data\LanguageXML';
     }
 
     if (!function_exists('t')) {
@@ -91,31 +91,31 @@ class IoC
 
   protected function detectDefaults()
   {
-    $a_items = array(
+    $items = [
       'Header',
       'Footer',
       'Menu'
-    );
-    foreach ($a_items as $s_item) {
-      if (file_exists(NIV . 'Includes/Classes/' . $s_item . '.php')) {
-        IoC::$rules[$s_item] = '\Includes\Classes\\' . $s_item;
+    ];
+    foreach ($items as $item) {
+      if (file_exists(NIV . 'Includes/Classes/' . $item . '.php')) {
+        IoC::$rules[$item.'Interface'] = '\Includes\Classes\\' . $item;
       } else {
-        IoC::$rules[$s_item] = '\youconix\Core\Classes\\' . $s_item;
+        IoC::$rules[$item.'Interface'] = '\youconix\Core\Classes\\' . $item;
       }
     }
 
     IoC::$rules['Entities'] = '\youconix\Core\ORM\EntityHelper';
-    IoC::$rules['Request'] = '\youconix\Core\Templating\Request';
+    IoC::$rules['RequestInterface'] = '\youconix\Core\Templating\Request';
     IoC::$rules['Cache'] = '\youconix\Core\Services\Cache';
-    IoC::$rules['Config'] = IoC::$ruleConfig;
+    IoC::$rules['ConfigInterface'] = IoC::$ruleConfig;
     IoC::$rules['Cookie'] = '\youconix\Core\Services\Cookie';
     IoC::$rules['FileHandler'] = IoC::$ruleFileHandler;
-    IoC::$rules['Headers'] = '\youconix\Core\Services\Headers';
+    IoC::$rules['HeadersInterface'] = '\youconix\Core\Services\Headers';
     IoC::$rules['Input'] = '\youconix\Core\Input';
-    IoC::$rules['Output'] = '\youconix\Core\Templating\Template';
+    IoC::$rules['OutputInterface'] = '\youconix\Core\Templating\Template';
     IoC::$rules['Security'] = '\youconix\Core\Services\Security';
-    IoC::$rules['Session'] = '\youconix\Core\Services\Session\Native';
-    IoC::$rules['Settings'] = IoC::$ruleSettings;
+    IoC::$rules['SessionInterface'] = '\youconix\Core\Services\Session\Native';
+    IoC::$rules['SettingsInterface'] = IoC::$ruleSettings;
     IoC::$rules['Validation'] = '\youconix\Core\Services\Validation';
     IoC::$rules['Layout'] = 'Includes\BaseLogicClass';
     IoC::$rules['EntityManager'] = '\youconix\Core\ORM\EntityManager';
@@ -127,7 +127,7 @@ class IoC
       $s_name = substr($s_name, 1);
     }
 
-    if ($s_name == 'Mailer') {
+    if ($s_name == 'MailerInterface') {
       if (defined('DEBUG') || \youconix\core\Memory::isTesting()) {
         return '\youconix\Core\Mailer\PHPMailerDebug';
       } else {

@@ -1,39 +1,33 @@
 <?php
 
-namespace youconix\core\templating;
+namespace youconix\Core\Templating;
 
-use youconix\core\services\FileHandler;
+use youconix\Core\Services\FileHandler;
 
-class Template extends \youconix\core\services\Service implements \Output {
+class Template extends \youconix\Core\Services\AbstractService implements \OutputInterface {
 
   protected $bo_blade = false;
 
-  /**
-   *
-   * @var \Config
-   */
+  /** @var \ConfigInterface */
   protected $config;
 
-  /**
-   *
-   * @var \youconix\core\templating\TemplateParent
-   */
+  /** @var \youconix\Core\Templating\TemplateParent */
   protected $parser;
 
-  /**
-   *
-   * @var \Headers
-   */
+  /** @var \HeadersInterface */
   protected $headers;
   protected $s_view;
 
-  /**
-   *
-   * @var \youconix\core\services\FileHandler
-   */
+  /** @var string */
+  protected $file;
+
+  /** @var string */
+  protected $templateDir;
+
+  /** @var \youconix\Core\Services\FileHandler */
   protected $fileHandler;
 
-  public function __construct(FileHandler $fileHandler, \Config $config, \Headers $headers) {
+  public function __construct(FileHandler $fileHandler, \ConfigInterface $config, \HeadersInterface $headers) {
     $this->fileHandler = $fileHandler;
     $this->config = $config;
     $this->headers = $headers;
@@ -44,34 +38,46 @@ class Template extends \youconix\core\services\Service implements \Output {
    *
    * @param string $s_view
    *            The view relative to the template-directory
-   * @param string $s_templateDir
+   * @param string $templateDir
    * 		  Override the default template directory
    * @throws \TemplateException if the view does not exist
    * @throws \IOException if the view is not readable
    */
-  public function load($s_view, $s_templateDir = '') {
-    if (empty($s_templateDir)) {
-      $s_templateDir = $this->config->getTemplateDir();
+  public function load($view, $templateDir = '') {
+    if (empty($templateDir)) {
+      $templateDir = $this->config->getTemplateDir();
     }
 
-    $s_templateDir = NIV . 'styles' . DS . $s_templateDir . DS . 'templates' . DS;
+    $templateDir = NIV . 'styles' . DS . $templateDir . DS . 'templates' . DS;
+    $file = $templateDir . DS . $view . '.blade.php';
 
-    $s_file = $s_templateDir . DS . $s_view . '.blade.php';
-    if (!$this->fileHandler->exists($s_file) || !$this->fileHandler->isReadable($s_file)) {
-      $s_file = $s_templateDir . DS . $s_view . '.tpl';
+    $this->templateDir = $templateDir;
+    $this->file = $file;
 
-      if (!$this->fileHandler->exists($s_file) || !$this->fileHandler->isReadable($s_file)) {
-	throw new \TemplateException('Template ' . $s_view . ' in directory ' . $s_templateDir . ' does not exist.');
+    if (!$this->fileHandler->exists($file) || !$this->fileHandler->isReadable($file)) {
+      $file = $templateDir . DS . $view . '.tpl';
+
+      if (!$this->fileHandler->exists($file) || !$this->fileHandler->isReadable($file)) {
+	throw new \TemplateException('Template ' . $view . ' in directory ' . $templateDir . ' does not exist.');
       }
 
-      $this->parser = \Loader::inject('\youconix\core\templating\TemplateTpl');
+      $this->parser = \Loader::inject('\youconix\Core\Templating\TemplateTpl');
     } else {
-      $this->parser = \Loader::inject('\youconix\core\templating\TemplateBlade');
+      $this->parser = \Loader::inject('\youconix\Core\Templating\TemplateBlade');
       $this->bo_blade = true;
     }
 
-    $this->parser->load($s_file, $s_templateDir);
-    $this->s_view = $s_view;
+    $this->parser->load($file, $templateDir);
+    $this->s_view = $view;
+  }
+
+  public function __debugInfo()
+  {
+    return [
+      'template loaded' => $this->file,
+      'template directory' => $this->templateDir,
+      'parser' => get_class($this->parser)
+    ];
   }
 
   /**

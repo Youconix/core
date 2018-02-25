@@ -1,6 +1,6 @@
 <?php
 
-namespace youconix\core\ORM;
+namespace youconix\Core\ORM;
 
 final class EntityManager implements \EntityManager{  
   /**
@@ -20,7 +20,7 @@ final class EntityManager implements \EntityManager{
    */
   private $helper;  
 
-  public function __construct(\Builder $builder, \Entities $helper) {
+  public function __construct(\BuilderInterface $builder, \Entities $helper) {
     $this->builder = $builder;
     $this->helper = $helper;
     

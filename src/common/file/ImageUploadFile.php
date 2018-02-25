@@ -22,10 +22,10 @@ class ImageUploadFile extends \youconix\core\common\file\UploadFile
     /**
      * Constructor
      *
-     * @param \Language $language            
+     * @param \LanguageInterface $language            
      * @param \youconix\core\common\file\DefaultMimetypes $mimetypes            
      */
-    public function __construct(\Language $language, \Logger $logger, \youconix\core\common\Image $file, \youconix\core\common\file\DefaultMimetypes $mimetypes)
+    public function __construct(\LanguageInterface $language, \LoggerInterface $logger, \youconix\core\common\Image $file, \youconix\core\common\file\DefaultMimetypes $mimetypes)
     {
         parent::__construct($language, $logger, $file);
         

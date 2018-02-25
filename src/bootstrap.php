@@ -6,7 +6,7 @@ function reportException(\Exception $exception, $bo_caught = true)
   $s_error .= $exception->getTraceAsString();
 
   try {
-    $logs = \Loader::inject('\Logger');
+    $logs = \Loader::inject('\LoggerInterface');
 
     if ($bo_caught) {
       $logs->critical($s_error);
@@ -56,12 +56,9 @@ set_exception_handler('exception_handler');
 /**
  * Start framework
  */
-define('CORE', 'vendor' . DIRECTORY_SEPARATOR . 'youconix' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR);
-$a_files = explode('vendor' . DIRECTORY_SEPARATOR . 'youconix', __FILE__);
-define('WEB_ROOT', $a_files[0]);
-
-require_once(WEB_ROOT . DIRECTORY_SEPARATOR . CORE . 'Profiler.php');
-Profiler::reset();
+define('CORE', 'vendor' . DIRECTORY_SEPARATOR . 'youconix' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR);
+$files = explode('vendor' . DIRECTORY_SEPARATOR . 'youconix', __FILE__);
+define('WEB_ROOT', $files[0]);
 
 require_once(WEB_ROOT . DIRECTORY_SEPARATOR . CORE . 'Memory.php');
 \youconix\core\Memory::startUp();

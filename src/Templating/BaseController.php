@@ -63,7 +63,7 @@ abstract class BaseController
 
   /**
    * 
-   * @return \Logger
+   * @return \LoggerInterface
    */
   protected function getLogger()
   {
@@ -72,7 +72,7 @@ abstract class BaseController
 
   /**
    * 
-   * @return \Language
+   * @return \LanguageInterface
    */
   protected function getLanguage()
   {
@@ -88,7 +88,7 @@ abstract class BaseController
    * 		  Data as key-value pair
    * @param string $s_templateDir
    * 		  Override the default template directory
-   * @return \Output
+   * @return \OutputInterface
    * @throws \TemplateException if the view does not exist
    * @throws \IOException if the view is not readable
    */

@@ -1,8 +1,8 @@
 <?php
 
-namespace youconix\core\templating;
+namespace youconix\Core\Templating;
 
-class TemplateBlade extends \youconix\core\templating\TemplateParent
+class TemplateBlade extends \youconix\Core\Templating\AbstractTemplate
 {
 
   /**

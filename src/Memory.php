@@ -85,7 +85,7 @@ final class Memory
       ];
       self::$serviceData = [
         'systemPath' => NIV . CORE . 'Services' . DS . 'Data' . DS,
-        'userPath' => NIV . 'Includes' . DS . 'services' . DS . 'Data' . DS,
+        'userPath' => NIV . 'Includes' . DS . 'Services' . DS . 'Data' . DS,
         'systemNamespace' => '\youconix\Core\Services\Data\\',
         'userNamespace' => '\Includes\Services\Data\\'
       ];
@@ -133,7 +133,7 @@ final class Memory
       );
 
       require_once(NIV . CORE . 'AbstractObject.php');
-      require_once(NIV . CORE . 'Services' . DS . 'Service.php');
+      require_once(NIV . CORE . 'Services' . DS . 'AbstractService.php');
 
       /* Load IoC */
       self::$cache['IoC'] = self::loadCoreClass('\youconix\Core\IoC');
@@ -146,7 +146,7 @@ final class Memory
 
       self::$cache['IoC']->load();
 
-      /* Load standard services */
+      /* Load standard Services */
       $file = self::$cache[IoC::$ruleFileHandler];
       if (!$file->exists(NIV . 'files' . DS . 'updates')) {
         $file->newDirectory(NIV . 'files' . DS . 'updates', 0700);
@@ -155,7 +155,7 @@ final class Memory
       $caller = IoC::$ruleSettings;
       $settings = \Loader::inject($caller);
       self::$cache[$caller] = $settings;
-      self::$cache['\Settings'] = $settings;
+      self::$cache['\SettingsInterface'] = $settings;
       unset($caller);
       date_default_timezone_set($settings->get('settings/main/timeZone'));
 
@@ -176,7 +176,7 @@ final class Memory
    */
   private static function loadCoreClass($className)
   {
-    $fileName = str_replace('\\', DS, str_replace('\youconix\core\\', '', $className));
+    $fileName = str_replace('\\', DS, str_replace('\youconix\Core\\', '', $className));
 
     require(NIV . CORE . $fileName . '.php');
     if (file_exists(NIV . 'Includes' . DS . $fileName . '.php')) {
@@ -190,9 +190,9 @@ final class Memory
   /**
    * Sets the default values
    *
-   * @param \Settings $settings
+   * @param \SettingsInterface $settings
    */
-  private static function setDefaultValues(\Settings $settings)
+  private static function setDefaultValues(\SettingsInterface $settings)
   {
     if (isset($_SERVER['SERVER_ADDR']) && in_array($_SERVER['SERVER_ADDR'], [
         '127.0.0.1',
@@ -257,14 +257,14 @@ final class Memory
    *
    * @return string protocol
    * @deprecated since version 2.
-   * @see \Config:getProtocol
+   * @see \ConfigInterface:getProtocol
    */
   public static function getProtocol()
   {
     if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of Core/models/Config->getProtocol().", E_USER_DEPRECATED);
     }
-    return \Loader::inject('\Config')->getProtocol();
+    return \Loader::inject('\ConfigInterface')->getProtocol();
   }
 
   /**
@@ -272,14 +272,14 @@ final class Memory
    *
    * @return string page
    * @deprecated since version 2.
-   * @see \Config:getPage
+   * @see \ConfigInterface:getPage
    */
   public static function getPage()
   {
     if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of Core/models/Config->getPage().", E_USER_DEPRECATED);
     }
-    return \Loader::inject('\Config')->getPage();
+    return \Loader::inject('\ConfigInterface')->getPage();
   }
 
   /**
@@ -287,28 +287,28 @@ final class Memory
    *
    * @return boolean if ajax-mode is active
    * @deprecated since version 2.
-   * @see \Config:isAjax
+   * @see \ConfigInterface:isAjax
    */
   public static function isAjax()
   {
     if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of Core/models/Config->isAjax().", E_USER_DEPRECATED);
     }
-    return \Loader::inject('\Config')->isAjax();
+    return \Loader::inject('\ConfigInterface')->isAjax();
   }
 
   /**
    * Sets the framework in ajax-
    *
    * @deprecated since version 2
-   * @see \Config::setAjax()
+   * @see \ConfigInterface::setAjax()
    */
   public static function setAjax()
   {
     if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of Core/models/Config->setAjax().", E_USER_DEPRECATED);
     }
-    return \Loader::inject('\Config')->setAjax();
+    return \Loader::inject('\ConfigInterface')->setAjax();
   }
 
   /**
@@ -333,7 +333,7 @@ final class Memory
     if (!self::isTesting()) {
       trigger_error("This function has been deprecated in favour of Core/models/Config->getBase().", E_USER_DEPRECATED);
     }
-    return \Loader::inject('\Config')->getBase();
+    return \Loader::inject('\ConfigInterface')->getBase();
   }
 
   /**

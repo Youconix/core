@@ -1,8 +1,8 @@
 <?php
 
-namespace youconix\core\ConfigReaders;
+namespace youconix\Core\ConfigReaders;
 
-class XmlConfigReader extends \youconix\core\ConfigReaders\AbstractConfig implements \ConfigReader
+class XmlConfigReader extends \youconix\Core\ConfigReaders\AbstractConfig implements \ConfigReader
 {
   /**
    *
@@ -22,6 +22,7 @@ class XmlConfigReader extends \youconix\core\ConfigReaders\AbstractConfig implem
   {
     $path = $reader->getName();
 
+    $this->config = [];
     $this->readArray($reader, $path);
 
   }

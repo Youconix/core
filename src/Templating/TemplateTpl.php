@@ -1,6 +1,6 @@
 <?php
 
-namespace youconix\core\templating;
+namespace youconix\Core\Templating;
 
 /**
  * Template parser for joining the templates and the PHP code
@@ -12,7 +12,7 @@ namespace youconix\core\templating;
  * @version 1.0
  * @since 1.0
  */
-class TemplateTpl extends \youconix\core\templating\TemplateParent {
+class TemplateTpl extends \youconix\Core\Templating\AbstractTemplate {
 
   /**
    * Loads the templates

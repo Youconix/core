@@ -1,6 +1,6 @@
 <?php
 
-namespace youconix\core\ConfigReaders;
+namespace youconix\Core\ConfigReaders;
 
 
 abstract class AbstractConfig

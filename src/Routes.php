@@ -24,8 +24,8 @@ final class Routes
    */
   private $file;
 
-  public function __construct(\Builder $builder, \Config $config,
-                              \youconix\core\services\FileHandler $file)
+  public function __construct(\BuilderInterface $builder, \ConfigInterface $config,
+                              \youconix\Core\Services\FileHandler $file)
   {
     $this->builder = $builder;
     $this->file = $file;
@@ -37,6 +37,14 @@ final class Routes
     $this->cacheFile = $cacheDir . 'entityMap.php';
 
     $this->buildMap();
+  }
+
+  public function __debugInfo()
+  {
+    return [
+      'controller' => $this->controller,
+      'method' => $this->method
+    ];
   }
 
   /**
@@ -228,17 +236,17 @@ final class Routes
 
   /**
    *
-   * @param string $route
+   * @param string $routePath
    * @param string $name
    * @param array $parameters
    * @return \stdClass
    */
-  private function createRoute($route, $name, array $parameters = [])
+  private function createRoute($routePath, $name, array $parameters = [])
   {
-    $regex = (strpos($route, '{') !== false);
+    $regex = (strpos($routePath, '{') !== false);
 
     $route = new \stdClass();
-    $route->route_original = $route;
+    $route->route_original = $routePath;
     $route->regex = $regex;
     $route->name = $name;
     $route->parameters = [];
@@ -248,27 +256,27 @@ final class Routes
       $variable = str_replace('"', '', str_replace("'", '', $parts[0]));
       $value = str_replace('"', '', str_replace("'", '', $parts[1]));
 
-      $route = str_replace('{' . $variable . '}', '(' . $value . ')',
-        $route);
+      $routePath = str_replace('{' . $variable . '}', '(' . $value . ')',
+        $routePath);
       $route->parameters[$variable] = $value;
     }
 
     $index = explode('{', $route->route_original);
 
     $matches = null;
-    if (preg_match_all('/{([^}]+)}/s', $route, $matches)) {
+    if (preg_match_all('/{([^}]+)}/s', $routePath, $matches)) {
       $replace = '[^/]+';
       for ($i = 0; $i < count($matches[1]); $i++) {
-        $route = str_replace('{' . $matches[1][$i] . '}', '(' . $replace . ')',
-          $route);
+        $routePath = str_replace('{' . $matches[1][$i] . '}', '(' . $replace . ')',
+          $routePath);
         $route->parameters[$matches[1][$i]] = $replace;
       }
     }
     if ($regex) {
-      $route = str_replace('/', '\/', $route);
+      $routePath = str_replace('/', '\/', $routePath);
     }
 
-    $route->route = $route;
+    $route->route = $routePath;
     $route->index = $index[0];
 
     return $route;
@@ -290,11 +298,11 @@ final class Routes
 
   /**
    *
-   * @param \Config $config
+   * @param \ConfigInterface $config
    * @return \youconix\core\templating\BaseController
    * @throws \Http404Exception
    */
-  public function findController(\Config $config)
+  public function findController(\ConfigInterface $config)
   {
     $this->config = $config;
 
@@ -398,12 +406,12 @@ final class Routes
 
   private function checkLogin()
   {
-    \Loader::inject('\youconix\core\models\Privileges')->checkLogin();
+    \Loader::inject('\youconix\Core\Models\Privileges')->checkLogin();
   }
 
   /**
    *
-   * @return \Output
+   * @return \OutputInterface
    */
   public function getResult()
   {

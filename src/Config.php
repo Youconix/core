@@ -7,13 +7,13 @@ namespace youconix\Core;
  *
  * @since 2.0
  */
-class Config implements \Config
+class Config implements \ConfigInterface
 {
 
   /** @var \youconix\core\services\FileHandler */
   protected $file;
 
-  /** @var \Settings */
+  /** @var \SettingsInterface */
   protected $settings;
 
   /** @var \Cookie */
@@ -62,11 +62,11 @@ class Config implements \Config
    * PHP 5 constructor
    *
    * @param \youconix\core\services\FileHandler $file
-   * @param \Settings $settings
+   * @param \SettingsInterface $settings
    * @param \Cookie $cookie
    */
-  public function __construct(\youconix\core\services\FileHandler $file,
-                              \Settings $settings, \Cookie $cookie, \Builder $builder)
+  public function __construct(\youconix\Core\Services\FileHandler $file,
+                              \SettingsInterface $settings, \Cookie $cookie, \BuilderInterface $builder)
   {
     $this->file = $file;
     $this->settings = $settings;
@@ -76,6 +76,11 @@ class Config implements \Config
     $this->loadLanguage();
 
     $this->setDefaultValues($settings);
+  }
+
+  public function __debugInfo()
+  {
+    return [];
   }
 
   /**
@@ -159,7 +164,7 @@ class Config implements \Config
   /**
    * Returns the settings service
    *
-   * @return \Settings The service
+   * @return \SettingsInterface The service
    */
   public function getSettings()
   {
@@ -539,7 +544,7 @@ class Config implements \Config
   public function getLogfileMaxSize()
   {
     if (!$this->settings->exists('settings/main/log_max_size')) {
-      return Config::LOG_MAX_SIZE;
+      return ConfigInterface::LOG_MAX_SIZE;
     }
 
     return $this->settings->get('settings/main/log_max_size');

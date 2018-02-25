@@ -1,7 +1,7 @@
 <?php
-namespace youconix\core\templating;
+namespace youconix\Core\Templating;
 
-class Request implements \Request
+class Request implements \RequestInterface
 {
 
     /**
@@ -18,13 +18,13 @@ class Request implements \Request
 
     /**
      *
-     * @var \Config
+     * @var \ConfigInterface
      */
     protected $config;
 
     /**
      *
-     * @var \Logger
+     * @var \LoggerInterface
      */
     protected $logs;
 
@@ -60,13 +60,13 @@ class Request implements \Request
 
     /**
      *
-     * @param \youconix\core\Input $input            
-     * @param \youconix\core\services\Headers $headers            
-     * @param \Config $config            
-     * @param \Logger $logs            
-     * @param \Session $session            
+     * @param \youconix\Core\Input $input
+     * @param \youconix\Core\Services\Headers $headers
+     * @param \ConfigInterface $config            
+     * @param \LoggerInterface $logs            
+     * @param \SessionInterface $session
      */
-    public function __construct(\youconix\core\Input $input, \youconix\core\services\Headers $headers, \Config $config, \Logger $logs, \Session $session)
+    public function __construct(\youconix\Core\Input $input, \youconix\Core\Services\Headers $headers, \ConfigInterface $config, \LoggerInterface $logs, \SessionInterface $session)
     {
         $this->headers = $headers;
         $this->config = $config;
@@ -243,7 +243,7 @@ class Request implements \Request
 
     /**
      *
-     * @return \Config
+     * @return \ConfigInterface
      */
     public function getConfig()
     {
@@ -252,7 +252,7 @@ class Request implements \Request
 
     /**
      *
-     * @return \Logger
+     * @return \LoggerInterface
      */
     public function getLogger()
     {

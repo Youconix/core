@@ -21,7 +21,7 @@ class ControllerWrapper {
     
     /**
      *
-     * @var \Output
+     * @var \OutputInterface
      */
     protected $output;
     
@@ -33,13 +33,13 @@ class ControllerWrapper {
     
     /**
      *
-     * @var \Logger
+     * @var \LoggerInterface
      */
     protected $logger;
     
     /**
      *
-     * @var \Language
+     * @var \LanguageInterface
      */
     protected $language;
     
@@ -47,12 +47,12 @@ class ControllerWrapper {
      * 
      * @param \Request $request
      * @param \Layout $layout
-     * @param \Output $output
+     * @param \OutputInterface $output
      * @param \Headers $headers
-     * @param \Logger $logger
-     * @param \Language $language
+     * @param \LoggerInterface $logger
+     * @param \LanguageInterface $language
      */
-    public function __construct(\Request $request,\Layout $layout,\Output $output, \Headers $headers, \Logger $logger, \Language $language)
+    public function __construct(\RequestInterface $request, \Layout $layout, \OutputInterface $output, \HeadersInterface $headers, \LoggerInterface $logger, \LanguageInterface $language)
     {
         $this->request = $request;
         $this->layout  = $layout;
@@ -61,8 +61,13 @@ class ControllerWrapper {
         $this->logger = $logger;
         $this->language = $language;
     }
-    
-    public function acceptAllRequestInput()
+
+    public function __debugInfo()
+    {
+      return [];
+    }
+
+  public function acceptAllRequestInput()
     {
         $this->request->acceptAllInput();
     }
@@ -102,7 +107,7 @@ class ControllerWrapper {
     
     /**
      * 
-     * @return \Output
+     * @return \OutputInterface
      */
     public function getOutput()
     {
@@ -120,7 +125,7 @@ class ControllerWrapper {
     
     /**
      * 
-     * @return \Logger
+     * @return \LoggerInterface
      */
     public function getLogger()
     {
@@ -129,7 +134,7 @@ class ControllerWrapper {
     
     /**
      * 
-     * @return \Language
+     * @return \LanguageInterface
      */
     public function getLanguage()
     {

@@ -13,7 +13,7 @@ abstract class AdminController extends BaseController
    *      Data as key-value pair
    * @param string $s_templateDir
    *      Override the default template directory
-   * @return \Output
+   * @return \OutputInterface
    * @throws \TemplateException if the view does not exist
    * @throws \IOException if the view is not readable
    */
@@ -30,9 +30,9 @@ abstract class AdminController extends BaseController
 
   /**
    *
-   * @param \Output $template
+   * @param \OutputInterface $template
    */
-  protected function setDefaultValues(\Output $template)
+  protected function setDefaultValues(\OutputInterface $template)
   {
     $template->append('currentLanguage', $this->getLanguage()->getLanguage());
   }

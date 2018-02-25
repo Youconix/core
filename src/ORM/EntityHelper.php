@@ -1,23 +1,23 @@
 <?php
 
-namespace youconix\core\ORM;
+namespace youconix\Core\ORM;
 
 class EntityHelper implements \Entities {
   /**
    *
-   * @var \Config
+   * @var \ConfigInterface
    */
   private $config;
 
   /**
    *
-   * @var \youconix\core\ORM\Proxy
+   * @var \youconix\Core\ORM\Proxy
    */
   private $proxy;
 
   /**
    *
-   * @var \youconix\core\services\FileHandler
+   * @var \youconix\Core\Services\FileHandler
    */
   private $file;
   
@@ -33,15 +33,15 @@ class EntityHelper implements \Entities {
   private $s_systemDir;
   private $s_proxyDir;
 
-  public function __construct(\Config $config, \youconix\core\services\FileHandler $file, \youconix\core\ORM\Proxy $proxy) {
+  public function __construct(\ConfigInterface $config, \youconix\Core\Services\FileHandler $file, \youconix\Core\ORM\Proxy $proxy) {
     $this->config = $config;
     $this->file = $file;
     $this->proxy = $proxy;
     
     $s_cacheDir = $this->config->getCacheDirectory();
     $this->s_cacheFile = $s_cacheDir . 'entityMap.php';
-    $this->s_siteDir = WEB_ROOT . DS . 'includes' . DS . 'entities';
-    $this->s_systemDir = WEB_ROOT . DS . 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'entities';
+    $this->s_siteDir = WEB_ROOT . DS . 'Includes' . DS . 'entities';
+    $this->s_systemDir = WEB_ROOT . DS . 'vendor' . DS . 'youconix' . DS . 'Core' . DS . 'src'.DS.'Entities';
     $this->s_proxyDir = $s_cacheDir . 'proxies';
     
     if (!$file->exists($this->s_proxyDir)) {
@@ -102,10 +102,10 @@ class EntityHelper implements \Entities {
       namespace files\cache\proxies;
       
       class ' . $s_name . 'Proxy extends ';
-      if ($this->file->exists(WEBSITE_ROOT . DS . 'includes' . DS . 'entities' . DS . $s_name . '.php')) {
-        $s_proxy .= '\includes\entities\\' . $s_name;
+      if ($this->file->exists(WEBSITE_ROOT . DS . 'Includes' . DS . 'Entities' . DS . $s_name . '.php')) {
+        $s_proxy .= '\Includes\Entities\\' . $s_name;
       } else {
-        $s_proxy .= '\youconix\core\\entities\\' . $s_name;
+        $s_proxy .= '\youconix\Core\\Entities\\' . $s_name;
       }
       $s_proxy .= ' {
       protected $manager;
