@@ -21,5 +21,11 @@
             "name": "R. Scheijen",
             "email": "rscheijen@youconix.nl"
         }
-    ]
+    ],
+	"autoload": {
+		"psr-4": {
+			"youconix\\Core\\": "youconix\\Core\\src\\",
+			"youconix\\Core\\test\\": "youconix\\Core\\test\\"
+		}
+	}
 }
