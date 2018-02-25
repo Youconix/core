@@ -106,7 +106,7 @@ class IoC
 
     IoC::$rules['Entities'] = '\youconix\Core\ORM\EntityHelper';
     IoC::$rules['RequestInterface'] = '\youconix\Core\Templating\Request';
-    IoC::$rules['Cache'] = '\youconix\Core\Services\Cache';
+    IoC::$rules['CacheInterface'] = '\youconix\Core\Services\Cache';
     IoC::$rules['ConfigInterface'] = IoC::$ruleConfig;
     IoC::$rules['Cookie'] = '\youconix\Core\Services\Cookie';
     IoC::$rules['FileHandler'] = IoC::$ruleFileHandler;

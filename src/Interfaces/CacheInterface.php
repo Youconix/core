@@ -1,6 +1,6 @@
 <?php
 
-interface Cache
+interface CacheInterface
 {
 
     /**
@@ -13,18 +13,18 @@ interface Cache
     /**
      * Writes the renderd page to the cache
      *
-     * @param string $s_output
+     * @param string $output
      *            The rendered page
      */
-    public function writeCache($s_output);
+    public function writeCache($output);
 
     /**
      * Clears the given page from the site cache
      *
-     * @param string $s_page
+     * @param string $page
      *            The page ($_SERVER['REQUEST_URI'])
      */
-    public function clearPage($s_page);
+    public function clearPage($page);
 
     /**
      * Clears the language cache (.mo)
@@ -54,8 +54,8 @@ interface Cache
     /**
      * Deletes the given no-cache page
      *
-     * @param int $i_id
+     * @param int $id
      *            The page ID
      */
-    public function deleteNoCache($i_id);
+    public function deleteNoCache($id);
 }

@@ -10,7 +10,7 @@ namespace youconix\Core\Services;
  * @version 1.0
  * @since 2.0
  */
-class Cache extends \youconix\Core\Services\AbstractService implements \Cache
+class Cache extends \youconix\Core\Services\AbstractService implements \CacheInterface
 {
 
   /**
