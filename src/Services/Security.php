@@ -8,15 +8,15 @@ namespace youconix\Core\Services;
  * @version 1.0
  * @since 1.0
  */
-class Security extends AbstractService implements \Security
+class Security extends AbstractService implements \SecurityInterface
 {
 
     /**
-     * @var \Validation
+     * @var \ValidationInterface
      */
     protected $validation;
 
-    public function __construct(\Validation $validation)
+    public function __construct(\ValidationInterface $validation)
     {
         $this->validation = $validation;
     }

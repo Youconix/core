@@ -1,6 +1,6 @@
 <?php
 
-interface Validation
+interface ValidationInterface
 {
 
     /**

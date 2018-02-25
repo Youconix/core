@@ -1,5 +1,9 @@
 <?php
-interface Guard {
+
+use youconix\Core\Input;
+use youconix\Core\Auth\Auth;
+
+interface GuardInterface {
   const FORM_INVALID = "FORM_INVALID";
   const INVALID_LOGIN = "INVALID LOGIN";
   const LOGIN_EXPIRED = "EXPIRED LOGIN";
@@ -33,15 +37,15 @@ interface Guard {
   
   /**
    * 
-   * @param \youconix\core\Input $config
+   * @param Input $config
    */
-  public function validate(\youconix\core\Input $config);
+  public function validate(Input $config);
   
   /**
    * 
-   * @param \youconix\core\Input $config
+   * @param Input $config
    */
-  public function setConfig(\youconix\core\Input $config);
+  public function setConfig(Input $config);
   
   /**
    * 
@@ -55,15 +59,15 @@ interface Guard {
    */
   public function setEnabled($enabled);
   
-  public function loginForm(\OutputInterface $output, \Request $request);
+  public function loginForm(\OutputInterface $output, \RequestInterface $request);
   
-  public function do_login(\Request $request);
+  public function do_login(\RequestInterface $request);
   
-  public function registrationForm(\OutputInterface $output, \Request $request);
+  public function registrationForm(\OutputInterface $output, \RequestInterface $request);
   
-  public function do_registration(\Request $request);
+  public function do_registration(\RequestInterface $request);
   
-  public function setAuth(\youconix\core\auth\Auth $auth);
+  public function setAuth(Auth $auth);
   
   public function usernameAvailable($s_username);
   

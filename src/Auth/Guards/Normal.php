@@ -1,42 +1,42 @@
 <?php
 
-namespace youconix\core\auth\guards;
+namespace youconix\Core\Auth\guards;
 
-class Normal extends \youconix\core\auth\PasswordGuard
+class Normal extends \youconix\Core\Auth\PasswordGuard
 {
 
   /**
    *
-   * @var \youconix\core\services\Hashing
+   * @var \youconix\Core\Services\Hashing
    */
   protected $hashing;
 
   /**
-   * 
-   * @var \youconix\core\helpers\PasswordForm
+   *
+   * @var \youconix\Core\Helpers\PasswordForm
    */
   protected $form;
 
   /**
    *
-   * @var \youconix\core\helpers\Captcha
+   * @var \youconix\Core\Helpers\Captcha
    */
   protected $captcha;
 
   /**
-   * 
+   *
    * @param \LanguageInterface $language
    * @param \SettingsInterface $settings
    * @param \youconix\core\services\Hashing $hashing
-   * @param \Builder $builder
-   * @param \youconix\core\helpers\PasswordForm $form
-   * @param \youconix\core\helpers\Captcha $captcha
-   * @param \Session $session
+   * @param \BuilderInterface $builder
+   * @param \youconix\Core\Helpers\PasswordForm $form
+   * @param \youconix\Core\Helpers\Captcha $captcha
+   * @param \SessionInterface $session
    */
   public function __construct(\LanguageInterface $language, \SettingsInterface $settings,
-                              \youconix\core\services\Hashing $hashing, \Builder $builder,
-                              \youconix\core\helpers\PasswordForm $form,
-                              \youconix\core\helpers\Captcha $captcha, \Session $session)
+                              \youconix\Core\Services\Hashing $hashing, \BuilderInterface $builder,
+                              \youconix\Core\Helpers\PasswordForm $form,
+                              \youconix\Core\Helpers\Captcha $captcha, \SessionInterface $session)
   {
     parent::__construct($language, $settings, $builder, $session);
 
@@ -48,16 +48,16 @@ class Normal extends \youconix\core\auth\PasswordGuard
   protected function loadConfig()
   {
     $this->guardConfig = [
-	'enabled' => false,
-	'length' => 8,
-	'strength' => 1
+      'enabled' => false,
+      'length' => 8,
+      'strength' => 1
     ];
 
     parent::loadConfig();
   }
 
   /**
-   * 
+   *
    * @return boolean
    */
   public function hasConfig()
@@ -66,7 +66,7 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
+   *
    * @param \OutputInterface $output
    * @param \Request $request
    */
@@ -110,18 +110,18 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
-   * @param \Request $request
+   *
+   * @param \RequestInterface $request
    * @return string
    */
-  public function do_login(\Request $request)
+  public function do_login(\RequestInterface $request)
   {
     $post = $request->post();
 
     if (!$post->validate([
-	    'username' => 'type:string|required',
-	    'password' => 'type:string|required'
-	])) {
+      'username' => 'type:string|required',
+      'password' => 'type:string|required'
+    ])) {
       return Normal::FORM_INVALID;
     }
 
@@ -129,11 +129,11 @@ class Normal extends \youconix\core\auth\PasswordGuard
     $s_plainPassword = $post->get('password');
 
     $this->builder->select('users', '*')
-	->getWhere()
-	->bindString('nick', $s_username)
-	->bindString('active', 1)
-	->bindString('blocked', 0)
-	->bindString('loginType', 'normal');
+      ->getWhere()
+      ->bindString('nick', $s_username)
+      ->bindString('active', 1)
+      ->bindString('blocked', 0)
+      ->bindString('loginType', 'normal');
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return Normal::INVALID_LOGIN;
@@ -143,7 +143,7 @@ class Normal extends \youconix\core\auth\PasswordGuard
 
     if (!$this->hashing->verify($s_plainPassword, $s_password)) {
       if (!$this->oldHashing($s_username, $s_plainPassword, $s_password)) {
-	return Normal::INVALID_LOGIN;
+        return Normal::INVALID_LOGIN;
       }
     }
 
@@ -160,7 +160,7 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
+   *
    * @param string $s_username
    * @param string $s_plainPassword
    * @param string $stored
@@ -175,7 +175,7 @@ class Normal extends \youconix\core\auth\PasswordGuard
     if ($s_hash == $stored) {
       $s_password = $this->hashing->hash($s_plainPassword);
       $this->builder->update('users')->bindString('password', $s_password)->getWhere('nick',
-										     $s_username);
+        $s_username);
       $this->builder->getResult();
 
       return true;
@@ -184,7 +184,7 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
+   *
    * @param \OutputInterface $output
    */
   public function expiredForm(\OutputInterface $output)
@@ -217,19 +217,19 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
-   * @param \Request $request
+   *
+   * @param \RequestInterface $request
    * @return string
    */
-  public function updatePassword(\Request $request)
+  public function updatePassword(\RequestInterface $request)
   {
     $post = $request->post();
 
     if (!$post->validate([
-	    'password_old' => 'type:string|required',
-	    'password' => 'type:string|required',
-	    'password2' => 'type:string|required'
-	])) {
+      'password_old' => 'type:string|required',
+      'password' => 'type:string|required',
+      'password2' => 'type:string|required'
+    ])) {
       return Normal::FORM_INVALID;
     }
 
@@ -241,25 +241,25 @@ class Normal extends \youconix\core\auth\PasswordGuard
     $s_password = $this->hashing->hash($post->get('password'));
     $s_passwordCurrent = $post->get('password_old');
     $this->builder->update('users')->bindString('password', $s_password)->getWhere()->bindInt('userid',
-											      $i_userid)->bindString('password', $s_passwordCurrent);
+      $i_userid)->bindString('password', $s_passwordCurrent);
     $database = $this->builder->getResult();
     if ($database->affected_rows() == 0) {
       return Normal::FORM_INVALID;
     }
 
     $database = $this->builder->select('users', '*')->getWhere()->bindInt('userid',
-									  $i_userid)->getResult();
+      $i_userid)->getResult();
     $a_data = $database->fetch_object();
     $user = $this->auth->createUser($a_data[0]);
     $this->auth->setLogin($user);
   }
 
   /**
-   * 
+   *
    * @param \OutputInterface $output
-   * @param \Request $request
+   * @param \RequestInterface $request
    */
-  public function registrationForm(\OutputInterface $output, \Request $request)
+  public function registrationForm(\OutputInterface $output, \RequestInterface $request)
   {
     $post = $request->post();
 
@@ -307,22 +307,22 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
-   * @param \Request $request
+   *
+   * @param \RequestInterface $request
    * @return string
    */
-  public function do_registration(\Request $request)
+  public function do_registration(\RequestInterface $request)
   {
     $post = $request->post();
 
     if (!$post->validate([
-	    'username' => 'type:string|required',
-	    'email' => 'type:email|required',
-	    'password' => 'type:string|required',
-	    'password2' => 'type:string|required',
-	    'conditions' => 'required',
-	    'captcha' => 'type:string|required',
-	])) {
+      'username' => 'type:string|required',
+      'email' => 'type:email|required',
+      'password' => 'type:string|required',
+      'password2' => 'type:string|required',
+      'conditions' => 'required',
+      'captcha' => 'type:string|required',
+    ])) {
       return Normal::FORM_INVALID;
     }
 
@@ -354,21 +354,21 @@ class Normal extends \youconix\core\auth\PasswordGuard
     $user->save();
 
     $this->auth->sendRegistrationMail($this->getName(), $s_username, $s_email,
-				      $s_hash);
+      $s_hash);
 
     return Normal::FORM_OKE;
   }
 
   /**
-   * 
+   *
    * @param string $hash
    * @return string
    */
   public function do_reset($hash)
   {
     $database = $this->builder->select('password_codes', '*')->getWhere()->bindString('code',
-										      $hash)
-	    ->bindInt('expire', time(), 'AND', '>=')->getResult();
+      $hash)
+      ->bindInt('expire', time(), 'AND', '>=')->getResult();
     if ($database->num_rows() == 0) {
       return Normal::FORM_INVALID;
     }
@@ -376,10 +376,10 @@ class Normal extends \youconix\core\auth\PasswordGuard
     $i_userid = $database->result(0, 'userid');
     $s_password = $this->hashing->hash($database->result(0, 'password'));
     $this->builder->delete('password_codes')->getWhere()->bindInt('userid',
-								  $i_userid)->getResult();
+      $i_userid)->getResult();
     $this->builder->update('users')->bindString('password', $s_password)->bindString('password_expired',
-										     '1')
-	->bindString('blocked', '0')->getWhere()->bindInt('id', $i_userid)->getResult();
+      '1')
+      ->bindString('blocked', '0')->getWhere()->bindInt('id', $i_userid)->getResult();
 
     $this->session->set('userid', $i_userid);
     $this->auth->getHeaders()->redirect('/login/expired/' . $this->getName());
@@ -387,11 +387,11 @@ class Normal extends \youconix\core\auth\PasswordGuard
 
   public function email_confirm()
   {
-    
+
   }
 
   /**
-   * 
+   *
    * @return string
    */
   public function getName()
@@ -408,11 +408,11 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
+   *
    * @param \OutputInterface $output
-   * @param \Request $request
+   * @param \RequestInterface $request
    */
-  public function resetForm(\OutputInterface $output, \Request $request)
+  public function resetForm(\OutputInterface $output, \RequestInterface $request)
   {
     $post = $request->post();
 
@@ -441,25 +441,25 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
-   * @param \Request $request
+   *
+   * @param \RequestInterface $request
    * @return string
    */
-  public function sendResetEmail(\Request $request)
+  public function sendResetEmail(\RequestInterface $request)
   {
     $post = $request->post();
 
     if (!$post->validate([
-	    'username' => 'type:string|required',
-	    'email' => 'type:string|required'
-	])) {
+      'username' => 'type:string|required',
+      'email' => 'type:string|required'
+    ])) {
       return Normal::FORM_INVALID;
     }
 
     $s_email = $post->get('email');
     $s_username = $post->get('username');
     $this->builder->select('users', 'id')->getWhere()->bindString('email',
-								  $s_email)->bindString('nick', $s_username);
+      $s_email)->bindString('nick', $s_username);
     $database = $this->builder->getResult();
     if ($database->num_rows() == 0) {
       return Normal::FORM_INVALID;
@@ -470,29 +470,29 @@ class Normal extends \youconix\core\auth\PasswordGuard
     $s_password = $this->hashing->createRandom();
     $i_expire = (time() + 3600);
     $this->builder->delete('password_codes')->getWhere()->bindInt('userid',
-								  $i_userid)->getResult();
+      $i_userid)->getResult();
     $this->builder->insert('password_codes')->bindInt('userid', $i_userid)->bindString('code',
-										       $s_hash)
-	->bindString('password', $s_password)->bindInt('expire', $i_expire)->getResult();
+      $s_hash)
+      ->bindString('password', $s_password)->bindInt('expire', $i_expire)->getResult();
 
     $this->auth->sendResetMail($this->getName(), $s_username, $s_email,
-			       $s_password, $s_hash, $i_expire);
+      $s_password, $s_hash, $i_expire);
 
     return Normal::FORM_OKE;
   }
 
   /**
-   * 
+   *
    * @param \OutputInterface $output
    */
   private function addJavascript(\OutputInterface $output)
   {
     $output->append('head',
-		    '<script src="/js/authorization/normal.js"></script>');
+      '<script src="/js/authorization/normal.js"></script>');
   }
 
   /**
-   * 
+   *
    * @return string
    */
   public function getConfigForm()
@@ -533,7 +533,7 @@ class Normal extends \youconix\core\auth\PasswordGuard
   }
 
   /**
-   * 
+   *
    * @param int $value
    * @return string
    */

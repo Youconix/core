@@ -1,81 +1,75 @@
 <?php
 
-interface Input
+interface InputInterface
 {
 
     /**
      * Secures the input from the given type
      *
-     * @param string $s_type
+     * @param string $type
      *            The global variable type (POST | GET | REQUEST | SESSION | SERVER )
-     * @param array $a_fields
+     * @param array $fields
      *            The input type rules
      */
-    public function parse($s_type, $a_fields);
+    public function parse($type, array $fields);
     
     /**
      * Passes all the given type fields to the request
      * WARNING : DISABLES SECURITY
      * 
-     * @param string $s_type
+     * @param string $type
      *            The global variable type (POST | GET | REQUEST | SESSION | SERVER )
-     * @return \Input
+     * @return \InputInterface
      */
-    public function getAll($s_type);
+    public function getAll($type);
 
     /**
      * Checks if the input has the given field
      *
-     * @param string $s_key
-     *            The field name
+     * @param string $key
      * @return boolean
      */
-    public function has($s_key);
+    public function has($key);
 
     /**
      * Returns the value from the given field
      * Gives the default value if the field does not exist
      *
-     * @param string $s_key
-     *            The field name
-     * @param string $s_default
-     *            The default value
-     * @return The value
+     * @param string $key
+     * @param string $default
+     * @return mixed
      */
-    public function getDefault($s_key, $s_default = '');
+    public function getDefault($key, $default = '');
 
     /**
      * Returns the value from the given field
      *
-     * @param string $s_key
-     *            The field name
-     * @return The value
+     * @param string $key
+     * @return mixed
      * @throws \OutOfBoundsException If the field does not exist
      */
-    public function get($s_key);
+    public function get($key);
 
     /**
      * Validates the input
      *
-     * @param array $a_rules
-     *            The validation rules
+     * @param array $rules
      * @return boolean True if the input is valid
      */
-    public function validate($a_rules);
+    public function validate(array $rules);
 
     /**
      * Validates the input and returns the validation errors
      *
-     * @param array $a_rules
-     *            The validation rules
+     * @param array $rules
      * @return array The errors, empty array if the input is valid
      */
-    public function validateErrors($a_rules);
+    public function validateErrors(array $rules);
 
     /**
      * Returns the validation service
      *
-     * @return \Validation
+     * @return \ValidationInterface
      */
     public function getValidation();
 
@@ -89,10 +83,9 @@ interface Input
     /**
      * Sets the previous request values
      *
-     * @param array $a_data
-     *            The values
+     * @param array $data
      */
-    public function setPrevious($a_data);
+    public function setPrevious(array $data);
 
     /**
      * Returns the previous request values

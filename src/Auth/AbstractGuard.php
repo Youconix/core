@@ -1,8 +1,11 @@
 <?php
 
-namespace youconix\core\auth;
+namespace youconix\Core\Auth;
 
-abstract class GuardParent implements \Guard
+use youconix\Core\Input;
+use youconix\Core\Auth\Auth;
+
+abstract class AbstractGuard implements \GuardInterface
 {
 
   /**
@@ -19,18 +22,18 @@ abstract class GuardParent implements \Guard
 
   /**
    *
-   * @var \Builder
+   * @var \BuilderInterface
    */
   protected $builder;
 
   /**
-   * @var \youconix\core\auth\Auth 
+   * @var \youconix\Core\Auth\Auth
    */
   protected $auth;
 
   /**
    *
-   * @var \Session
+   * @var \SessionInterface
    */
   protected $session;
 
@@ -50,11 +53,11 @@ abstract class GuardParent implements \Guard
    * 
    * @param \LanguageInterface $language
    * @param \SettingsInterface $settings
-   * @param \Builder $builder
-   * @param \Session $session
+   * @param \BuilderInterface $builder
+   * @param \SessionInterface $session
    */
   public function __construct(\LanguageInterface $language, \SettingsInterface $settings,
-                              \Builder $builder, \Session $session)
+                              \BuilderInterface $builder, \SessionInterface $session)
   {
     $this->language = $language;
     $this->settings = $settings;
@@ -105,7 +108,7 @@ abstract class GuardParent implements \Guard
    */
   public function isRegistrationEnabled()
   {
-    return $this->settings->get('auth/usersRegister');
+    return $this->settings->get('settings/auth/usersRegister');
   }
 
   /**
@@ -115,10 +118,9 @@ abstract class GuardParent implements \Guard
   abstract public function hasConfig();
 
   /**
-   * 
-   * @param \youconix\core\Input $config
+   * @param Input $config
    */
-  public function validate(\youconix\core\Input $config)
+  public function validate(Input $config)
   {
     $keys = array_keys($this->guardConfig);
     $name = $this->getName();
@@ -133,9 +135,9 @@ abstract class GuardParent implements \Guard
 
   /**
    * 
-   * @param \youconix\core\Input $config
+   * @param Input $config
    */
-  public function setConfig(\youconix\core\Input $config)
+  public function setConfig(Input $config)
   {
     $keys = array_keys($this->guardConfig);
     $name = $this->getName();
@@ -168,9 +170,9 @@ abstract class GuardParent implements \Guard
 
   /**
    * 
-   * @param \youconix\core\auth\Auth $auth
+   * @param Auth $auth
    */
-  public function setAuth(\youconix\core\auth\Auth $auth)
+  public function setAuth(Auth $auth)
   {
     $this->auth = $auth;
   }

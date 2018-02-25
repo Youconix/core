@@ -8,7 +8,7 @@ namespace youconix\Core\Services;
  * @version 1.0
  * @since 2.0
  */
-class Validation extends \youconix\Core\Services\AbstractService implements \Validation
+class Validation extends \youconix\Core\Services\AbstractService implements \ValidationInterface
 {
 
   protected $a_errors = [];

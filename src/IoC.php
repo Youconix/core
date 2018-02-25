@@ -111,12 +111,12 @@ class IoC
     IoC::$rules['Cookie'] = '\youconix\Core\Services\Cookie';
     IoC::$rules['FileHandler'] = IoC::$ruleFileHandler;
     IoC::$rules['HeadersInterface'] = '\youconix\Core\Services\Headers';
-    IoC::$rules['Input'] = '\youconix\Core\Input';
+    IoC::$rules['InputInterface'] = '\youconix\Core\Input';
     IoC::$rules['OutputInterface'] = '\youconix\Core\Templating\Template';
-    IoC::$rules['Security'] = '\youconix\Core\Services\Security';
+    IoC::$rules['SecurityInterface'] = '\youconix\Core\Services\Security';
     IoC::$rules['SessionInterface'] = '\youconix\Core\Services\Session\Native';
     IoC::$rules['SettingsInterface'] = IoC::$ruleSettings;
-    IoC::$rules['Validation'] = '\youconix\Core\Services\Validation';
+    IoC::$rules['ValidationInterface'] = '\youconix\Core\Services\Validation';
     IoC::$rules['Layout'] = 'Includes\BaseLogicClass';
     IoC::$rules['EntityManager'] = '\youconix\Core\ORM\EntityManager';
   }

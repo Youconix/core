@@ -60,7 +60,7 @@ class Auth extends \youconix\Core\Services\AbstractService
   /**
    *
    * @param \youconix\Core\Services\FileHandler $fileHandler
-   * @param \youconix\Core\Models\Repositories\User $user
+   * @param \youconix\Core\Repositories\User $user
    * @param \SessionInterface $session
    * @param \HeadersInterface $headers
    * @param \ConfigInterface $config

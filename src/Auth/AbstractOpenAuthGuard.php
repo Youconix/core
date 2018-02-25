@@ -1,8 +1,8 @@
 <?php
 
-namespace youconix\core\auth;
+namespace youconix\Core\Auth;
 
-abstract class OpenAuthGuard extends GuardParent
+abstract class AbstractOpenAuthGuard extends AbstractGuard
 {
 
   protected function loadConfig()

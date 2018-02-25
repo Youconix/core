@@ -1,8 +1,8 @@
 <?php
 
-namespace youconix\core\auth;
+namespace youconix\Core\Auth;
 
-abstract class PasswordGuard extends GuardParent
+abstract class PasswordGuard extends AbstractGuard
 {
 
   /**
@@ -43,7 +43,7 @@ abstract class PasswordGuard extends GuardParent
 
   abstract public function email_confirm();
 
-  abstract public function updatePassword(\Request $request);
+  abstract public function updatePassword(\RequestInterface $request);
 
   abstract public function expiredForm(\OutputInterface $output);
 }
