@@ -1,5 +1,6 @@
 <?php
-namespace youconix\core\classes;
+
+namespace youconix\Core\Classes;
 
 /**
  * Filters the read directory
@@ -11,36 +12,45 @@ namespace youconix\core\classes;
  * @since     2.0
  */
 
-class DirectoryFilterIteractor extends \FilterIterator {
-    private $a_directoryFilter;
-     
-    public function __construct(\Iterator $iterator , $a_filters )
-    {
-        parent::__construct($iterator);
-        
-        $this->a_directoryFilter = $a_filters;
-    }
-     
-    public function accept()
-    {
-        $item = $this->current()->getFilename();
+class DirectoryFilterIteractor extends \FilterIterator
+{
+  private $directoryFilter;
 
-        foreach( $this->a_directoryFilter AS $s_filter ){
-            $s_filter = str_replace(array('.','/','*'),array('\.','\/','.+'),$s_filter);
-            
-            if( substr($s_filter,0,1) == '!' ){
-                $s_filter = substr($s_filter, 1);
-                if( preg_match('/'.$s_filter.'/',$item) ){
-                    return false;
-                }
-            }
-            else {
-                if( !preg_match('/'.$s_filter.'/',$item) ){
-                    return false;
-                }
-            }
+
+  /**
+   * DirectoryFilterIteractor constructor.
+   * @param \Iterator $iterator
+   * @param array $filters
+   */
+  public function __construct(\Iterator $iterator, array $filters)
+  {
+    parent::__construct($iterator);
+
+    $this->directoryFilter = $filters;
+  }
+
+  /**
+   * @return bool
+   */
+  public function accept()
+  {
+    $item = $this->current()->getFilename();
+
+    foreach ($this->directoryFilter AS $filter) {
+      $filter = str_replace(array('.', '/', '*'), array('\.', '\/', '.+'), $filter);
+
+      if (substr($filter, 0, 1) == '!') {
+        $filter = substr($filter, 1);
+        if (preg_match('/' . $filter . '/', $item)) {
+          return false;
         }
-        
-        return true;
+      } else {
+        if (!preg_match('/' . $filter . '/', $item)) {
+          return false;
+        }
+      }
     }
+
+    return true;
+  }
 }

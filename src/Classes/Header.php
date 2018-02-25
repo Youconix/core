@@ -25,7 +25,7 @@ class Header implements \HeaderInterface
 
   /**
    *
-   * @var \youconix\core\auth\Auth
+   * @var \youconix\Core\Auth\Auth
    */
   protected $auth;
 
@@ -37,7 +37,7 @@ class Header implements \HeaderInterface
 
   /**
    * Starts the class header
-   * 
+   *
    * @param \LanguageInterface $language
    * @param \ConfigInterface $config
    * @param \youconix\core\auth\Auth $auth
@@ -51,7 +51,7 @@ class Header implements \HeaderInterface
 
   /**
    * Generates the header
-   * 
+   *
    * @param \OutputInterface $template
    */
   public function createHeader(\OutputInterface $template)
@@ -91,7 +91,7 @@ class Header implements \HeaderInterface
       $s_language = (array_key_exists($s_code, $a_languagesCodes)) ? $a_languagesCodes[$s_code] : $s_code;
 
       $this->template->append('headerLanguage',
-			      [['code' => $s_code, 'LanguageInterface' => $s_language]]);
+        [['code' => $s_code, 'LanguageInterface' => $s_language]]);
     }
   }
 }

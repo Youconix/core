@@ -7,7 +7,7 @@ namespace youconix\core\classes;
  *
  * @since 1.0
  */
-class MenuAdmin implements \Menu
+class MenuAdmin implements \MenuInterface
 {
   /**
    *
@@ -16,25 +16,25 @@ class MenuAdmin implements \Menu
   private $language;
 
   /**
-   * 
-   * @var \youconix\core\models\ControlPanelModules
+   *
+   * @var \youconix\Core\Models\ControlPanelModules
    */
   private $controlPanelModules;
 
   /**
    *
-   * @var \youconix\core\services\Xml
+   * @var \youconix\Core\Services\Xml
    */
   private $xml;
-  
+
   /**
    *
-   * @var \youconix\core\Routes
+   * @var \youconix\Core\Routes
    */
   private $routes;
 
   /**
-   * 
+   *
    * @var \OutputInterface
    */
   private $template;
@@ -45,9 +45,9 @@ class MenuAdmin implements \Menu
    * Starts the class menuAdmin
    */
   public function __construct(\LanguageInterface $language,
-                              \youconix\core\services\Xml $xml,
-                              \youconix\core\models\ControlPanelModules $controlPanelModules,
-			      \youconix\core\Routes $routes)
+                              \youconix\Core\Services\Xml $xml,
+                              \youconix\Core\Models\ControlPanelModules $controlPanelModules,
+                              \youconix\Core\Routes $routes)
   {
     $this->language = $language;
     $this->xml = $xml;
@@ -80,7 +80,7 @@ class MenuAdmin implements \Menu
     $i = 1;
     foreach ($a_modules as $s_module) {
       $obj_settings = $this->xml->cloneService();
-      $obj_settings->load($s_dir.DS.$s_module.'/settings.xml');
+      $obj_settings->load($s_dir . DS . $s_module . '/settings.xml');
 
       $s_title = $obj_settings->get('module/title');
 
@@ -102,7 +102,7 @@ class MenuAdmin implements \Menu
         $a_links = [];
 
         $tabItem = new \stdClass();
-        $tabItem->item_id = 'admin_'.$i;
+        $tabItem->item_id = 'admin_' . $i;
         $tabItem->links = [];
 
         foreach ($block->childNodes as $item) {
@@ -110,24 +110,24 @@ class MenuAdmin implements \Menu
 
             $a_links[] = $item;
           } else
-          if ($item->tagName == 'title') {
-            ($this->language->exists($item->nodeValue)) ? $tabItem->title = $this->language->get($item->nodeValue)
-                      : $tabItem->title = $item->nodeValue;
-          } else {
-            $s_name = $item->tagName;
-            $tabItem->$s_name = (string) $item->nodeValue;
-          }
+            if ($item->tagName == 'title') {
+              ($this->language->exists($item->nodeValue)) ? $tabItem->title = $this->language->get($item->nodeValue)
+                : $tabItem->title = $item->nodeValue;
+            } else {
+              $s_name = $item->tagName;
+              $tabItem->$s_name = (string)$item->nodeValue;
+            }
         }
 
-	$tabItem->path = $this->routes->path($tabItem->path);
-        $tabItem->item_id = 'admin_'.$s_module.'_'.strtolower(str_replace(' ','_',$tabItem->title));
+        $tabItem->path = $this->routes->path($tabItem->path);
+        $tabItem->item_id = 'admin_' . $s_module . '_' . strtolower(str_replace(' ', '_', $tabItem->title));
 
         $tabItem->links = $this->setLinks($a_links);
         $menu_tab_content->items[] = $tabItem;
       }
       $this->a_menu_tab_content[] = $menu_tab_content;
 
-      $i ++;
+      $i++;
     }
   }
 
@@ -140,7 +140,7 @@ class MenuAdmin implements \Menu
       foreach ($obj_link->childNodes as $item) {
         if ($item->tagName == 'title') {
           ($this->language->exists($item->nodeValue)) ? $data->title = $this->language->get($item->nodeValue)
-                    : $data->title = $item->nodeValue;
+            : $data->title = $item->nodeValue;
         } else {
           $s_name = $item->tagName;
           $data->$s_name = $item->nodeValue;

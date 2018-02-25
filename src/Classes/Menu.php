@@ -29,12 +29,12 @@ class Menu implements \MenuInterface
 
   /**
    * Starts the class menu
-   *        
-   * @param \LanguageInterface $language            
+   *
+   * @param \LanguageInterface $language
    * @param \youconix\Core\Auth\Auth $auth
    */
   public function __construct(\LanguageInterface $language,
-			      \youconix\Core\Auth\Auth $auth)
+                              \youconix\Core\Auth\Auth $auth)
   {
     $this->language = $language;
     $this->auth = $auth;
@@ -42,7 +42,7 @@ class Menu implements \MenuInterface
 
   /**
    * Generates the menu
-   * 
+   *
    * @param \OutputInterface $template
    */
   public function generateMenu(\OutputInterface $template)
@@ -71,12 +71,12 @@ class Menu implements \MenuInterface
   {
     $this->template->set('login', $this->language->get('menu/login'));
     $this->template->set('registration',
-			 $this->language->get('menu/registration'));
+      $this->language->get('menu/registration'));
   }
 
   /**
    * @param \youconix\core\entities\User $user
-   * 
+   *
    * Displays the logged in items
    */
   protected function loggedIn(\youconix\core\entities\User $user)
@@ -88,7 +88,7 @@ class Menu implements \MenuInterface
       $this->template->set('menuAdmin', true, true);
 
       $this->template->set('adminPanel',
-			   $this->language->get('system/menu/adminPanel'));
+        $this->language->get('system/menu/adminPanel'));
     }
   }
 }

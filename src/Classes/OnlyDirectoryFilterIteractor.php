@@ -1,5 +1,6 @@
 <?php
-namespace youconix\core\classes;
+
+namespace youconix\Core\Classes;
 
 /**
  * Filters the file list to accept only directories
@@ -11,9 +12,13 @@ namespace youconix\core\classes;
  * @since     2.0
  */
 
-class OnlyDirectoryFilterIteractor extends \FilterIterator {
-    public function accept()
-    {
-        return $this->current()->isDir();
-    }
+class OnlyDirectoryFilterIteractor extends \FilterIterator
+{
+  /**
+   * @return bool
+   */
+  public function accept()
+  {
+    return $this->current()->isDir();
+  }
 }

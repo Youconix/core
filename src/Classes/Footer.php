@@ -11,35 +11,35 @@ namespace youconix\Core\Classes;
 class Footer implements \FooterInterface
 {
 
-    /**
-     * 
-     * @var \OutputInterface
-     */
-    protected $template;
-    
-    /**
-     * 
-     * @var \SettingsInterface
-     */
-    protected $settings;
+  /**
+   *
+   * @var \OutputInterface
+   */
+  protected $template;
 
-    /**
-     * Starts the class footer
-     * 
-     * @param \OutputInterface $template
-     * @param \SettingsInterface  $settings
-     */
-    public function __construct(\OutputInterface $template, \SettingsInterface $settings)
-    {
-        $this->template = $template;
-        $this->settings = $settings;
-    }
+  /**
+   *
+   * @var \SettingsInterface
+   */
+  protected $settings;
 
-    /**
-     * Generates the footer
-     */
-    public function createFooter()
-    {
-        $this->template->set('version', $this->settings->get('version'));
-    }
+  /**
+   * Starts the class footer
+   *
+   * @param \OutputInterface $template
+   * @param \SettingsInterface $settings
+   */
+  public function __construct(\OutputInterface $template, \SettingsInterface $settings)
+  {
+    $this->template = $template;
+    $this->settings = $settings;
+  }
+
+  /**
+   * Generates the footer
+   */
+  public function createFooter()
+  {
+    $this->template->set('version', $this->settings->get('version'));
+  }
 }

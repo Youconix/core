@@ -1,13 +1,11 @@
 <?php
-namespace youconix\core\classes;
+
+namespace youconix\Core\Classes;
 
 /**
  * Queue class.
  * This collection works with the principal first in, first out
  *
- * This file is part of Miniature-happiness
- *
- * @copyright Youconix
  * @author Rachelle Scheijen
  * @since 1.0
  * @deprecated
@@ -17,147 +15,144 @@ namespace youconix\core\classes;
 class Queue
 {
 
-    private $a_content;
+  private $content;
 
-    private $i_start;
+  private $start;
 
-    private $i_counter;
+  private $counter;
 
-    /**
-     * Creates a new queue
-     *
-     * @param $a_content The
-     *            of the queue, optional
-     */
-    public function __construct($a_content = array())
-    {
-        if (! \youconix\core\Memory::isTesting()) {
-            trigger_error("This class has been deprecated in favour of SplQueue.", E_USER_DEPRECATED);
-        }
-        $this->clear();
-        
-        $this->addArray($a_content);
+  /**
+   * Creates a new queue
+   *
+   * @param $content
+   */
+  public function __construct($content = [])
+  {
+    if (!\youconix\core\Memory::isTesting()) {
+      trigger_error("This class has been deprecated in favour of SplQueue.", E_USER_DEPRECATED);
+    }
+    $this->clear();
+
+    $this->addArray($content);
+  }
+
+  /**
+   * Merges the given queue with this one
+   *
+   * @param Queue $queue
+   * @throws \Exception $queue if not a Queue
+   */
+  public function addQueue($queue)
+  {
+    if (!($queue instanceof Queue)) {
+      throw new \Exception("Can only add Queues");
     }
 
-    /**
-     * Merges the given queue with this one
-     *
-     * @param Queue $obj_Queue
-     *            queue
-     * @throws Exception $obj_Queue if not a Queue
-     */
-    public function addQueue($obj_Queue)
-    {
-        if (! ($obj_Queue instanceof Queue)) {
-            throw new \Exception("Can only add Queues");
-        }
-        
-        while (! $obj_Queue->isEmpty()) {
-            $this->push($obj_Queue->pop());
-        }
+    while (!$queue->isEmpty()) {
+      $this->push($queue->pop());
+    }
+  }
+
+  /**
+   * Adds the array to the queue
+   *
+   * @param array $content
+   */
+  public function addArray(array $content)
+  {
+    foreach ($content as $item) {
+      $this->push($item);
+    }
+  }
+
+  /**
+   * Pushes the item at the end of the queue
+   *
+   * @param mixed $item
+   */
+  public function push($item)
+  {
+    $this->content[] = $item;
+    $this->counter++;
+  }
+
+  /**
+   * Retrieves and removes the head of this queue, or null if this queue is empty.
+   *
+   *
+   * @return mixed The first element of the queue.
+   */
+  public function pop()
+  {
+    if ($this->isEmpty()) {
+      return null;
     }
 
-    /**
-     * Adds the array to the queue
-     *
-     * @param array $a_content
-     *            content to add
-     */
-    public function addArray($a_content)
-    {
-        foreach ($a_content as $item) {
-            $this->push($item);
-        }
+    $s_content = $this->content[$this->start];
+    $this->content[$this->start] = null;
+    $this->start++;
+
+    return $s_content;
+  }
+
+  /**
+   * Retrieves the head of this queue, or null if this queue is empty.
+   *
+   *
+   * @return mixed The first element of the queue.
+   */
+  public function peek()
+  {
+    if ($this->isEmpty()) {
+      return null;
     }
 
-    /**
-     * Pushes the item at the end of the queue
-     *
-     * @param mixed $item
-     *            item
-     */
-    public function push($item)
-    {
-        $this->a_content[] = $item;
-        $this->i_counter ++;
+    return $this->content[$this->start];
+  }
+
+  /**
+   * Searches if the queue contains the given item
+   *
+   * @param Object $search
+   * @return Boolean if the queue contains the item
+   *
+   */
+  public function search($search)
+  {
+    if ($this->isEmpty()) {
+      return false;
     }
 
-    /**
-     * Retrieves and removes the head of this queue, or null if this queue is empty.
-     *
-     *
-     * @return mixed The first element of the queue.
-     */
-    public function pop()
-    {
-        if ($this->isEmpty())
-            return null;
-        
-        $s_content = $this->a_content[$this->i_start];
-        $this->a_content[$this->i_start] = null;
-        $this->i_start ++;
-        
-        return $s_content;
+    for ($i = $this->start; $i <= $this->counter; $i++) {
+      if (is_object($this->content[$i]) && ($this->content[$i] instanceof String)) {
+        if ($this->content[$i]->equals($search))
+          return true;
+      }
+      if ($this->content[$i] == $search) {
+        return true;
+      }
     }
 
-    /**
-     * Retrieves the head of this queue, or null if this queue is empty.
-     *
-     *
-     * @return mixed The first element of the queue.
-     */
-    public function peek()
-    {
-        if ($this->isEmpty())
-            return null;
-        
-        return $this->a_content[$this->i_start];
-    }
+    return false;
+  }
 
-    /**
-     * Searches if the queue contains the given item
-     *
-     * @param Object $search
-     *            item
-     * @return Boolean if the queue contains the item
-     *        
-     */
-    public function search($search)
-    {
-        if ($this->isEmpty()) {
-            return false;
-        }
-        
-        for ($i = $this->i_start; $i <= $this->i_counter; $i ++) {
-            if (is_object($this->a_content[$i]) && ($this->a_content[$i] instanceof String)) {
-                if ($this->a_content[$i]->equals($search))
-                    return true;
-            }
-            if ($this->a_content[$i] == $search) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
+  /**
+   * Checks if the queue is empty
+   *
+   * @return boolean if the queue is empty
+   */
+  public function isEmpty()
+  {
+    return ($this->start == $this->counter);
+  }
 
-    /**
-     * Checks if the queue is empty
-     *
-     * @return boolean if the queue is empty
-     */
-    public function isEmpty()
-    {
-        return ($this->i_start == $this->i_counter);
-    }
-
-    /**
-     * Clears the queue
-     */
-    public function clear()
-    {
-        $this->a_content = array();
-        $this->i_counter = 0;
-        $this->i_start = 0;
-    }
+  /**
+   * Clears the queue
+   */
+  public function clear()
+  {
+    $this->content = [];
+    $this->counter = 0;
+    $this->start = 0;
+  }
 }
