@@ -196,7 +196,7 @@ interface Config
   /**
    * 
    * @param int $level
-   * @param int $mimimunLength
+   * @param int $minimumLength
    */
-  public function setPasswordSettings($level, $mimimunLength);
+  public function setPasswordSettings($level, $minimumLength);
 }

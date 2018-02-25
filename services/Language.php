@@ -251,7 +251,6 @@ abstract class Language extends \youconix\core\services\Service implements \Lang
     protected function encodeKey($key)
     {
         $key = str_replace('/', '.', $key);
-        $keys = explode('.', $key);
 
         return $key;
     }

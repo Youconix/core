@@ -2,134 +2,165 @@
 
 namespace youconix\core\services;
 
+use youconix\core\services\FileHandler;
+use youconix\core\ConfigReaders\XmlConfigReader;
+use youconix\core\ConfigReaders\YamlConfigReader;
+
 /**
  * Settings handler.
  * This class contains all the framework settings.
- * The settings file is stored in de settings directory in de data dir (default admin/data)
+ * The settings files are stored in de settings directory in de data dir (default admin/data)
  *
- * @version 1.0
- * @see core/services/Xml.inc.php
+ * @version 2.0
  * @since 1.0
  */
-class Settings implements \Settings
+class Settings extends \youconix\core\ConfigReaders\AbstractConfig implements \Settings
 {
 
-  protected $s_settingsDir;
+    /** @var \youconix\core\ConfigReaders\XmlConfigReader $xmlReader */
+    protected $xmlConfigReader;
 
-  /**
-   *
-   * @var \ConfigReader $configReader
-   */
-  protected $configReader;
+    /** @var \youconix\core\ConfigReaders\YamlConfigReader $xmlReader */
+    protected $yamlConfigReader;
 
-  /**
-   * @param \ConfigReader $configReader
-   */
-  public function __construct(\ConfigReader $configReader)
-  {
-    $this->configReader = $configReader;
-    try {
-      $this->configReader->loadConfig('settings');
+    /** @var \youconix\core\services\FileHandler $file */
+    protected $file;
+
+    /** @var array */
+    protected $config = [];
+
+    /** @var array  */
+    protected $blocks = [];
+
+    /** @var array */
+    protected $files;
+
+    /**
+     * @param FileHandler $file
+     * @param XmlConfigReader $xmlReader
+     * @param YamlConfigReader $yamlReader
+     */
+    public function __construct(FileHandler $file, XmlConfigReader $xmlReader, YamlConfigReader $yamlReader)
+    {
+        $this->xmlConfigReader = $xmlReader;
+        $this->yamlConfigReader = $yamlReader;
+        $this->file = $file;
+
+        $this->readCacheFiles();
+
+        if (!array_key_exists('settings.main.nameSite', $this->config)) {
+            //\youconix\core\Memory::redirect('/router.php/install/');
+            exit();
+        }
     }
-    catch(\RuntimeException $e){
-      $s_base = \youconix\core\Memory::detectBase();
 
-      \youconix\core\Memory::redirect($s_base . '/install/');
-      exit();
+    protected function readCacheFiles()
+    {
+        $cacheFile = $this->createCacheFileName();
+
+        if (!defined('DEBUG') && $this->file->exists($cacheFile)) {
+            $content = $this->file->readFile($cacheFile);
+            $this->config = unserialize($content);
+            return;
+        }
+
+        $filesXml = $this->file->readFilteredDirectoryNames(DATA_DIR.DS.'settings', [], 'xml');
+        $filesYaml = array_merge(
+            $this->file->readFilteredDirectoryNames(DATA_DIR.DS.'settings', [], 'yml'),
+            $this->file->readFilteredDirectoryNames(DATA_DIR.DS.'settings', [], 'yaml')
+        );
+
+        $this->files = [];
+        $this->parseDirectory($filesXml, 'xml');
+        $this->parseDirectory($filesYaml, 'yaml');
+
+        foreach($this->files as $file){
+            if ($file['type'] == 'xml'){
+                $this->xmlConfigReader->loadConfig($file['file']);
+                $config = $this->xmlConfigReader->getConfigAsArray();
+            }
+            else {
+                $this->yamlConfigReader->loadConfig($file['file']);
+                $config = $this->yamlConfigReader->getConfigAsArray();
+            }
+
+            $this->config = array_merge($this->config, $config);
+        }
+
+        $this->file->writeFile($cacheFile, serialize($this->config));
     }
-  }
 
-  /**
-   * Returns if the object should be treated as singleton
-   *
-   * @return boolean
-   */
-  public static function isSingleton()
-  {
-    return true;
-  }
+    /**
+     * @param array $files
+     * @param string $type
+     */
+    protected function parseDirectory(array $files, $type)
+    {
+        foreach($files as $file){
+            if (is_array($file)) {
+                $this->parseDirectory($file, $type);
+                continue;
+            }
 
-  /**
-   * Saves the settings file
-   */
-  public function save($file = '')
-  {
-    $this->configReader->save($this->s_settingsDir . '/settings.xml');
-  }
+            $parts = explode(DS, substr($file,0,strrpos($file,'.')));
+            $this->files[end($parts)] = [
+                'file' => $file,
+                'type' => $type
+            ];
+        }
+    }
 
-  /**
-   * Adds a new node
-   *
-   * @param string $path
-   * @param string $content
-   * @throws \XMLException If the path already exists
-   */
-  public function add($path, $content)
-  {
-    $this->configReader->add($path, $content);
-  }
+    /**
+     * Returns if the object should be treated as singleton
+     *
+     * @return boolean
+     */
+    public static function isSingleton()
+    {
+        return true;
+    }
 
-  /**
-   * Checks of the given part of the loaded file exists
-   *
-   * @param string $path
-   * @return boolean, true if the part exists otherwise false
-   */
-  public function exists($path)
-  {
-    return $this->configReader->exists($path);
-  }
+    /**
+     * @return string
+     */
+    protected function createCacheFileName()
+    {
+        return DATA_DIR . DS . 'settings' . DS . 'config_cache.php';
+    }
 
-  /**
-   * Gives the asked part of the loaded file
-   *
-   * @param string $path
-   * @return string The content of the requested part
-   * @throws \XMLException when the path does not exist
-   */
-  public function get($path)
-  {
-    return $this->configReader->get($path);
-  }
 
-  /**
-   * Saves the value at the given place
-   *
-   * @param string $path
-   * @param string $content
-   * @throws \XMLException when the path does not exist
-   */
-  public function set($path, $content)
-  {
-    return $this->configReader->set($path, $content);
-  }
+    /**
+     * Gives the asked config block
+     *
+     * @param string $path
+     * @return string The content of the requested part
+     * @throws \ConfigException
+     * @return array The block
+     */
+    public function getBlock($path)
+    {
+        $path = $this->encodePath($path);
 
-  /**
-   * Empties the asked part of the loaded file
-   *
-   * @param string $path
-   * @throws \XMLException when the path does not exist
-   */
-  public function emptyPath($path)
-  {
-    $this->configReader->emptyPath($path);
-  }
+        if (in_array($path, $this->blocks)) {
+            return $this->blocks[$path];
+        }
 
-  /**
-   * Gives the asked block of the loaded file
-   *
-   * @param string $path
-   * @return string The content of the requested part
-   * @throws \XMLException when the path does not exist
-   * @return array The block
-   */
-  public function getBlock($path)
-  {
-    return $this->configReader->getBlock($path);
-  }
+        $search = $path.'.';
+        $length = strlen($search);
+        $block = [];
+        foreach($this->config as $key => $value){
+            if (substr($key,0,$length) != $search) {
+                continue;
+            }
 
-  public function loadConfig($file)
-  {
-    $this->configReader->loadConfig($file);
-  }
+            $key = str_replace($search, '', $key);
+            $block[$key] = $value;
+        }
+
+        if (count($block) == 0){
+            throw new \ConfigException('Call to unknown config block '.$path.'.');
+        }
+
+        return $block;
+    }
 }

@@ -328,7 +328,7 @@ class ControlPanelModules
     }
   }
 
-  /**
+  /**g
    * 
    * @return array
    */
