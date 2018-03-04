@@ -2,50 +2,34 @@
 
 namespace youconix\Core\ORM;
 
-use youconix\Core\Services\Validation;
-
 abstract class AbstractEntity
 {
-  protected $s_table = '';
+  protected $table = '';
   
-  /**
-   *
-   * @var Validation
-   */
-  protected $validation;
+  /** @var \ValidationInterface */
+  protected $validationService;
 
-  /**
-   * @var \Builder $builder
-   */
+  /** @var \BuilderInterface  */
   protected $builder;
 
-  /**
-   *
-   * @var array
-   */
-  protected $a_validation = [];
+  /** @var array  */
+  protected $validation = [];
 
-  /**
-   *
-   * @var bool
-   */
+  /** @var boolean */
   protected $bo_throwError = true;
   
-  /**
-   *
-   * @var array
-   */
+  /** @var array */
   protected $a_validationErrors;
 
   /**
    * 
-   * @param \Builder $builder
-   * @param Validation $validation
+   * @param \BuilderInterface $builder
+   * @param \ValidationInterface $validation
    */
-  public function __construct(\BuilderInterface $builder, Validation $validation)
+  public function __construct(\BuilderInterface $builder, \ValidationInterface $validation)
   {
     $this->builder = $builder;
-    $this->validation = $validation;
+    $this->validationService = $validation;
     
     $this->detectTableName();
   }
@@ -62,20 +46,20 @@ abstract class AbstractEntity
   
   protected function detectTableName()
   {
-    if (!empty($this->s_table)) {
+    if (!empty($this->table)) {
       return;
     }
     $s_className = get_class($this);
-    $this->s_table = strtolower(preg_replace('/[A-Z]/', '_$0', $s_className));
+    $this->table = strtolower(preg_replace('/[A-Z]/', '_$0', $s_className));
   }
   
   /**
    * 
-   * @return $s_table
+   * @return $table
    */
   public function getTableName()
   {
-    return $this->s_table;
+    return $this->table;
   }
 
   /**
@@ -109,10 +93,10 @@ abstract class AbstractEntity
 	continue;
       }
 
-      $this->validation->validateField($s_key, $this->$s_key, $this->a_validation[$s_key]);
+      $this->validationService->validateField($s_key, $this->$s_key, $this->a_validation[$s_key]);
     }
 
-    $this->a_validationErrors = array_merge($this->a_validationErrors, $this->validation->getErrors());
+    $this->a_validationErrors = array_merge($this->a_validationErrors, $this->validationService->getErrors());
     
     if (!$this->bo_throwError) {
       return $this->a_validationErrors;

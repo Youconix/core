@@ -1,12 +1,14 @@
 {
-	"name": "youconix/core",
-	"description": "Core files from the Miniature-happyness framework.",
+	"name": "youconix/Core",
+	"description": "Core files from the Miniature-happiness framework.",
 	"license": "LGPL-3.0+",
 	"require" : {
 		"phpmailer/phpmailer" : "5.2.*",
 		"psr/log" : "1.*"
 	},
 	"suggest" : {
+		"youconix/ControlPanel" : "^1.0",
+        "youconix/AuthGui": "^1.0",
 		"dompdf/dompdf" : "0.6.*",
 		"facebook/php-sdk-v4": "~5.0",
 		"guzzlehttp/guzzle": "^6.0",
@@ -24,7 +26,11 @@
     ],
 	"autoload": {
 		"psr-4": {
-			"youconix\\Core\\": "youconix\\Core\\src\\",
+			"youconix\\Core\\": "youconix\\Core\\src\\"
+		}
+	},
+	"autoload_dev": {
+		"psr-4": {
 			"youconix\\Core\\test\\": "youconix\\Core\\test\\"
 		}
 	}

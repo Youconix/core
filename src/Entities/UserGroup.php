@@ -15,7 +15,7 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
    * @var \youconix\Core\Entities\User
    */
   protected $user;
-  
+
   /**
    *
    * @OneToOne(targetEntity="Group")
@@ -49,25 +49,25 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
   }
 
   /**
-   * 
-   * @param int $i_id
+   *
+   * @param int $id
    */
-  public function setId($i_id)
+  public function setId($id)
   {
-    $this->id = $i_id;
+    $this->id = $id;
   }
 
   /**
-   * 
-   * @param int $i_level
+   *
+   * @param int $level
    */
-  public function setLevel($i_level)
+  public function setLevel($level)
   {
-    $this->level = $i_level;
+    $this->level = $level;
   }
 
   /**
-   * 
+   *
    * @return int
    */
   public function getLevel()
@@ -75,25 +75,41 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
     return $this->level;
   }
 
+  /**
+   * @return User
+   */
   public function getUser()
   {
     return $this->user;
   }
 
+  /**
+   * @param $user
+   */
   public function setUser($user)
   {
     $this->user = $user;
   }
-  
-  public function setGroupID($id){
+
+  /**
+   * @param $id
+   */
+  public function setGroupID($id)
+  {
     $this->groupID = $id;
   }
 
-  public function setGroup($group)
+  /**
+   * @param Group $group
+   */
+  public function setGroup(Group $group)
   {
     $this->group = $group;
   }
 
+  /**
+   * @return Group
+   */
   public function getGroup()
   {
     return $this->group;
@@ -107,17 +123,17 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
   public function getColor()
   {
     switch ($this->getLevel()) {
-      case \Session::ANONYMOUS:
-	return \Session::ANONYMOUS_COLOR;
+      case \SessionInterface::ANONYMOUS:
+        return \SessionInterface::ANONYMOUS_COLOR;
 
-      case \Session::USER:
-	return \Session::USER_COLOR;
+      case \SessionInterface::USER:
+        return \SessionInterface::USER_COLOR;
 
-      case \Session::MODERATOR:
-	return \Session::MODERATOR_COLOR;
+      case \SessionInterface::MODERATOR:
+        return \SessionInterface::MODERATOR_COLOR;
 
-      case \Session::ADMIN:
-	return \Session::ADMIN_COLOR;
+      case \SessionInterface::ADMIN:
+        return \SessionInterface::ADMIN_COLOR;
     }
   }
 
@@ -128,7 +144,7 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
    */
   public function isUser()
   {
-    return ($this->getLevel() >= \Session::USER);
+    return ($this->getLevel() >= \SessionInterface::USER);
   }
 
   /**
@@ -138,7 +154,7 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
    */
   public function isModerator()
   {
-    return ($this->getLevel() >= \Session::MODERATOR);
+    return ($this->getLevel() >= \SessionInterface::MODERATOR);
   }
 
   /**
@@ -148,6 +164,6 @@ class UserGroup extends \youconix\Core\ORM\AbstractEntity
    */
   public function isAdmin()
   {
-    return ($this->getLevel() >= \Session::ADMIN);
+    return ($this->getLevel() >= \SessionInterface::ADMIN);
   }
 }

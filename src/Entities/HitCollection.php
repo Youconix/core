@@ -1,23 +1,21 @@
 <?php
 
-namespace youconix\core\entities;
+namespace youconix\Core\Entities;
 
-use youconix\core\services\Validation;
-
-class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
+class HitCollection extends \youconix\Core\ORM\AbstractEntity implements \Iterator
 {
 
-  protected $a_items = array();
-  protected $a_keys = array();
-  protected $i_pos = 0;
-  protected $i_length = 0;
+  protected $items = [];
+  protected $keys = [];
+  protected $pos = 0;
+  protected $length = 0;
 
   /**
    * 
-   * @param \Builder $builder
-   * @param Validation $validation
+   * @param \BuilderInterface $builder
+   * @param \ValidationInterface $validation
    */
-  public function __construct(\Builder $builder, Validation $validation)
+  public function __construct(\BuilderInterface $builder, \ValidationInterface $validation)
   {
     $this->builder = $builder;
     $this->validation = $validation;
@@ -26,23 +24,23 @@ class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
   }
 
   /**
-   * @param int $i_startDate
+   * @param int $startDate
    *            The start date as timestamp
-   * @param int $i_endDate
+   * @param int $endDate
    *            The end date as timestamp
    */
-  public function init($i_startDate, $i_endDate)
+  public function init($startDate, $endDate)
   {
-    while ($i_startDate < $i_endDate) {
-      $item = new HitItem(0, $i_startDate);
-      $s_key = $item->getKey();
+    while ($startDate < $endDate) {
+      $item = new HitItem(0, $startDate);
+      $key = $item->getKey();
 
-      $this->a_items[$s_key] = $item;
-      $this->a_keys[] = $s_key;
-      $this->i_length ++;
+      $this->items[$key] = $item;
+      $this->keys[] = $key;
+      $this->length ++;
 
-      $i_startDate = mktime(0, 0, 0, date("n", $i_startDate) + 1, 1,
-					  date("Y", $i_startDate));
+      $startDate = mktime(0, 0, 0, date("n", $startDate) + 1, 1,
+					  date("Y", $startDate));
     }
   }
   
@@ -58,25 +56,24 @@ class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
   /**
    * Adds a HitItem
    *
-   * @param \youconix\core\models\data\HitItem $item
-   *            The item
+   * @param \youconix\Core\Entities\HitItem $item
    */
   public function add(HitItem $item)
   {
-    $s_key = $item->getKey();
+    $key = $item->getKey();
 
-    $this->a_items[$s_key]->increaseAmount($item->getAmount());
+    $this->items[$key]->increaseAmount($item->getAmount());
   }
 
   /**
    * Returns the current item
    *
-   * @return \youconix\core\models\data\HitItem The item
+   * @return \youconix\Core\Entities\HitItem
    */
   public function current()
   {
-    $s_key = $this->key();
-    return $this->a_items[$s_key];
+    $key = $this->key();
+    return $this->items[$key];
   }
 
   /**
@@ -86,7 +83,7 @@ class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
    */
   public function key()
   {
-    return $this->a_keys[$this->i_pos];
+    return $this->keys[$this->pos];
   }
 
   /**
@@ -94,7 +91,7 @@ class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
    */
   public function next()
   {
-    $this->i_pos ++;
+    $this->pos ++;
   }
 
   /**
@@ -102,7 +99,7 @@ class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
    */
   public function rewind()
   {
-    $this->i_pos = 0;
+    $this->pos = 0;
   }
 
   /**
@@ -112,32 +109,32 @@ class HitCollection extends \youconix\core\ORM\Entity implements \Iterator
    */
   public function valid()
   {
-    return ($this->i_pos < $this->i_length);
+    return ($this->pos < $this->length);
   }
 }
 
 class HitItem
 {
 
-  protected $i_amount = 0;
-  protected $s_key = '';
-  protected $i_month;
-  protected $i_year;
+  protected $amount = 0;
+  protected $key = '';
+  protected $month;
+  protected $year;
 
   /**
    * Creates a new HitItem
    *
-   * @param int $i_amount
+   * @param int $amount
    *            The start amount
-   * @param int $i_datetime
+   * @param int $datetime
    *            The date as timestamp
    */
-  public function __construct($i_amount, $i_datetime)
+  public function __construct($amount, $datetime)
   {
-    $this->i_amount = $i_amount;
-    $this->i_month = date('n', $i_datetime);
-    $this->i_year = date('Y', $i_datetime);
-    $this->s_key = $this->i_month . '-' . $this->i_year;
+    $this->amount = $amount;
+    $this->month = date('n', $datetime);
+    $this->year = date('Y', $datetime);
+    $this->key = $this->month . '-' . $this->year;
   }
 
   /**
@@ -147,17 +144,17 @@ class HitItem
    */
   public function getKey()
   {
-    return $this->s_key;
+    return $this->key;
   }
 
   /**
    * Increases the stored amount with the given amount
    *
-   * @param int $i_amount            
+   * @param int $amount            
    */
-  public function increaseAmount($i_amount)
+  public function increaseAmount($amount)
   {
-    $this->i_amount += $i_amount;
+    $this->amount += $amount;
   }
 
   /**
@@ -167,8 +164,6 @@ class HitItem
    */
   public function getAmount()
   {
-    return $this->i_amount;
+    return $this->amount;
   }
 }
-
-?>

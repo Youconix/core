@@ -5,7 +5,7 @@ namespace youconix\Core\Entities;
 /**
  * Group data model.
  * Contains the group data
- * 
+ *
  * @Table(name="groups")
  * @ORM\Entity(repositoryClass="youconix\Core\Repositories\Group")
  */
@@ -42,15 +42,18 @@ class Group extends \youconix\Core\ORM\AbstractEntity
    *
    * @var array
    */
-  protected $a_users;
+  protected $users;
 
-  public function setId($i_id)
+  /**
+   * @param $id
+   */
+  public function setId($id)
   {
-    \youconix\core\Memory::type('int', $i_id);
-    
-    $this->id = $i_id;
+    \youconix\core\Memory::type('int', $id);
+
+    $this->id = $id;
   }
-  
+
   /**
    *
    * @return int ID
@@ -71,13 +74,13 @@ class Group extends \youconix\Core\ORM\AbstractEntity
 
   /**
    *
-   * @param string $s_name            
+   * @param string $name
    */
-  public function setName($s_name)
+  public function setName($name)
   {
-    \youconix\core\Memory::type('string', $s_name);
+    \youconix\core\Memory::type('string', $name);
 
-    $this->name = $s_name;
+    $this->name = $name;
   }
 
   /**
@@ -91,13 +94,13 @@ class Group extends \youconix\Core\ORM\AbstractEntity
 
   /**
    *
-   * @param string $s_description            
+   * @param string $description
    */
-  public function setDescription($s_description)
+  public function setDescription($description)
   {
-    \youconix\core\Memory::type('string', $s_description);
+    \youconix\core\Memory::type('string', $description);
 
-    $this->description = $s_description;
+    $this->description = $description;
   }
 
   /**
@@ -107,60 +110,59 @@ class Group extends \youconix\Core\ORM\AbstractEntity
    */
   public function isDefault()
   {
-    return ($this->automatic == 1);
+    return ($this->default == 1);
   }
 
   /**
    * Sets the group as default
    *
-   * @param boolean $bo_default
-   *            to true to make the group default
+   * @param boolean $default
    */
-  public function setDefault($bo_default)
+  public function setDefault($default)
   {
-    \youconix\core\Memory::type('boolean', $bo_default);
+    \youconix\core\Memory::type('boolean', $default);
 
-    if ($bo_default) {
-      $this->automatic = 1;
+    if ($default) {
+      $this->default = 1;
     } else {
-      $this->automatic = 0;
+      $this->default = 0;
     }
   }
 
   /**
    * Gets the user access level
    *
-   * @param int $i_userid
+   * @param int $userid
    *            The user ID
-   * @return int The access level defined in /include/Services/Session.inc.php
+   * @return int The access level defined in /SessionInterface
    */
-  public function getLevelByGroupID($i_userid)
+  public function getLevelByGroupID($userid)
   {
-    \youconix\core\Memory::type('int', $i_userid);
+    \youconix\core\Memory::type('int', $userid);
 
-    if (!is_null($this->a_users)) {
-      if (array_key_exists($i_userid, $this->a_users)) {
-	return $this->a_users[$i_userid];
+    if (!is_null($this->users)) {
+      if (array_key_exists($userid, $this->users)) {
+        return $this->users[$userid];
       }
     } else {
-      $this->a_users = array();
+      $this->users = [];
     }
 
     /* Get groupname */
     $this->builder->select('group_users', 'level')
-	->getWhere()
-	->bindInt('groupID', $this->id)
-	->bindInt('userid', $i_userid);
+      ->getWhere()
+      ->bindInt('groupID', $this->id)
+      ->bindInt('userid', $userid);
     $database = $this->builder->getResult();
 
     if ($database->num_rows() == 0) {
       /* No record found. Access denied */
-      $this->a_users[$i_userid] = \Session::ANONYMOUS;
+      $this->users[$userid] = \SessionInterface::ANONYMOUS;
     } else {
-      $this->a_users[$i_userid] = $database->result(0, 'level');
+      $this->users[$userid] = $database->result(0, 'level');
     }
 
-    return $this->a_users[$i_userid];
+    return $this->users[$userid];
   }
 
   /**
@@ -171,51 +173,51 @@ class Group extends \youconix\Core\ORM\AbstractEntity
   public function getMembersByGroup()
   {
     $this->builder->select('group_users g', 'g.level,u.nick AS username,u.id')
-	->innerJoin('users u', 'g.userid', 'u.id')
-	->order('u.nick', 'ASC');
+      ->innerJoin('users u', 'g.userid', 'u.id')
+      ->order('u.nick', 'ASC');
     $this->builder->getWhere()->bindInt('g.groupID', $this->id);
     $database = $this->builder->getResult();
 
-    $a_result = array();
+    $result = [];
     if ($database->num_rows() > 0) {
-      $a_result = $database->fetch_assoc();
+      $result = $database->fetch_assoc();
     }
 
-    return $a_result;
+    return $result;
   }
 
   /**
    * Adds the group to the database
-   * 
-   * @see \youconix\core\models\Equivalent::add()
+   *
+   * @see \youconix\Core\Models\Equivalent::add()
    */
   protected function add()
   {
-    $database = $this->builder->select($this->s_table, $this->builder->getMaximun('id', 'id'))->getResult();
+    $database = $this->builder->select($this->table, $this->builder->getMaximun('id', 'id'))->getResult();
     $this->id = ($database->result(0, 'id') + 1);
 
-    $this->builder->insert($this->s_table);
+    $this->builder->insert($this->table);
     $this->buildSave();
     $this->builder->getResult();
 
-    if ($this->automatic != 1) {
+    if ($this->default != 1) {
       return;
     }
 
     /* Add users to group */
     $i_groupID = $this->id;
     $this->builder->select('users', 'id,staff');
-    $a_users = $this->builder->getResult()->fetch_assoc();
+    $users = $this->builder->getResult()->fetch_assoc();
 
-    foreach ($a_users as $a_user) {
-      $i_level = 0;
-      if ($a_user['staff'] == \Session::ADMIN)
-	$i_level = 2;
+    foreach ($users as $user) {
+      $level = 0;
+      if ($user['staff'] == \SessionInterface::ADMIN)
+        $level = 2;
 
       $this->builder->insert('group_users');
       $this->builder->bindInt('groupID', $i_groupID)
-	  ->bindInt('userid', $a_user['id'])
-	  ->bindString('level', $i_level);
+        ->bindInt('userid', $user['id'])
+        ->bindString('level', $level);
       $this->builder->getResult();
     }
   }
@@ -223,8 +225,8 @@ class Group extends \youconix\Core\ORM\AbstractEntity
   /**
    * Deletes the group
    * Can not remove a group with members
-   * 
-   * @see \youconix\core\models\Equivalent::delete()
+   *
+   * @see \youconix\Core\Models\Equivalent::delete()
    */
   public function delete()
   {
@@ -239,68 +241,67 @@ class Group extends \youconix\Core\ORM\AbstractEntity
   /**
    * Adds a user to the group
    *
-   * @param int $i_userid
-   *            userid
-   * @param int $i_level
+   * @param int $userid
+   * @param int $level
    *            access level, default 0 (user)
    */
-  public function addUser($i_userid, $i_level = 0)
+  public function addUser($userid, $level = 0)
   {
-    \youconix\core\Memory::type('int', $i_userid);
-    \youconix\core\Memory::type('int', $i_level);
+    \youconix\core\Memory::type('int', $userid);
+    \youconix\core\Memory::type('int', $level);
 
-    if ($i_level < 0 || $i_level > 2)
-      $i_level = 0;
+    if ($level < 0 || $level > 2) {
+      $level = 0;
+    }
 
-    if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
+    if ($this->getLevelByGroupID($userid) == \SessionInterface::ANONYMOUS) {
       $this->builder->insert("group_users")
-	  ->bindInt('groupID', $this->id)
-	  ->bindInt('userid', $i_userid)
-	  ->bindString('level', $i_level)
-	  ->getResult();
+        ->bindInt('groupID', $this->id)
+        ->bindInt('userid', $userid)
+        ->bindString('level', $level)
+        ->getResult();
     }
   }
 
   /**
    * Edits the users access rights for this group
    *
-   * @param int $i_userid
-   *            userid
-   * @param int $i_level
+   * @param int $userid
+   * @param int $level
    *            access level, default 0 (user)
    */
-  public function editUser($i_userid, $i_level = 0)
+  public function editUser($userid, $level = 0)
   {
-    \youconix\core\Memory::type('int', $i_userid);
-    \youconix\core\Memory::type('int', $i_level);
+    \youconix\core\Memory::type('int', $userid);
+    \youconix\core\Memory::type('int', $level);
 
-    if (!in_array($i_level, array(
-	    - 1,
-	    0,
-	    1,
-	    2
-	)))
+    if (!in_array($level, [
+      -1,
+      0,
+      1,
+      2
+    ]))
       return;
 
-    if ($i_level == - 1) {
+    if ($level == -1) {
       $this->builder->delete("group_users")
-	  ->getWhere()
-	  ->bindInt('userid', $i_userid);
+        ->getWhere()
+        ->bindInt('userid', $userid);
       $this->builder->getResult();
     } else
-    if ($this->getLevelByGroupID($i_userid) == \Session::ANONYMOUS) {
-      $this->builder->insert("group_users")
-	  ->bindInt('groupID', $this->id)
-	  ->bindInt('userid', $i_userid)
-	  ->bindString('level', $i_level)
-	  ->getResult();
-    } else {
-      $this->builder->update("group_users")
-	  ->bindString('level', $i_level)
-	  ->getWhere()
-	  ->bindInt('userid', $i_userid);
-      $this->builder->getResult();
-    }
+      if ($this->getLevelByGroupID($userid) == \SessionInterface::ANONYMOUS) {
+        $this->builder->insert("group_users")
+          ->bindInt('groupID', $this->id)
+          ->bindInt('userid', $userid)
+          ->bindString('level', $level)
+          ->getResult();
+      } else {
+        $this->builder->update("group_users")
+          ->bindString('level', $level)
+          ->getWhere()
+          ->bindInt('userid', $userid);
+        $this->builder->getResult();
+      }
   }
 
   /**
@@ -308,48 +309,49 @@ class Group extends \youconix\Core\ORM\AbstractEntity
    */
   public function addUsersToDefault()
   {
-    if ($this->i_default == 0)
+    if ($this->default == 0)
       return;
 
     $this->builder->select('users', 'userid')->bindString('active', '1')->bindString('blocked', '0');
     $database = $this->builder->getResult();
-    $a_users = $database->fetch_assoc();
-    $a_currentUsers = array();
+    $users = $database->fetch_assoc();
+    $currentUsers = [];
     $this->builder->select("group_users", "userid")
-	->getWhere()
-	->bindInt('groupID', $this->id);
+      ->getWhere()
+      ->bindInt('groupID', $this->id);
     $database = $this->builder->getResult();
     if ($database->num_rows() > 0) {
-      $a_currentUsers = $database->fetch_assoc_key('userid');
+      $currentUsers = $database->fetch_assoc_key('userid');
     }
-    $i_level = \Session::USER;
+    $level = \SessionInterface::USER;
 
-    foreach ($a_users as $i_user) {
-      if (array_key_exists($i_user, $a_currentUsers))
-	continue;
+    foreach ($users as $user) {
+      if (array_key_exists($user, $currentUsers)) {
+        continue;
+      }
 
       $this->builder->insert("group_users")
-	  ->bindInt('groupID', $this->id)
-	  ->bindInt('userid', $i_user)
-	  ->bindString('level', $i_level)
-	  ->getResult();
+        ->bindInt('groupID', $this->id)
+        ->bindInt('userid', $user)
+        ->bindString('level', $level)
+        ->getResult();
     }
   }
 
   /**
    * Deletes the user from the group
    *
-   * @param int $i_userid
+   * @param int $userid
    */
-  public function deleteUser($i_userid)
+  public function deleteUser($userid)
   {
-    \youconix\core\Memory::type('int', $i_userid);
+    \youconix\core\Memory::type('int', $userid);
 
-    if ($this->getLevelByGroupID($i_userid) != \Session::ANONYMOUS) {
+    if ($this->getLevelByGroupID($userid) != \SessionInterface::ANONYMOUS) {
       $this->builder->delete('group_users')
-	  ->getWhere()
-	  ->bindInt('groupID', $this->id)
-	  ->bindInt('userid', $i_userid);
+        ->getWhere()
+        ->bindInt('groupID', $this->id)
+        ->bindInt('userid', $userid);
       $this->builder->getResult();
     }
   }
@@ -365,11 +367,12 @@ class Group extends \youconix\Core\ORM\AbstractEntity
       return false;
 
     $this->builder->select('group_users', 'id')
-	->getWhere()
-	->bindInt('groupID', $this->id);
+      ->getWhere()
+      ->bindInt('groupID', $this->id);
     $database = $this->builder->getResult();
-    if ($database->num_rows() == 0)
+    if ($database->num_rows() == 0) {
       return false;
+    }
 
     return true;
   }
